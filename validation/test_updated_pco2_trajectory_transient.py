@@ -44,6 +44,27 @@ def test_gradual_trajectory_preserves_initial_isotope_state() -> None:
     assert result.states[0].cap_delta17_prime_permil == pytest.approx(
         result.initial_steady_state["cap_delta17_prime_permil"], abs=1.0e-12
     )
+    assert result.transition_end_state["time_years"] == pytest.approx(174.0)
+    assert result.transition_end_state["pco2_ppm"] == pytest.approx(422.8)
+
+
+def test_transition_endpoint_is_evaluated_beyond_a_short_display_window() -> None:
+    result = run_updated_pco2_trajectory(
+        UpdatedPCO2TrajectoryInput(
+            initial=INITIAL,
+            final_pco2_ppm=422.8,
+            transition_duration_years=174.0,
+            duration_years=50.0,
+            sample_count=9,
+            equilibrium_search_max_years=200.0,
+        )
+    )
+    assert result.time_years[-1] == pytest.approx(50.0)
+    assert result.transition_end_state["time_years"] == pytest.approx(174.0)
+    assert result.transition_end_state["cap_delta17_prime_permil"] != pytest.approx(
+        result.states[-1].cap_delta17_prime_permil,
+        abs=1.0e-8,
+    )
 
 
 def test_long_hold_converges_to_final_steady_state() -> None:

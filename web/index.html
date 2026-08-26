@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OXYTIB</title>
-  <link rel="stylesheet" href="assets/styles.css?v=1.19.0">
-  <script defer src="assets/app.js?v=1.19.0"></script>
+  <link rel="stylesheet" href="assets/styles.css?v=1.20.2">
+  <script defer src="assets/app.js?v=1.20.2"></script>
 </head>
 <body>
   <header class="topbar">
@@ -164,7 +164,6 @@
               <h2 id="result-title">pCO<sub>2</sub> solution</h2>
             </div>
             <div class="result-actions">
-              <button class="secondary-command" id="download-result" type="button" disabled>Download CSV</button>
               <button class="secondary-command" id="download-result-xlsx" type="button" disabled>Download XLSX</button>
             </div>
           </div>
@@ -186,11 +185,6 @@
                 <button class="plot-export" type="button" data-canvas="solver-marginal-canvas" data-filename="constrained_solution_distribution" disabled title="Download plot as PNG">↓ PNG</button>
               </div>
               <canvas id="solver-marginal-canvas" width="980" height="330"></canvas>
-              <div class="marginal-key" aria-label="Solution distribution legend">
-                <span><i class="density-mark" aria-hidden="true"></i>Relative probability density</span>
-                <span><i class="interval-mark" aria-hidden="true"></i>Central 95% credible interval</span>
-                <span><i class="median-mark" aria-hidden="true"></i>Posterior median</span>
-              </div>
             </div>
             <p class="method-note hidden" id="solver-method-note"></p>
             <div class="solver-probability hidden" id="solver-probability">
@@ -199,10 +193,6 @@
                 <button class="plot-export" type="button" data-canvas="solver-probability-canvas" data-filename="constrained_pco2_gpp_probability" disabled title="Download plot as PNG">↓ PNG</button>
               </div>
               <canvas id="solver-probability-canvas" width="980" height="560"></canvas>
-              <div class="marginal-key" aria-label="Probability field legend">
-                <span><i class="probability-scale-mark" aria-hidden="true"></i>Relative probability density</span>
-                <span><i class="hpd-mark" aria-hidden="true"></i>95% credible region</span>
-              </div>
               <div class="probability-caption" id="solver-probability-caption"></div>
             </div>
           </div>
@@ -230,9 +220,6 @@
           <button class="plot-export" type="button" data-canvas="isotope-canvas" data-filename="pco2_gpp_delta17_isotope_field" disabled title="Download plot as PNG">↓ PNG</button>
           <canvas id="isotope-canvas" width="980" height="560" role="img" aria-label="Atmospheric oxygen isotope field"></canvas>
         </div>
-        <aside class="summary-panel" id="isotope-summary">
-          <h3>Model isotope field</h3>
-        </aside>
       </div>
     </section>
 
@@ -307,7 +294,7 @@
             <div><dt>δ<sup>x</sup>O</dt><dd>Conventional oxygen-isotope composition relative to VSMOW, in ‰.</dd></div>
             <div><dt>δ′<sup>x</sup>O</dt><dd>Logarithmic oxygen-isotope composition, in ‰.</dd></div>
             <div><dt>Δ′<sup>17</sup>O<sub>0.528</sub></dt><dd>Triple-oxygen-isotope deviation from the 0.528 reference line, in ‰.</dd></div>
-            <div><dt>VSMOW</dt><dd>Vienna Standard Mean Ocean Water isotope-ratio reference.</dd></div>
+            <div><dt>VSMOW</dt><dd>Vienna Standard Mean Ocean Water reference scale.</dd></div>
             <div><dt>pCO<sub>2</sub></dt><dd>Atmospheric CO<sub>2</sub> partial pressure, reported in ppm.</dd></div>
             <div><dt>pO<sub>2</sub></dt><dd>Atmospheric O<sub>2</sub> partial pressure, reported relative to PAL.</dd></div>
             <div><dt>PAL</dt><dd>Present atmospheric level; 1.00 PAL corresponds to 21.2% atmospheric O<sub>2</sub> in this interface.</dd></div>

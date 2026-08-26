@@ -44,8 +44,10 @@ Create the untracked configuration:
 cp deploy/.env.traefik.example deploy/.env.traefik
 ```
 
-Set `OXYTIB_HOST` and keep `OXYTIB_TRAEFIK_ENABLE=false` during staging. Build
-and verify the loopback service first:
+Set `OXYTIB_HOST`, retain `OXYTIB_ROOT_PATH=/oxytib` so the interactive API
+documentation resolves its OpenAPI schema below the public path prefix, and
+keep `OXYTIB_TRAEFIK_ENABLE=false` during staging. Build and verify the
+loopback service first:
 
 ```bash
 docker compose \

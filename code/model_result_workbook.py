@@ -19,6 +19,9 @@ TITLE_FILL = PatternFill("solid", fgColor="123238")
 HEADER_FILL = PatternFill("solid", fgColor="006F71")
 TITLE_FONT = Font(color="FFFFFF", bold=True, size=14)
 HEADER_FONT = Font(color="FFFFFF", bold=True)
+SOFTWARE_NAME = "OXYTIB"
+SOFTWARE_VERSION = "0.1.0"
+REPOSITORY_URL = "https://github.com/FabianZah/atmospheric-o2-triple-isotope-model"
 
 
 def _unit(coordinate: str) -> str:
@@ -66,8 +69,9 @@ def _append_summary_rows(
     unit = _unit(coordinate)
     rows: list[tuple[str, Any, str]] = [
         ("generated_utc", datetime.now(timezone.utc).isoformat(), ""),
-        ("publication_model_id", envelope["publication_model_id"], ""),
-        ("api_version", envelope["api_version"], ""),
+        ("software", SOFTWARE_NAME, ""),
+        ("software_version", SOFTWARE_VERSION, ""),
+        ("repository", REPOSITORY_URL, ""),
         ("calculation", envelope["calculation"], ""),
         ("isotope_source", context["isotope_source"], ""),
         (
@@ -96,18 +100,6 @@ def _append_summary_rows(
         ("credible_interval_upper", high, unit),
         ("credible_interval_mass", inputs["credible_mass"], "probability"),
         ("boundary_sensitive", result["solve_boundary_sensitive"], ""),
-        ("surface_data_id", result["surface_data_id"], ""),
-        ("upstream_model_data_id", result["upstream_model_data_id"], ""),
-        (
-            "central_model_data_id",
-            envelope["provenance"]["central_model_data_id"],
-            "",
-        ),
-        (
-            "uncertainty_contract_id",
-            envelope["provenance"]["uncertainty_contract_id"],
-            "",
-        ),
         ("probability_scope", result["probability_scope"], ""),
     ]
     spherule = context.get("spherule")
@@ -160,7 +152,7 @@ def build_coordinate_inference_workbook(
     workbook = Workbook()
     workbook.properties.creator = "OXYTIB"
     workbook.properties.title = "Constrained atmospheric O2 isotope inference"
-    workbook.properties.subject = envelope["publication_model_id"]
+    workbook.properties.subject = f"{SOFTWARE_NAME} {SOFTWARE_VERSION}"
 
     summary = workbook.active
     summary.title = "Summary"
@@ -261,7 +253,7 @@ def build_transient_workbook(
     workbook = Workbook()
     workbook.properties.creator = "OXYTIB"
     workbook.properties.title = "Atmospheric O2 isotope time-response experiment"
-    workbook.properties.subject = envelope["publication_model_id"]
+    workbook.properties.subject = f"{SOFTWARE_NAME} {SOFTWARE_VERSION}"
 
     summary = workbook.active
     summary.title = "Summary"
@@ -272,8 +264,9 @@ def build_transient_workbook(
     )
     summary_rows = [
         ("generated_utc", datetime.now(timezone.utc).isoformat(), ""),
-        ("publication_model_id", envelope["publication_model_id"], ""),
-        ("api_version", envelope["api_version"], ""),
+        ("software", SOFTWARE_NAME, ""),
+        ("software_version", SOFTWARE_VERSION, ""),
+        ("repository", REPOSITORY_URL, ""),
         ("calculation", envelope["calculation"], ""),
         ("experiment_type", experiment_type, ""),
         ("display_duration", request["duration_years"], "years"),
@@ -293,10 +286,25 @@ def build_transient_workbook(
             equilibrium.get("tolerance_permil"),
             "permil",
         ),
-        ("model_data_id", result.get("model_data_id"), ""),
-        ("transfer_convention", result.get("transfer_convention"), ""),
-        ("carbon_driver_preset", result.get("carbon_driver_preset"), ""),
     ]
+    if experiment_type == "pCO2_trajectory":
+        transition = result["transition_end_state"]
+        summary_rows.extend(
+            (
+                ("transition_end_time", transition["time_years"], "years"),
+                ("transition_end_pCO2", transition["pco2_ppm"], "ppm"),
+                (
+                    "transition_end_O2_Delta_prime_17O_0.528",
+                    transition["cap_delta17_prime_permil"],
+                    "permil",
+                ),
+                (
+                    "transition_end_O2_delta_prime_18O",
+                    transition["delta18_prime_permil"],
+                    "permil",
+                ),
+            )
+        )
     for row in summary_rows:
         summary.append(row)
     _finish_table(summary, (42, 72, 24))
@@ -378,7 +386,10 @@ def build_transient_workbook(
         headers=("Field", "Value"),
     )
     provenance_values = {
-        **envelope.get("provenance", {}),
+        "software": SOFTWARE_NAME,
+        "software_version": SOFTWARE_VERSION,
+        "repository": REPOSITORY_URL,
+        "calculation": envelope["calculation"],
         "solver": result.get("solver", {}),
         "operational_equilibrium": equilibrium,
     }

@@ -1,61 +1,61 @@
 :root {
   color-scheme: light;
-  --ink: #17212b;
-  --muted: #61707c;
-  --line: #d6dde1;
-  --line-strong: #aebbc2;
-  --paper: #ffffff;
-  --ground: #f1f4f4;
-  --header: #192a2d;
-  --header-ink: #f7faf9;
-  --header-muted: #c2d0d3;
-  --hover: #f6f8f8;
-  --field-label: #35434c;
-  --input: #ffffff;
-  --disabled: #e9eeee;
-  --subtle: #eef5f4;
-  --subtle-strong: #eaf3f2;
-  --footer: #e5eaeb;
-  --teal: #006f71;
-  --teal-dark: #07575b;
-  --command: #006f71;
-  --command-hover: #07575b;
+  --ink: #252a28;
+  --muted: #656d69;
+  --line: #d6d9d2;
+  --line-strong: #aeb7b0;
+  --paper: #fffefa;
+  --ground: #edf0ea;
+  --header: #26332e;
+  --header-ink: #fbfcf8;
+  --header-muted: #cbd5cf;
+  --hover: #f3f5ef;
+  --field-label: #3e4843;
+  --input: #fffefa;
+  --disabled: #e7ebe5;
+  --subtle: #edf3ec;
+  --subtle-strong: #e7efe8;
+  --footer: #e2e7e0;
+  --teal: #3c6f60;
+  --teal-dark: #285647;
+  --command: #356556;
+  --command-hover: #274f43;
   --command-ink: #ffffff;
-  --gold: #c18b28;
-  --oxide: #a44b46;
-  --red: #a83d45;
-  --shadow: 0 8px 24px rgba(27, 43, 52, 0.08);
+  --gold: #aa7933;
+  --oxide: #a35448;
+  --red: #a3444c;
+  --shadow: 0 8px 24px rgba(35, 45, 39, 0.08);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --ink: #e6eceb;
-  --muted: #a1adac;
-  --line: #354044;
-  --line-strong: #566367;
-  --paper: #181e20;
-  --ground: #101416;
-  --header: #0c1112;
-  --header-ink: #f4f7f6;
-  --header-muted: #aab7b7;
-  --hover: #232b2d;
-  --field-label: #c6d0ce;
-  --input: #111719;
-  --disabled: #252d2f;
-  --subtle: #1d2b2b;
-  --subtle-strong: #1b2929;
-  --footer: #151b1d;
-  --teal: #4fb7ae;
-  --teal-dark: #86d4cb;
-  --command: #277f79;
-  --command-hover: #31978f;
+  --ink: #e8ece7;
+  --muted: #aab4ac;
+  --line: #3a4740;
+  --line-strong: #5b6a62;
+  --paper: #18201c;
+  --ground: #101512;
+  --header: #0b100e;
+  --header-ink: #f5f7f3;
+  --header-muted: #b3beb7;
+  --hover: #222c26;
+  --field-label: #ccd4ce;
+  --input: #111713;
+  --disabled: #27312b;
+  --subtle: #1c2a22;
+  --subtle-strong: #1e2d25;
+  --footer: #141b17;
+  --teal: #73a890;
+  --teal-dark: #a0cbb8;
+  --command: #3f7562;
+  --command-hover: #4e8b75;
   --command-ink: #ffffff;
-  --gold: #d4a84f;
-  --oxide: #d4776e;
-  --red: #ef858b;
-  --shadow: 0 8px 24px rgba(0, 0, 0, 0.26);
+  --gold: #d0a157;
+  --oxide: #d98274;
+  --red: #ed8a90;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 * { box-sizing: border-box; }
@@ -135,7 +135,7 @@ main { min-height: calc(100vh - 172px); }
   margin: 0 auto;
 }
 
-.control-panel, .result-area, .plot-panel, .summary-panel {
+.control-panel, .result-area, .plot-panel {
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -226,14 +226,6 @@ h3 { font-size: 14px; letter-spacing: 0; }
 .method-note { max-width: 690px; margin: 32px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
 .solver-marginal { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); }
 .solver-marginal canvas { margin-top: 8px; }
-.marginal-key { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px 20px; color: var(--muted); font-size: 11px; }
-.marginal-key span { display: inline-flex; align-items: center; gap: 7px; }
-.marginal-key i { width: 24px; height: 10px; flex: 0 0 auto; display: inline-block; }
-.density-mark { border-top: 3px solid #2166ac; background: rgba(33, 102, 172, 0.18); }
-.interval-mark { background: rgba(193, 139, 40, 0.24); border: 1px solid rgba(193, 139, 40, 0.55); }
-.median-mark { width: 2px !important; height: 14px !important; background: #17212b; }
-.probability-scale-mark { background: linear-gradient(90deg, #f2f6f6, #439993, #16235b); }
-.hpd-mark { border: 2px solid #17212b; background: transparent; }
 .solver-probability { margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--line); }
 .solver-probability-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .solver-probability-heading h3 { margin: 0; font-size: 16px; }
@@ -261,7 +253,7 @@ h3 { font-size: 14px; letter-spacing: 0; }
 .surface-constraint strong { font-size: 16px; font-weight: 700; }
 .control-label { display: block; color: var(--field-label); font-weight: 600; }
 .control-label small { margin-left: 4px; color: var(--muted); font-size: 10px; font-weight: 500; }
-.surface-layout { max-width: 1500px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 18px; }
+.surface-layout { max-width: 1500px; margin: 0 auto; display: block; }
 .plot-panel { min-width: 0; padding: 12px; overflow: hidden; position: relative; }
 .plot-export {
   position: absolute;
@@ -282,20 +274,10 @@ h3 { font-size: 14px; letter-spacing: 0; }
 .plot-export:disabled { opacity: 0.45; cursor: default; }
 .solver-probability-heading .plot-export { position: static; flex: 0 0 auto; }
 canvas { display: block; width: 100%; height: auto; aspect-ratio: 1.75; }
-.summary-panel { padding: 18px; }
-.summary-panel h3 { margin: 0 0 14px; }
-.summary-panel p { color: var(--muted); line-height: 1.55; }
-.summary-metric { padding: 13px 0; border-top: 1px solid var(--line); display: grid; gap: 4px; }
-.summary-metric span { color: var(--muted); font-size: 11px; }
-.summary-metric strong { font-size: 16px; }
-.legend-scale { height: 11px; margin: 18px 0 6px; background: linear-gradient(90deg, #f2f6f6, #aacfc9, #439993, #006f71, #16235b); }
-.legend-scale.isotope-scale { background: linear-gradient(90deg, #16235b, #2166ac, #23a99d, #f2c84b); }
-.legend-labels { display: flex; justify-content: space-between; color: var(--muted); font-size: 10px; }
-
 .transient-controls { grid-template-columns: 1.3fr 1fr 1fr; }
 .trajectory-controls { grid-template-columns: repeat(5, minmax(130px, 1fr)); }
 .transient-plots { max-width: 1500px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-.transient-summary { max-width: 1500px; min-height: 0; margin: 0 auto 14px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; }
+.transient-summary { max-width: 1500px; min-height: 0; margin: 0 auto 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 1px; }
 .transient-summary div { min-width: 0; padding: 12px 16px; background: var(--paper); border: 1px solid var(--line); }
 .transient-summary span { display: block; color: var(--muted); font-size: 11px; }
 .transient-summary strong { display: block; margin-top: 4px; }

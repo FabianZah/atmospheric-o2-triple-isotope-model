@@ -323,7 +323,6 @@ function renderConstrainedCoordinate(result, target, inputs, constraints, reques
       : "";
     $("solver-probability-caption").innerHTML = marginalizedText.trim();
   }
-  $("download-result").disabled = false;
   $("download-result-xlsx").disabled = false;
   state.lastResult = {
     result, target, inputs, constraints, coordinate, request,
@@ -336,7 +335,6 @@ async function runSolver() {
   $("solver-error").textContent = "";
   $("solver-result").classList.add("hidden");
   $("solver-empty").classList.remove("hidden");
-  $("download-result").disabled = true;
   $("download-result-xlsx").disabled = true;
   state.lastResult = null;
   setBusy(button, true, "Calculating…");
@@ -377,55 +375,6 @@ async function runSolver() {
   } finally {
     setBusy(button, false);
   }
-}
-
-function downloadResult() {
-  if (!state.lastResult) return;
-  const { result, target, inputs, constraints, coordinate, solution } = state.lastResult;
-  const solutionUnit = result.solve_units || (coordinate === "pCO2" ? "ppm" : coordinate === "GPP" ? "PgC yr-1" : "PAL");
-  const rows = [
-    ["field", "value", "unit"],
-    ["publication_model_id", state.metadata?.publication_model_id || "", ""],
-    ["isotope_source", target.source, ""],
-    ["target_air_Delta_prime_17O", target.target, "permil"],
-    ["Delta_prime_17O_analytical_sigma", target.sigma, "permil"],
-    ["target_air_delta18O_VSMOW", target.delta18 ?? "", "permil"],
-    ["delta18O_analytical_sigma", target.delta18Sigma ?? "", "permil"],
-    ["solved_coordinate", coordinate, ""],
-    ["central_solution", solution.central, solutionUnit],
-    ["interval_lower", solution.low, solutionUnit],
-    ["interval_upper", solution.high, solutionUnit],
-    ["interval_kind", solution.intervalKind, ""],
-    ["surface_data_id", result.surface_data_id, ""],
-  ];
-  if (target.spherule) {
-    rows.push(
-      ["spherule_Delta_prime_17O_0.528", target.spherule.delta17, "permil"],
-      ["spherule_Delta_prime_17O_analytical_sigma", target.spherule.delta17Sigma, "permil"],
-      ["spherule_delta18O_VSMOW", target.spherule.delta18, "permil"],
-      ["spherule_delta18O_analytical_sigma", target.spherule.delta18Sigma, "permil"],
-    );
-  }
-  if (constraints) {
-    for (const [coordinateName, constraint] of Object.entries(constraints)) {
-      const unit = coordinateName === "pCO2" ? "ppm" : coordinateName === "GPP" ? "PgC yr-1" : "PAL";
-      rows.push([`${coordinateName}_constraint_kind`, constraint.kind, ""]);
-      for (const key of ["center", "sigma", "lower", "upper"]) {
-        if (constraint[key] != null) rows.push([`${coordinateName}_constraint_${key}`, constraint[key], unit]);
-      }
-      const effective = result.effective_constraint_bounds?.[coordinateName];
-      if (effective) {
-        rows.push([`${coordinateName}_effective_lower`, effective[0], unit]);
-        rows.push([`${coordinateName}_effective_upper`, effective[1], unit]);
-      }
-    }
-  }
-  const csv = rows.map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(",")).join("\n");
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-  link.download = `oxytib_${coordinate}_solution.csv`;
-  link.click();
-  URL.revokeObjectURL(link.href);
 }
 
 async function downloadWorkbook() {
@@ -512,13 +461,13 @@ function heatColor(value, stops = posteriorColorStops) {
   return `rgb(${rgb.join(",")})`;
 }
 
-function drawColorLegend(ctx, x, y, width, stops, title, lowLabel, highLabel) {
+function drawColorLegend(ctx, x, y, width, stops, title, lowLabel, highLabel, titleFontSize = 10) {
   const gradient = ctx.createLinearGradient(x, 0, x + width, 0);
   stops.forEach((color, index) => {
     gradient.addColorStop(index / (stops.length - 1), `rgb(${color.join(",")})`);
   });
   ctx.fillStyle = "#17212b";
-  ctx.font = "600 10px system-ui";
+  ctx.font = `600 ${titleFontSize}px system-ui`;
   ctx.textAlign = "left";
   ctx.fillText(title, x, y - 5);
   ctx.fillStyle = gradient;
@@ -899,15 +848,25 @@ function drawIsotopeField(result) {
 
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, width, height);
+  const legendWidth = Math.min(260, plotW * 0.46);
   drawColorLegend(
     ctx,
     margin.left,
     21,
-    Math.min(260, plotW * 0.46),
+    legendWidth,
     isotopeColorStops,
-    "Atmospheric O₂ Δ′¹⁷O (‰)",
+    "Atmospheric O₂ Δ′¹⁷O₀.₅₂₈ (‰)",
     format(result.minimum_cap_delta17_permil, result.contour_label_decimals),
     format(result.maximum_cap_delta17_permil, result.contour_label_decimals),
+    12,
+  );
+  ctx.fillStyle = "#43515a";
+  ctx.font = "600 10px system-ui";
+  ctx.textAlign = "left";
+  ctx.fillText(
+    `Fixed pO₂ = ${format(result.fixed_p_o2_pal, 2)} PAL`,
+    margin.left + legendWidth + 34,
+    28,
   );
   for (let ix = 0; ix < nx - 1; ix += 1) {
     for (let iy = 0; iy < ny - 1; iy += 1) {
@@ -929,7 +888,7 @@ function drawIsotopeField(result) {
   canvas.dataset.contourValues = levels.join(",");
   canvas.setAttribute(
     "aria-label",
-    `Atmospheric oxygen Δ′17O isotope field with ${levels.length} labeled contours balanced across the plotted field`,
+    `Atmospheric oxygen Δ′17O0.528 isotope field at ${format(result.fixed_p_o2_pal, 2)} PAL with ${levels.length} labeled contours balanced across the plotted field`,
   );
   levels.forEach((level, index) => {
     const fraction = levels.length === 1 ? 0.5 : 0.18 + 0.64 * index / (levels.length - 1);
@@ -975,15 +934,6 @@ function drawIsotopeField(result) {
   enablePlotExport("isotope-canvas");
 }
 
-function renderIsotopeSummary(result) {
-  const rangeDecimals = Math.min(3, Math.max(1, result.contour_label_decimals));
-  $("isotope-summary").innerHTML = `
-    <h3>Deterministic model isotope field</h3>
-    <div class="summary-metric"><span>Fixed pO<sub>2</sub></span><strong>${format(result.fixed_p_o2_pal, 2)} PAL</strong></div>
-    <div class="summary-metric"><span>Δ′<sup>17</sup>O<sub>0.528</sub> range</span><strong>${format(result.minimum_cap_delta17_permil, rangeDecimals)} to ${format(result.maximum_cap_delta17_permil, rangeDecimals)}‰</strong></div>
-    <div class="legend-scale isotope-scale"></div><div class="legend-labels"><span>${format(result.minimum_cap_delta17_permil, rangeDecimals)}‰</span><span>Model Δ′<sup>17</sup>O<sub>0.528</sub></span><span>${format(result.maximum_cap_delta17_permil, rangeDecimals)}‰</span></div>`;
-}
-
 async function runIsotopeField() {
   const button = $("run-surface");
   $("surface-error").textContent = "";
@@ -1006,7 +956,6 @@ async function runIsotopeField() {
       }),
     });
     drawIsotopeField(payload.result);
-    renderIsotopeSummary(payload.result);
   } catch (error) {
     $("surface-error").textContent = publicErrorMessage(error);
   } finally {
@@ -1270,10 +1219,19 @@ async function runTransient() {
     enablePlotExport("transient-d17");
     enablePlotExport("transient-d18");
     const equilibrium = result.operational_equilibrium?.time_years ?? result.equilibrium_time_years;
+    let transitionD17Card = "";
+    let transitionD18Card = "";
+    if (type === "pCO2_trajectory") {
+      const transitionState = result.transition_end_state;
+      transitionD17Card = `<div><span>At transition end Δ′<sup>17</sup>O</span><strong>${formatFixed(transitionState.cap_delta17_prime_permil, 3)}‰</strong></div>`;
+      transitionD18Card = `<div><span>At transition end δ′<sup>18</sup>O</span><strong>${formatFixed(transitionState.delta18_prime_permil, 3)}‰</strong></div>`;
+    }
     $("transient-summary").innerHTML = `
       <div><span>Initial Δ′<sup>17</sup>O</span><strong>${formatFixed(d17[0], 3)}‰</strong></div>
+      ${transitionD17Card}
       <div><span>Displayed final Δ′<sup>17</sup>O</span><strong>${formatFixed(d17[d17.length - 1], 3)}‰</strong></div>
       <div><span>Initial δ′<sup>18</sup>O</span><strong>${formatFixed(d18[0], 3)}‰</strong></div>
+      ${transitionD18Card}
       <div><span>Displayed final δ′<sup>18</sup>O</span><strong>${formatFixed(d18[d18.length - 1], 3)}‰</strong></div>
       <div><span>Operational equilibrium time</span><strong>${equilibrium == null ? "Beyond search horizon" : `${format(equilibrium, 0)} years`}</strong></div>`;
     state.lastTransient = { type, request };
@@ -1361,7 +1319,6 @@ function resetInputs() {
   $("solver-error").textContent = "";
   $("solver-result").classList.add("hidden");
   $("solver-empty").classList.remove("hidden");
-  $("download-result").disabled = true;
   $("download-result-xlsx").disabled = true;
   state.lastResult = null;
 }
@@ -1401,7 +1358,6 @@ function bindInterface() {
   ["trajectory-start", "trajectory-end", "trajectory-duration", "trajectory-interpolation"].forEach((id) => {
     $(id).addEventListener("change", () => { $("trajectory-preset").value = "custom"; });
   });
-  $("download-result").addEventListener("click", downloadResult);
   $("download-result-xlsx").addEventListener("click", downloadWorkbook);
   document.querySelectorAll(".plot-export").forEach((button) => {
     button.addEventListener("click", () => downloadPlot(button));
@@ -1421,7 +1377,7 @@ async function initialize() {
     state.metadata = await api("/api/v1/model");
     $("model-state").classList.add("ready");
     $("model-state").innerHTML = "<span></span> Model ready";
-    $("footer-model").textContent = `${state.metadata.publication_model_id} · API v${state.metadata.api_version}`;
+    $("footer-model").textContent = `OXYTIB ${state.metadata.citation.version}`;
   } catch (error) {
     $("model-state").classList.add("error");
     $("model-state").innerHTML = "<span></span> Model unavailable";

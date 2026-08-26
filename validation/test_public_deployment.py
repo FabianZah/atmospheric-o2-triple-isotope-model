@@ -63,6 +63,10 @@ def test_environment_template_and_ignore_policy_are_safe() -> None:
     assert "CADDY_IMAGE=caddy:2.11.4-alpine" in template
     assert "OXYTIB_MAX_REQUEST_BYTES=1048576" in template
     assert "OXYTIB_MAX_COMPUTE_REQUESTS=2" in template
+    traefik_template = (ROOT / "deploy" / ".env.traefik.example").read_text(
+        encoding="utf-8"
+    )
+    assert "OXYTIB_ROOT_PATH=/oxytib" in traefik_template
     assert "PASSWORD=" not in template
     assert "TOKEN=" not in template
     ignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
@@ -89,6 +93,9 @@ def test_traefik_compose_is_staged_bounded_and_prefix_aware() -> None:
     )
     assert api["environment"]["OXYTIB_MAX_COMPUTE_REQUESTS"] == (
         "${OXYTIB_MAX_COMPUTE_REQUESTS:-2}"
+    )
+    assert api["environment"]["OXYTIB_ROOT_PATH"] == (
+        "${OXYTIB_ROOT_PATH:-/oxytib}"
     )
     assert compose["networks"]["traefik-global-proxy"] == {
         "external": True,

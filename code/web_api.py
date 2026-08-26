@@ -61,6 +61,9 @@ MAX_COMPUTE_REQUESTS = int(os.environ.get("OXYTIB_MAX_COMPUTE_REQUESTS", 2))
 COMPUTE_QUEUE_TIMEOUT_SECONDS = float(
     os.environ.get("OXYTIB_COMPUTE_QUEUE_TIMEOUT_SECONDS", 1.0)
 )
+ROOT_PATH = os.environ.get("OXYTIB_ROOT_PATH", "").strip()
+if ROOT_PATH:
+    ROOT_PATH = "/" + ROOT_PATH.strip("/")
 
 if MAX_REQUEST_BYTES < 1:
     raise ValueError("OXYTIB_MAX_REQUEST_BYTES must be positive")
@@ -589,9 +592,10 @@ app = FastAPI(
         "Typed calculation API for the single accepted updated model. "
         "Numerical extrapolation outside the published surface is rejected."
     ),
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=None,
+    redoc_url=None,
     openapi_url="/openapi.json",
+    root_path=ROOT_PATH,
 )
 app.add_middleware(
     CORSMiddleware,
@@ -618,6 +622,11 @@ async def invalid_model_input(_request: Request, exc: ValueError) -> JSONRespons
 @app.get("/")
 def root() -> FileResponse:
     return FileResponse(WEB_ROOT / "index.html")
+
+
+@app.get("/docs", include_in_schema=False)
+def api_documentation() -> FileResponse:
+    return FileResponse(WEB_ROOT / "api-docs.html")
 
 
 @app.get("/citation/model.bib")

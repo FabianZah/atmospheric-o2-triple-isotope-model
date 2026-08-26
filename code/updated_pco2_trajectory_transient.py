@@ -39,6 +39,7 @@ class UpdatedPCO2TrajectoryResult:
     pco2_ppm: tuple[float, ...]
     states: tuple[GlobalO2Reservoir, ...]
     initial_steady_state: dict[str, float]
+    transition_end_state: dict[str, float]
     final_steady_state: dict[str, float]
     model_data_id: str
     transfer_convention: str
@@ -259,6 +260,12 @@ def run_updated_pco2_trajectory(
         for index, time in enumerate(times)
     )
     pco2_values = tuple(pco2_at(float(time)) for time in times)
+    transition_reservoir = GlobalO2Reservoir(
+        *map(float, solved.sol(request.transition_duration_years) * scale),
+        source=(
+            "OXYTIB pCO2 trajectory state at the prescribed transition endpoint"
+        ),
+    )
     final_event_value = equilibrium_event(
         integration_horizon, solved.sol(integration_horizon)
     )
@@ -276,6 +283,14 @@ def run_updated_pco2_trajectory(
         initial_steady_state={
             "delta18_prime_permil": initial_state.delta18_prime_permil,
             "cap_delta17_prime_permil": initial_state.cap_delta17_prime_permil,
+        },
+        transition_end_state={
+            "time_years": request.transition_duration_years,
+            "pco2_ppm": request.final_pco2_ppm,
+            "delta18_prime_permil": transition_reservoir.delta18_prime_permil,
+            "cap_delta17_prime_permil": (
+                transition_reservoir.cap_delta17_prime_permil
+            ),
         },
         final_steady_state={
             "delta18_prime_permil": final_state.delta18_prime_permil,

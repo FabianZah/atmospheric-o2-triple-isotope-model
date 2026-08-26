@@ -29,15 +29,23 @@ def test_frontend_assets_and_api_work_when_mounted_below_prefix() -> None:
     styles = prefixed_client.get("/oxytib/assets/styles.css")
     health = prefixed_client.get("/oxytib/api/v1/health")
     citation = prefixed_client.get("/oxytib/citation/model.bib")
+    documentation = prefixed_client.get("/oxytib/docs")
+    swagger_initializer = prefixed_client.get("/oxytib/assets/swagger-init.js")
 
     assert root.status_code == 200
-    assert 'href="assets/styles.css?v=1.19.0"' in root.text
-    assert 'src="assets/app.js?v=1.19.0"' in root.text
+    assert 'href="assets/styles.css?v=1.20.2"' in root.text
+    assert 'src="assets/app.js?v=1.20.2"' in root.text
     assert script.status_code == 200
     assert styles.status_code == 200
     assert health.status_code == 200
     assert health.json()["status"] == "ok"
     assert citation.status_code == 200
+    assert documentation.status_code == 200
+    assert 'src="assets/swagger-init.js"' in documentation.text
+    assert "SwaggerUIBundle" not in documentation.text
+    assert swagger_initializer.status_code == 200
+    assert 'replace(/\\/docs\\/?$/, "")' in swagger_initializer.text
+    assert 'url: `${applicationPrefix}/openapi.json`' in swagger_initializer.text
 
 
 def test_cors_is_opt_in(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -85,9 +93,11 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert 'id="transient-pco2"' in root.text
     assert root.text.count('class="plot-export"') == 7
     assert 'id="download-result-xlsx"' in root.text
+    assert 'id="download-result"' not in root.text
     assert 'id="download-transient-xlsx"' in root.text
-    assert 'href="assets/styles.css?v=1.19.0"' in root.text
-    assert 'src="assets/app.js?v=1.19.0"' in root.text
+    assert 'href="assets/styles.css?v=1.20.2"' in root.text
+    assert 'src="assets/app.js?v=1.20.2"' in root.text
+    assert '>Download XLSX</button>' in root.text
     assert 'id="theme-toggle"' in root.text
     assert 'href="/assets/' not in root.text
     assert 'src="/assets/' not in root.text
@@ -119,6 +129,9 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert 'id="gpp-constraint-mode"' in root.text
     assert 'id="po2-constraint-mode"' in root.text
     assert "Δ′<sup>17</sup>O<sub>0.528</sub>" in root.text
+    assert "Vienna Standard Mean Ocean Water reference scale." in root.text
+    assert 'class="marginal-key"' not in root.text
+    assert 'id="isotope-summary"' not in root.text
     assert "https://doi.org/10.1016/j.gca.2014.03.026" in root.text
     assert "How to cite" in root.text
     assert 'href="citation/model.bib"' in root.text
@@ -155,7 +168,7 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert "function applicationUrl" in script.text
     assert "fetch(applicationUrl(path)" in script.text
     assert 'fetch(applicationUrl("/api/v1/export/coordinate.xlsx")' in script.text
-    assert "Deterministic model isotope field" in script.text
+    assert "Deterministic model isotope field" not in script.text
     assert "contour is emphasized" not in script.text
     assert "level === -10" not in script.text
     assert "result.contour_levels_permil" in script.text
@@ -168,7 +181,8 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert "Color encodes the model-predicted atmospheric" not in script.text
     assert "drawMarginalLegend(ctx, width)" in script.text
     assert '"95% credible region"' in script.text
-    assert '"Atmospheric O₂ Δ′¹⁷O (‰)"' in script.text
+    assert '"Atmospheric O₂ Δ′¹⁷O₀.₅₂₈ (‰)"' in script.text
+    assert "Fixed pO₂ =" in script.text
     assert "Peak grid compatibility" not in script.text
     assert "function drawMarginalPosterior" in script.text
     assert 'prior: state.solveFor === "pO2" ? "uniform" : "log_uniform"' not in script.text
@@ -182,6 +196,8 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert 'state.solveFor = "pCO2"' in script.text
     assert "result.pco2_ppm" in script.text
     assert 'formatFixed(d17[0], 3)' in script.text
+    assert "At transition end Δ′" in script.text
+    assert "At transition end δ′" in script.text
     assert "displayTimes = [-preStepDuration" in script.text
     assert "function niceTickStep" in script.text
     assert "Math.ceil(xmin / xTickStep)" in script.text
@@ -236,7 +252,10 @@ def test_coordinate_xlsx_export_contains_provenance_and_posterior_data() -> None
         row[0].value: row[1].value
         for row in workbook["Summary"].iter_rows(min_row=4, max_col=2)
     }
-    assert summary["publication_model_id"] == "oxytib_publication_model_v1"
+    assert summary["software"] == "OXYTIB"
+    assert summary["software_version"] == "0.1.0"
+    assert "publication_model_id" not in summary
+    assert "surface_data_id" not in summary
     assert summary["isotope_source"] == "Direct air O2"
     assert summary["solved_coordinate"] == "pCO2"
     assert summary["GPP_constraint_kind"] == "fixed"
@@ -283,9 +302,18 @@ def test_transient_xlsx_export_reuses_run_and_contains_metadata(
         row[0].value: row[1].value
         for row in workbook["Summary"].iter_rows(min_row=4, max_col=2)
     }
-    assert summary["publication_model_id"] == "oxytib_publication_model_v1"
+    assert summary["software"] == "OXYTIB"
+    assert summary["software_version"] == "0.1.0"
+    assert "publication_model_id" not in summary
+    provenance_fields = {
+        row[0].value
+        for row in workbook["Provenance"].iter_rows(min_row=4, max_col=1)
+    }
+    assert not any(field and field.endswith("_id") for field in provenance_fields)
     assert summary["experiment_type"] == "pCO2"
     assert summary["sample_count"] == 3
+    assert "transfer_convention" not in summary
+    assert "carbon_driver_preset" not in summary
     assert workbook["Time series"].max_row == 6
 
 
@@ -317,6 +345,9 @@ def test_gradual_pco2_trajectory_endpoint_and_xlsx_export() -> None:
     assert body["calculation"] == "pco2_trajectory_transient"
     assert body["result"]["pco2_ppm"][0] == pytest.approx(285.5)
     assert body["result"]["pco2_ppm"][-1] == pytest.approx(422.8)
+    assert body["result"]["transition_end_state"]["time_years"] == pytest.approx(
+        174.0
+    )
     assert export.status_code == 200
     assert export.content[:2] == b"PK"
     assert "oxytib_pco2_trajectory_time_response.xlsx" in export.headers[
@@ -328,6 +359,8 @@ def test_gradual_pco2_trajectory_endpoint_and_xlsx_export() -> None:
         for row in workbook["Summary"].iter_rows(min_row=4, max_col=2)
     }
     assert summary["experiment_type"] == "pCO2_trajectory"
+    assert summary["transition_end_time"] == pytest.approx(174.0)
+    assert "transition_end_O2_Delta_prime_17O_0.528" in summary
     assert workbook["Time series"].max_row == 12
 
 
