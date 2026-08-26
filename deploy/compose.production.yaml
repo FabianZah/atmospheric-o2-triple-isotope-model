@@ -1,0 +1,74 @@
+name: o2-budget-model
+
+services:
+  model-api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: "o2-budget-model:${O2_MODEL_VERSION:-0.1.0}"
+    restart: unless-stopped
+    environment:
+      O2_MODEL_CORS_ORIGINS: "${O2_MODEL_CORS_ORIGINS:-}"
+    expose:
+      - "8000"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: "${O2_MODEL_PIDS:-256}"
+    mem_limit: "${O2_MODEL_MEMORY:-2g}"
+    cpus: "${O2_MODEL_CPUS:-2.0}"
+    stop_grace_period: 30s
+    networks:
+      - backend
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+  caddy:
+    image: "${CADDY_IMAGE:-caddy:2.11.4-alpine}"
+    restart: unless-stopped
+    depends_on:
+      model-api:
+        condition: service_healthy
+    environment:
+      O2_MODEL_DOMAIN: "${O2_MODEL_DOMAIN:?set O2_MODEL_DOMAIN}"
+      ACME_EMAIL: "${ACME_EMAIL:?set ACME_EMAIL}"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./caddy:/etc/caddy:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 256m
+    cpus: "0.5"
+    networks:
+      - frontend
+      - backend
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+networks:
+  frontend:
+  backend:
+    internal: true
+
+volumes:
+  caddy_data:
+  caddy_config:

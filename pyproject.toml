@@ -1,0 +1,21 @@
+# Tooling configuration for the atmospheric O2 triple-isotope model.
+#
+# Note: the code uses a flat two-directory layout (code/ + validation/) with a
+# shared sys.path bootstrap (conftest.py and per-script bootstraps), so it is run
+# in place rather than pip-installed. Project/citation metadata lives in
+# CITATION.cff; this file holds only tool configuration. The stable root
+# launcher hides the internal layout from normal users.
+
+[tool.pytest.ini_options]
+# conftest.py at the repository root puts code/ and validation/ on sys.path.
+testpaths = ["validation"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+# Conservative defaults; the reconstruction code predates linting.
+select = ["E", "F", "W"]
+ignore = ["E501", "E741"]

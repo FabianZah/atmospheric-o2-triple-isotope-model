@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "dataset_id": "luz_1999_gisp2_table2_v1",
+  "citation": "Luz et al. (1999), Nature 400, 547-550",
+  "doi": "10.1038/22987",
+  "source": "Table 2",
+  "isotope_reference": "HLA modern atmospheric O2",
+  "reported_delta17_definition": "(delta17O - 0.521 * delta18O) * 1000, in per meg",
+  "analytical_precision": {
+    "delta18O_permil_standard_error": 0.003,
+    "delta17O_permil_standard_error": 0.009,
+    "Delta17O_per_meg_standard_error": 9.0,
+    "interlaboratory_Delta17O_difference_per_meg": 7.0
+  },
+  "equation_3_assumption": "k_t / k_0 = 1",
+  "biological_equilibrium_Delta17O_per_meg_relative_HLA": 155.0,
+  "rows": [
+    {
+      "depth_m": null,
+      "gas_age_kyr": 0.15,
+      "climate": "Interglacial",
+      "delta15N_permil": null,
+      "delta18O_permil_relative_HLA_gravity_corrected": null,
+      "delta17O_permil_relative_HLA_gravity_corrected": null,
+      "reported_Delta17O_per_meg_relative_HLA": 0.0,
+      "CO2_ppm": 280.0,
+      "reported_normalized_gross_production": 1.0,
+      "role": "present reference"
+    },
+    {
+      "depth_m": 1907.0,
+      "gas_age_kyr": 18.67,
+      "climate": "Glacial",
+      "delta15N_permil": 0.41,
+      "delta18O_permil_relative_HLA_gravity_corrected": 1.050,
+      "delta17O_permil_relative_HLA_gravity_corrected": 0.584,
+      "reported_Delta17O_per_meg_relative_HLA": 37.0,
+      "CO2_ppm": 190.0,
+      "reported_normalized_gross_production": 0.89,
+      "role": "historical sample"
+    },
+    {
+      "depth_m": 2039.0,
+      "gas_age_kyr": 25.78,
+      "climate": "Glacial",
+      "delta15N_permil": 0.36,
+      "delta18O_permil_relative_HLA_gravity_corrected": 0.822,
+      "delta17O_permil_relative_HLA_gravity_corrected": 0.467,
+      "reported_Delta17O_per_meg_relative_HLA": 39.0,
+      "CO2_ppm": 190.0,
+      "reported_normalized_gross_production": 0.91,
+      "role": "historical sample"
+    },
+    {
+      "depth_m": 2212.0,
+      "gas_age_kyr": 36.67,
+      "climate": "Interstadial",
+      "delta15N_permil": 0.39,
+      "delta18O_permil_relative_HLA_gravity_corrected": 0.413,
+      "delta17O_permil_relative_HLA_gravity_corrected": 0.236,
+      "reported_Delta17O_per_meg_relative_HLA": 21.0,
+      "CO2_ppm": 210.0,
+      "reported_normalized_gross_production": 0.87,
+      "role": "historical sample"
+    },
+    {
+      "depth_m": 2492.0,
+      "gas_age_kyr": 56.17,
+      "climate": "Interstadial",
+      "delta15N_permil": 0.42,
+      "delta18O_permil_relative_HLA_gravity_corrected": 0.365,
+      "delta17O_permil_relative_HLA_gravity_corrected": 0.226,
+      "reported_Delta17O_per_meg_relative_HLA": 35.0,
+      "CO2_ppm": 210.0,
+      "reported_normalized_gross_production": 0.97,
+      "role": "historical sample"
+    },
+    {
+      "depth_m": 2668.0,
+      "gas_age_kyr": 82.03,
+      "climate": "Interglacial",
+      "delta15N_permil": 0.32,
+      "delta18O_permil_relative_HLA_gravity_corrected": 0.236,
+      "delta17O_permil_relative_HLA_gravity_corrected": 0.135,
+      "reported_Delta17O_per_meg_relative_HLA": 12.0,
+      "CO2_ppm": 235.0,
+      "reported_normalized_gross_production": 0.91,
+      "role": "historical sample"
+    }
+  ]
+}

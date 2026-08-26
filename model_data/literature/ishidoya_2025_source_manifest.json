@@ -1,0 +1,89 @@
+{
+  "dataset": "Ishidoya et al. (2025) TKB atmospheric O2 delta18 archive",
+  "archive_doi": "10.5281/zenodo.14221768",
+  "article_doi": "10.5194/acp-25-1965-2025",
+  "license": "CC BY 4.0",
+  "verified_files": [
+    {
+      "name": "raw_data_2013.csv",
+      "bytes": 10790509,
+      "sha256": "898fe7d7637ab1122e47f8db5134c8ac6a9c43c4eeb48a0578bdd9c46ef70df7"
+    },
+    {
+      "name": "raw_data_2014.csv",
+      "bytes": 13031580,
+      "sha256": "bdeb75dc3fa3a9470466134eb2762585c1f5000c87ee9576f318b5e75b8bf945"
+    },
+    {
+      "name": "raw_data_2015.csv",
+      "bytes": 12956800,
+      "sha256": "5614417636c21d153164f8f246ae317854ad0fdbfe1fb0428331b6b6e21977ea"
+    },
+    {
+      "name": "raw_data_2016.csv",
+      "bytes": 12933396,
+      "sha256": "956b9abe35bd3804edb60384b73e9b70f7dd0185ee7a556e8e0f61846abf3068"
+    },
+    {
+      "name": "raw_data_2017.csv",
+      "bytes": 13234408,
+      "sha256": "9563e1da8759c2d2d341c2a188b6b858b393f85afa9b3009278b44f6f62a044e"
+    },
+    {
+      "name": "raw_data_2018.csv",
+      "bytes": 13874030,
+      "sha256": "e056e1b594bd988d2914f80275b4420c0eeb7f0e012ec39f296875e086c19ff1"
+    },
+    {
+      "name": "raw_data_2019.csv",
+      "bytes": 11506824,
+      "sha256": "35239f9954b4451f76c2a0fb6ccc6d0850eaa5e40cf692bd5b90828afc7e0c2b"
+    },
+    {
+      "name": "raw_data_2020.csv",
+      "bytes": 10765483,
+      "sha256": "4d5b0de56127c728d322dc3ddbf87c8955134bab57dbb2c4589e0c3d4f49b747"
+    },
+    {
+      "name": "raw_data_2021.csv",
+      "bytes": 10248833,
+      "sha256": "dc08de0d0e575cc85504e55adf201d15cbf7c3abc81ee87e5294a43516d7837f"
+    },
+    {
+      "name": "raw_data_2022.csv",
+      "bytes": 10903952,
+      "sha256": "1bcaa31816a893f8caadbba6fee5c47cf23ab87439e4bbac672cfe4fec250a65"
+    },
+    {
+      "name": "data_for_Fig4.csv",
+      "bytes": 6062,
+      "sha256": "4266de3b9c95018b0645900fcc65cfebd49e855d60f5ab8778ce016c26f9c2e9"
+    },
+    {
+      "name": "data_for_Fig6.csv",
+      "bytes": 1555213,
+      "sha256": "147efef1e889460cad01b0ec159626b2e83a30e137f735d5ccc1c83d789436cc"
+    },
+    {
+      "name": "data_for_Fig7.csv",
+      "bytes": 4470,
+      "sha256": "dff21d70d008281e9d62caa1ab19f914e8628d5bbd04031e96869313c33b56fd"
+    }
+  ],
+  "excluded_unreliable_months": [
+    "2014-06",
+    "2014-07",
+    "2016-09",
+    "2020-01"
+  ],
+  "primary_validation_series": "Equal-weight annual mean of the archived data_for_Fig7.csv monthly delta_atm(18O) values; missing values remain missing.",
+  "annualization_sensitivity": "Raw equal-month and raw-point-weighted annual means are retained because the article does not state which weighting generated Figure 8.",
+  "source_data_note": "The prepared Figure 7 file contains two nearly identical 2018.2034 rows and no distinct April fractional year. The archived values are preserved; the raw-data annualizations independently include April 2018.",
+  "endpoint_rates_ppm_per_year": {
+    "prepared_fig7_ppm_per_year": 0.21611111111111114,
+    "raw_equal_month_ppm_per_year": 0.21640333828600886,
+    "raw_point_weighted_ppm_per_year": 0.221672711433742
+  },
+  "published_endpoint_rate_ppm_per_year": 0.22,
+  "derived_table": "model_data\\literature\\ishidoya_2025_annual_delta18.csv"
+}

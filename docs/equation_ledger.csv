@@ -1,0 +1,252 @@
+species,reservoir,sign,coefficient,reaction,rate_law,support,source,note
+O_strat,stratosphere,sink,1.0,R2a,7.09563169e-10 * O_strat * O2_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,sink,1.0,R2d,7.48222234e-10 * O_strat * O18O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,sink,1.0,R2e,7.51841626e-10 * O_strat * O17O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,sink,1.0,R4a,4.65443042e-09 * O3_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,sink,1.0,R4b,4.63104499e-09 * OO18O_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,sink,1.0,R4c,4.64248880e-09 * OO17O_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,sink,1.0,R6b,6.71788189e-11 * O18O_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,sink,1.0,R6d,6.75037845e-11 * O17O_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,source,2.0,R1a,3.49973784e-05 * O2_strat,printed,Young Table 2,O2 + hv -> O + O
+O_strat,stratosphere,source,1.0,R1b,3.49973784e-05 * O17O_strat,printed,Young Table 2,O17O + hv -> O + 17O
+O_strat,stratosphere,source,1.0,R1c,3.49973784e-05 * O18O_strat,printed,Young Table 2,O18O + hv -> O + 18O
+O_strat,stratosphere,source,1.0,R3a,9.34104960e+03 * O3_strat,printed,Young Table 2,O3 + hv -> O2 + O
+O_strat,stratosphere,source,1.0,R3c,6.22736640e+03 * OO18O_strat,printed,Young Table 2,OO18O + hv -> O18O + O
+O_strat,stratosphere,source,1.0,R3e,6.22736640e+03 * OO17O_strat,printed,Young Table 2,OO17O + hv -> O17O + O
+O_strat,stratosphere,source,2.0,R4k,8.14186080e-05 * O3_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,source,1.0,R4l,4.05047667e-05 * OO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,source,2.0,R4m,4.05047667e-05 * OO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,source,1.0,R4n,4.06048583e-05 * OO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,source,2.0,R4o,4.06048583e-05 * OO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,source,1.0,R4p,3.89723478e-05 * O3_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,source,2.0,R4q,3.89723478e-05 * O3_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,source,1.0,R4r,3.97972549e-05 * O3_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,source,2.0,R4s,3.97972549e-05 * O3_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,source,1.0,R5a,5.30966689e+14 * O1D_strat,printed; unresolved normalization,Young Table 2; Eq. 26 audit,pseudo-first-order k_R5a*nM
+O_strat,stratosphere,source,1.0,R6a,1.30563823e-10 * O2_strat * O18_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,source,1.0,R6c,1.32998744e-10 * O2_strat * O17_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,source,1.0,R7a,3.02605826e-05 * CO2_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,source,1.0,R7c,1.44993659e-05 * CO2_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,source,1.0,R7e,1.50421307e-05 * CO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,source,1.0,R7g,1.47989225e-05 * CO2_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O_strat,stratosphere,source,1.0,R7i,1.50852015e-05 * CO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17_strat,stratosphere,sink,1.0,R2c,7.40654710e-10 * O17_strat * O2_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17_strat,stratosphere,sink,1.0,R4e,4.55015280e-09 * O3_strat * O17_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17_strat,stratosphere,sink,1.0,R6c,1.32998744e-10 * O2_strat * O17_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17_strat,stratosphere,source,1.0,R1b,3.49973784e-05 * O17O_strat,printed,Young Table 2,O17O + hv -> O + 17O
+O17_strat,stratosphere,source,1.0,R3d,3.11368320e+03 * OO17O_strat,printed,Young Table 2,OO17O + hv -> O2 + 17O
+O17_strat,stratosphere,source,1.0,R4n,4.06048583e-05 * OO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17_strat,stratosphere,source,1.0,R4r,3.97972549e-05 * O3_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17_strat,stratosphere,source,1.0,R5c,5.30966689e+14 * O17_1D_strat,printed; unresolved normalization,Young Table 2; Eq. 26 audit,pseudo-first-order k_R5a*nM
+O17_strat,stratosphere,source,1.0,R6d,6.75037845e-11 * O17O_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17_strat,stratosphere,source,1.0,R7f,1.47989225e-05 * CO2_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17_strat,stratosphere,source,1.0,R7h,1.50852015e-05 * CO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18_strat,stratosphere,sink,1.0,R2b,7.27094914e-10 * O18_strat * O2_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18_strat,stratosphere,sink,1.0,R4d,4.45583843e-09 * O3_strat * O18_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18_strat,stratosphere,sink,1.0,R6a,1.30563823e-10 * O2_strat * O18_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18_strat,stratosphere,source,1.0,R1c,3.49973784e-05 * O18O_strat,printed,Young Table 2,O18O + hv -> O + 18O
+O18_strat,stratosphere,source,1.0,R3b,3.11368320e+03 * OO18O_strat,printed,Young Table 2,OO18O + hv -> O2 + 18O
+O18_strat,stratosphere,source,1.0,R4l,4.05047667e-05 * OO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18_strat,stratosphere,source,1.0,R4p,3.89723478e-05 * O3_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18_strat,stratosphere,source,1.0,R5b,5.30966689e+14 * O18_1D_strat,printed; unresolved normalization,Young Table 2; Eq. 26 audit,pseudo-first-order k_R5a*nM
+O18_strat,stratosphere,source,1.0,R6b,6.71788189e-11 * O18O_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18_strat,stratosphere,source,1.0,R7b,1.44993659e-05 * CO2_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18_strat,stratosphere,source,1.0,R7d,1.50421307e-05 * CO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O1D_strat,stratosphere,sink,1.0,R4f,8.14186080e-05 * O3_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O1D_strat,stratosphere,sink,1.0,R4g,8.10095334e-05 * OO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O1D_strat,stratosphere,sink,1.0,R4h,8.12097166e-05 * OO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O1D_strat,stratosphere,sink,1.0,R4k,8.14186080e-05 * O3_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O1D_strat,stratosphere,sink,1.0,R4l,4.05047667e-05 * OO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O1D_strat,stratosphere,sink,1.0,R4m,4.05047667e-05 * OO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O1D_strat,stratosphere,sink,1.0,R4n,4.06048583e-05 * OO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O1D_strat,stratosphere,sink,1.0,R4o,4.06048583e-05 * OO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O1D_strat,stratosphere,sink,1.0,R5a,5.30966689e+14 * O1D_strat,printed; unresolved normalization,Young Table 2; Eq. 26 audit,pseudo-first-order k_R5a*nM
+O1D_strat,stratosphere,sink,1.0,R7a,3.02605826e-05 * CO2_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O1D_strat,stratosphere,sink,1.0,R7d,1.50421307e-05 * CO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O1D_strat,stratosphere,sink,1.0,R7e,1.50421307e-05 * CO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O1D_strat,stratosphere,sink,1.0,R7h,1.50852015e-05 * CO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O1D_strat,stratosphere,sink,1.0,R7i,1.50852015e-05 * CO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O1D_strat,stratosphere,source,1.0,R3f,1.58103576e+04 * O3_strat,printed,Young Table 2,O3 + hv -> O2 + O(1D)
+O1D_strat,stratosphere,source,1.0,R3h,1.05402384e+04 * OO18O_strat,printed,Young Table 2,OO18O + hv -> O18O + O(1D)
+O1D_strat,stratosphere,source,1.0,R3j,1.05402384e+04 * OO17O_strat,printed,Young Table 2,OO17O + hv -> O17O + O(1D)
+O17_1D_strat,stratosphere,sink,1.0,R4j,7.95945097e-05 * O3_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17_1D_strat,stratosphere,sink,1.0,R4r,3.97972549e-05 * O3_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17_1D_strat,stratosphere,sink,1.0,R4s,3.97972549e-05 * O3_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17_1D_strat,stratosphere,sink,1.0,R5c,5.30966689e+14 * O17_1D_strat,printed; unresolved normalization,Young Table 2; Eq. 26 audit,pseudo-first-order k_R5a*nM
+O17_1D_strat,stratosphere,sink,1.0,R7f,1.47989225e-05 * CO2_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17_1D_strat,stratosphere,sink,1.0,R7g,1.47989225e-05 * CO2_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17_1D_strat,stratosphere,source,1.0,R3i,5.27011920e+03 * OO17O_strat,printed,Young Table 2,OO17O + hv -> O2 + 17O(1D)
+O18_1D_strat,stratosphere,sink,1.0,R4i,7.79446956e-05 * O3_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18_1D_strat,stratosphere,sink,1.0,R4p,3.89723478e-05 * O3_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18_1D_strat,stratosphere,sink,1.0,R4q,3.89723478e-05 * O3_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18_1D_strat,stratosphere,sink,1.0,R5b,5.30966689e+14 * O18_1D_strat,printed; unresolved normalization,Young Table 2; Eq. 26 audit,pseudo-first-order k_R5a*nM
+O18_1D_strat,stratosphere,sink,1.0,R7b,1.44993659e-05 * CO2_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18_1D_strat,stratosphere,sink,1.0,R7c,1.44993659e-05 * CO2_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18_1D_strat,stratosphere,source,1.0,R3g,5.27011920e+03 * OO18O_strat,printed,Young Table 2,OO18O + hv -> O2 + 18O(1D)
+O2_strat,stratosphere,sink,1.0,R1a,3.49973784e-05 * O2_strat,printed,Young Table 2,O2 + hv -> O + O
+O2_strat,stratosphere,sink,1.0,R2a,7.09563169e-10 * O_strat * O2_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,sink,1.0,R2b,7.27094914e-10 * O18_strat * O2_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,sink,1.0,R2c,7.40654710e-10 * O17_strat * O2_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,sink,1.0,R6a,1.30563823e-10 * O2_strat * O18_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,sink,1.0,R6c,1.32998744e-10 * O2_strat * O17_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,sink,1.0,k_ST_O2_strat,1.00000000e+00 * O2_strat,printed; isotopologue analogy,Young Section 3.3,strat -> trop transport
+O2_strat,stratosphere,source,1.0,R3a,9.34104960e+03 * O3_strat,printed,Young Table 2,O3 + hv -> O2 + O
+O2_strat,stratosphere,source,1.0,R3b,3.11368320e+03 * OO18O_strat,printed,Young Table 2,OO18O + hv -> O2 + 18O
+O2_strat,stratosphere,source,1.0,R3d,3.11368320e+03 * OO17O_strat,printed,Young Table 2,OO17O + hv -> O2 + 17O
+O2_strat,stratosphere,source,1.0,R3f,1.58103576e+04 * O3_strat,printed,Young Table 2,O3 + hv -> O2 + O(1D)
+O2_strat,stratosphere,source,1.0,R3g,5.27011920e+03 * OO18O_strat,printed,Young Table 2,OO18O + hv -> O2 + 18O(1D)
+O2_strat,stratosphere,source,1.0,R3i,5.27011920e+03 * OO17O_strat,printed,Young Table 2,OO17O + hv -> O2 + 17O(1D)
+O2_strat,stratosphere,source,2.0,R4a,4.65443042e-09 * O3_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,source,1.0,R4b,4.63104499e-09 * OO18O_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,source,1.0,R4c,4.64248880e-09 * OO17O_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,source,1.0,R4d,4.45583843e-09 * O3_strat * O18_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,source,1.0,R4e,4.55015280e-09 * O3_strat * O17_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,source,2.0,R4f,8.14186080e-05 * O3_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,source,1.0,R4g,8.10095334e-05 * OO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,source,1.0,R4h,8.12097166e-05 * OO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,source,1.0,R4i,7.79446956e-05 * O3_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,source,1.0,R4j,7.95945097e-05 * O3_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,source,1.0,R4k,8.14186080e-05 * O3_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,source,1.0,R4l,4.05047667e-05 * OO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,source,1.0,R4n,4.06048583e-05 * OO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,source,1.0,R4p,3.89723478e-05 * O3_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,source,1.0,R4r,3.97972549e-05 * O3_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,source,1.0,R6b,6.71788189e-11 * O18O_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,source,1.0,R6d,6.75037845e-11 * O17O_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_strat,stratosphere,source,1.0,k_TS_O2_trop,1.00000000e-01 * O2_trop,printed; isotopologue analogy,Young Section 3.3,trop -> strat transport
+O17O_strat,stratosphere,sink,1.0,R1b,3.49973784e-05 * O17O_strat,printed,Young Table 2,O17O + hv -> O + 17O
+O17O_strat,stratosphere,sink,1.0,R2e,7.51841626e-10 * O_strat * O17O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17O_strat,stratosphere,sink,1.0,R6d,6.75037845e-11 * O17O_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17O_strat,stratosphere,sink,1.0,k_ST_O17O_strat,1.00000000e+00 * O17O_strat,printed; isotopologue analogy,Young Section 3.3,strat -> trop transport
+O17O_strat,stratosphere,source,1.0,R3e,6.22736640e+03 * OO17O_strat,printed,Young Table 2,OO17O + hv -> O17O + O
+O17O_strat,stratosphere,source,1.0,R3j,1.05402384e+04 * OO17O_strat,printed,Young Table 2,OO17O + hv -> O17O + O(1D)
+O17O_strat,stratosphere,source,1.0,R4c,4.64248880e-09 * OO17O_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17O_strat,stratosphere,source,1.0,R4e,4.55015280e-09 * O3_strat * O17_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17O_strat,stratosphere,source,1.0,R4h,8.12097166e-05 * OO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17O_strat,stratosphere,source,1.0,R4j,7.95945097e-05 * O3_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17O_strat,stratosphere,source,1.0,R4o,4.06048583e-05 * OO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17O_strat,stratosphere,source,1.0,R4s,3.97972549e-05 * O3_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17O_strat,stratosphere,source,1.0,R6c,1.32998744e-10 * O2_strat * O17_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O17O_strat,stratosphere,source,1.0,k_TS_O17O_trop,1.00000000e-01 * O17O_trop,printed; isotopologue analogy,Young Section 3.3,trop -> strat transport
+O18O_strat,stratosphere,sink,1.0,R1c,3.49973784e-05 * O18O_strat,printed,Young Table 2,O18O + hv -> O + 18O
+O18O_strat,stratosphere,sink,1.0,R2d,7.48222234e-10 * O_strat * O18O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18O_strat,stratosphere,sink,1.0,R6b,6.71788189e-11 * O18O_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18O_strat,stratosphere,sink,1.0,k_ST_O18O_strat,1.00000000e+00 * O18O_strat,printed; isotopologue analogy,Young Section 3.3,strat -> trop transport
+O18O_strat,stratosphere,source,1.0,R3c,6.22736640e+03 * OO18O_strat,printed,Young Table 2,OO18O + hv -> O18O + O
+O18O_strat,stratosphere,source,1.0,R3h,1.05402384e+04 * OO18O_strat,printed,Young Table 2,OO18O + hv -> O18O + O(1D)
+O18O_strat,stratosphere,source,1.0,R4b,4.63104499e-09 * OO18O_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18O_strat,stratosphere,source,1.0,R4d,4.45583843e-09 * O3_strat * O18_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18O_strat,stratosphere,source,1.0,R4g,8.10095334e-05 * OO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18O_strat,stratosphere,source,1.0,R4i,7.79446956e-05 * O3_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18O_strat,stratosphere,source,1.0,R4m,4.05047667e-05 * OO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18O_strat,stratosphere,source,1.0,R4q,3.89723478e-05 * O3_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18O_strat,stratosphere,source,1.0,R6a,1.30563823e-10 * O2_strat * O18_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O18O_strat,stratosphere,source,1.0,k_TS_O18O_trop,1.00000000e-01 * O18O_trop,printed; isotopologue analogy,Young Section 3.3,trop -> strat transport
+CO2_strat,stratosphere,sink,1.0,R7c,1.44993659e-05 * CO2_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+CO2_strat,stratosphere,sink,1.0,R7g,1.47989225e-05 * CO2_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+CO2_strat,stratosphere,sink,1.0,k_ST_CO2_strat,1.00000000e+00 * CO2_strat,printed; isotopologue analogy,Young Section 3.3,strat -> trop transport
+CO2_strat,stratosphere,source,1.0,R7d,1.50421307e-05 * CO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+CO2_strat,stratosphere,source,1.0,R7h,1.50852015e-05 * CO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+CO2_strat,stratosphere,source,1.0,k_TS_CO2_trop,1.00000000e-01 * CO2_trop,printed; isotopologue analogy,Young Section 3.3,trop -> strat transport
+CO17O_strat,stratosphere,sink,1.0,R7h,1.50852015e-05 * CO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+CO17O_strat,stratosphere,sink,1.0,k_ST_CO17O_strat,1.00000000e+00 * CO17O_strat,printed; isotopologue analogy,Young Section 3.3,strat -> trop transport
+CO17O_strat,stratosphere,source,1.0,R7g,1.47989225e-05 * CO2_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+CO17O_strat,stratosphere,source,1.0,k_TS_CO17O_trop,1.00000000e-01 * CO17O_trop,printed; isotopologue analogy,Young Section 3.3,trop -> strat transport
+CO18O_strat,stratosphere,sink,1.0,R7d,1.50421307e-05 * CO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+CO18O_strat,stratosphere,sink,1.0,k_ST_CO18O_strat,1.00000000e+00 * CO18O_strat,printed; isotopologue analogy,Young Section 3.3,strat -> trop transport
+CO18O_strat,stratosphere,source,1.0,R7c,1.44993659e-05 * CO2_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+CO18O_strat,stratosphere,source,1.0,k_TS_CO18O_trop,1.00000000e-01 * CO18O_trop,printed; isotopologue analogy,Young Section 3.3,trop -> strat transport
+O3_strat,stratosphere,sink,1.0,R3a,9.34104960e+03 * O3_strat,printed,Young Table 2,O3 + hv -> O2 + O
+O3_strat,stratosphere,sink,1.0,R3f,1.58103576e+04 * O3_strat,printed,Young Table 2,O3 + hv -> O2 + O(1D)
+O3_strat,stratosphere,sink,1.0,R4a,4.65443042e-09 * O3_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O3_strat,stratosphere,sink,1.0,R4d,4.45583843e-09 * O3_strat * O18_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O3_strat,stratosphere,sink,1.0,R4e,4.55015280e-09 * O3_strat * O17_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O3_strat,stratosphere,sink,1.0,R4f,8.14186080e-05 * O3_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O3_strat,stratosphere,sink,1.0,R4i,7.79446956e-05 * O3_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O3_strat,stratosphere,sink,1.0,R4j,7.95945097e-05 * O3_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O3_strat,stratosphere,sink,1.0,R4k,8.14186080e-05 * O3_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O3_strat,stratosphere,sink,1.0,R4p,3.89723478e-05 * O3_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O3_strat,stratosphere,sink,1.0,R4q,3.89723478e-05 * O3_strat * O18_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O3_strat,stratosphere,sink,1.0,R4r,3.97972549e-05 * O3_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O3_strat,stratosphere,sink,1.0,R4s,3.97972549e-05 * O3_strat * O17_1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O3_strat,stratosphere,source,1.0,R2a,7.09563169e-10 * O_strat * O2_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+OO17O_strat,stratosphere,sink,1.0,R3d,3.11368320e+03 * OO17O_strat,printed,Young Table 2,OO17O + hv -> O2 + 17O
+OO17O_strat,stratosphere,sink,1.0,R3e,6.22736640e+03 * OO17O_strat,printed,Young Table 2,OO17O + hv -> O17O + O
+OO17O_strat,stratosphere,sink,1.0,R3i,5.27011920e+03 * OO17O_strat,printed,Young Table 2,OO17O + hv -> O2 + 17O(1D)
+OO17O_strat,stratosphere,sink,1.0,R3j,1.05402384e+04 * OO17O_strat,printed,Young Table 2,OO17O + hv -> O17O + O(1D)
+OO17O_strat,stratosphere,sink,1.0,R4c,4.64248880e-09 * OO17O_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+OO17O_strat,stratosphere,sink,1.0,R4h,8.12097166e-05 * OO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+OO17O_strat,stratosphere,sink,1.0,R4n,4.06048583e-05 * OO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+OO17O_strat,stratosphere,sink,1.0,R4o,4.06048583e-05 * OO17O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+OO17O_strat,stratosphere,source,1.0,R2c,7.40654710e-10 * O17_strat * O2_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+OO17O_strat,stratosphere,source,1.0,R2e,7.51841626e-10 * O_strat * O17O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+OO18O_strat,stratosphere,sink,1.0,R3b,3.11368320e+03 * OO18O_strat,printed,Young Table 2,OO18O + hv -> O2 + 18O
+OO18O_strat,stratosphere,sink,1.0,R3c,6.22736640e+03 * OO18O_strat,printed,Young Table 2,OO18O + hv -> O18O + O
+OO18O_strat,stratosphere,sink,1.0,R3g,5.27011920e+03 * OO18O_strat,printed,Young Table 2,OO18O + hv -> O2 + 18O(1D)
+OO18O_strat,stratosphere,sink,1.0,R3h,1.05402384e+04 * OO18O_strat,printed,Young Table 2,OO18O + hv -> O18O + O(1D)
+OO18O_strat,stratosphere,sink,1.0,R4b,4.63104499e-09 * OO18O_strat * O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+OO18O_strat,stratosphere,sink,1.0,R4g,8.10095334e-05 * OO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+OO18O_strat,stratosphere,sink,1.0,R4l,4.05047667e-05 * OO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+OO18O_strat,stratosphere,sink,1.0,R4m,4.05047667e-05 * OO18O_strat * O1D_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+OO18O_strat,stratosphere,source,1.0,R2b,7.27094914e-10 * O18_strat * O2_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+OO18O_strat,stratosphere,source,1.0,R2d,7.48222234e-10 * O_strat * O18O_strat,printed+derived,Young Table 2; Eq. 25,Isotope-specific multiplier derived from Young reduced-mass expression.
+O2_trop,troposphere,sink,1.0,O2_weathering_geo,6.00000000e-07 * O2_trop,printed,Young Table 2; Section 3.6,O2 weathering uptake by geosphere
+O2_trop,troposphere,sink,1.0,k_TS_O2_trop,1.00000000e-01 * O2_trop,printed; isotopologue analogy,Young Section 3.3,trop -> strat transport
+O2_trop,troposphere,sink,1.0,resp_O2,8.00000000e-04 * O2_trop,printed,Young Sections 3.4-3.5; Eq. 27,respiration consumes O2 and produces CO2
+O2_trop,troposphere,source,1.0,k_ST_O2_strat,1.00000000e+00 * O2_strat,printed; isotopologue analogy,Young Section 3.3,strat -> trop transport
+O2_trop,troposphere,source,1.0,organic_burial_closure_O2,8.66400000e+32 / O2_trop,diagnostic closure,not paper-derived,"diagnostic closure: balances modern O2 weathering, scales as 1/nO2"
+O2_trop,troposphere,source,1.0,photo_O2,3.04000000e+16 * 1,printed; source-water isotope analogue,Young Section 3.4; Table 2,photosynthesis 16O2 source
+O18O_trop,troposphere,sink,1.0,O18O_weathering_geo,6.00000000e-07 * O18O_trop,inferred isotopologue analogue,Young Table 2; Section 3.6,O18O weathering uptake by geosphere
+O18O_trop,troposphere,sink,1.0,k_TS_O18O_trop,1.00000000e-01 * O18O_trop,printed; isotopologue analogy,Young Section 3.3,trop -> strat transport
+O18O_trop,troposphere,sink,1.0,resp_O18O,7.85700255e-04 * O18O_trop,printed; isotopologue fractionation,Young Table 2; Sections 3.4-3.5,Respiration fractionation constants are printed; isotopologue ODE is inferred.
+O18O_trop,troposphere,source,1.0,k_ST_O18O_strat,1.00000000e+00 * O18O_strat,printed; isotopologue analogy,Young Section 3.3,strat -> trop transport
+O18O_trop,troposphere,source,1.0,organic_burial_closure_O18O,3.62520000e+30 / O2_trop,diagnostic closure,not paper-derived,diagnostic closure scaled from modern O18O weathering
+O18O_trop,troposphere,source,1.0,photo_O18O,1.22556220e+14 * 1,printed; source-water isotope analogue,Young Section 3.4; Table 2,photosynthetic source water
+O17O_trop,troposphere,sink,1.0,O17O_weathering_geo,6.00000000e-07 * O17O_trop,inferred isotopologue analogue,Young Table 2; Section 3.6,O17O weathering uptake by geosphere
+O17O_trop,troposphere,sink,1.0,k_TS_O17O_trop,1.00000000e-01 * O17O_trop,printed; isotopologue analogy,Young Section 3.3,trop -> strat transport
+O17O_trop,troposphere,sink,1.0,resp_O17O,7.92604854e-04 * O17O_trop,printed; isotopologue fractionation,Young Table 2; Sections 3.4-3.5,Respiration fractionation constants are printed; isotopologue ODE is inferred.
+O17O_trop,troposphere,source,1.0,k_ST_O17O_strat,1.00000000e+00 * O17O_strat,printed; isotopologue analogy,Young Section 3.3,strat -> trop transport
+O17O_trop,troposphere,source,1.0,organic_burial_closure_O17O,6.49800000e+29 / O2_trop,diagnostic closure,not paper-derived,diagnostic closure scaled from modern O17O weathering
+O17O_trop,troposphere,source,1.0,photo_O17O,2.31608981e+13 * 1,printed; source-water isotope analogue,Young Section 3.4; Table 2,photosynthetic source water
+CO2_trop,troposphere,sink,1.0,CO2_ocean_infusion,1.17200000e-01 * CO2_trop,printed,Young Table 2; Eq. 27,
+CO2_trop,troposphere,sink,1.0,CO2_weathering,2.08000000e-04 * CO2_trop,printed,Young Table 2; Eq. 27,CO2 drawdown by weathering into geosphere O
+CO2_trop,troposphere,sink,1.0,R8a,2.09837212e-03 * CO2_trop,printed+folded reservoir,Young Table 2,CO2 + H2-18O -> CO18O + H2O
+CO2_trop,troposphere,sink,1.0,R8c,3.89120395e-04 * CO2_trop,printed+folded reservoir,Young Table 2,CO2 + H2-17O -> CO17O + H2O
+CO2_trop,troposphere,sink,1.0,k_TS_CO2_trop,1.00000000e-01 * CO2_trop,printed; isotopologue analogy,Young Section 3.3,trop -> strat transport
+CO2_trop,troposphere,sink,1.0,photo_CO2_sink,3.04000000e+16 * 1,printed,Young Eq. 27,photosynthetic CO2 sink from Young Eq. 27
+CO2_trop,troposphere,source,1.0,CO2_source,5.88400000e+15 * 1,printed,Young Table 2; Eq. 27,volcanic + ocean CO2 source
+CO2_trop,troposphere,source,1.0,R8b,1.00000000e+00 * CO18O_trop,printed+folded reservoir,Young Table 2,CO18O + H2O -> CO2 + H2-18O
+CO2_trop,troposphere,source,1.0,R8d,1.00000000e+00 * CO17O_trop,printed+folded reservoir,Young Table 2,CO17O + H2O -> CO2 + H2-17O
+CO2_trop,troposphere,source,1.0,co2_modern_closure,3.26883200e+14 * 1,diagnostic closure,not paper-derived,diagnostic modern CO2 closure
+CO2_trop,troposphere,source,1.0,k_ST_CO2_strat,1.00000000e+00 * CO2_strat,printed; isotopologue analogy,Young Section 3.3,strat -> trop transport
+CO2_trop,troposphere,source,1.0,resp_O2,8.00000000e-04 * O2_trop,printed,Young Sections 3.4-3.5; Eq. 27,respiration consumes O2 and produces CO2
+CO18O_trop,troposphere,sink,1.0,CO18O_ocean_infusion,1.17200000e-01 * CO18O_trop,inferred isotopologue analogue,Young Table 2; Eq. 27 analogue,Heavy-CO2 analogue is not written as a full ODE.
+CO18O_trop,troposphere,sink,1.0,CO18O_weathering,2.08000000e-04 * CO18O_trop,inferred isotopologue analogue,Young Table 2; Eq. 27 analogue,CO18O drawdown by weathering into geosphere O
+CO18O_trop,troposphere,sink,1.0,R8b,1.00000000e+00 * CO18O_trop,printed+folded reservoir,Young Table 2,CO18O + H2O -> CO2 + H2-18O
+CO18O_trop,troposphere,sink,1.0,k_TS_CO18O_trop,1.00000000e-01 * CO18O_trop,printed; isotopologue analogy,Young Section 3.3,trop -> strat transport
+CO18O_trop,troposphere,sink,1.0,photo_CO18O_sink,1.22556220e+14 * 1,ambiguous inferred term,Young Eq. 27 analogue,CO18O photosynthetic sink mode=o2_source_water
+CO18O_trop,troposphere,source,1.0,CO18O_source,1.17985968e+13 * 1,printed; isotopologue scaling,Young Table 2 footnotes,source scaled by R18_SMOW
+CO18O_trop,troposphere,source,1.0,R8a,2.09837212e-03 * CO2_trop,printed+folded reservoir,Young Table 2,CO2 + H2-18O -> CO18O + H2O
+CO18O_trop,troposphere,source,1.0,co18o_modern_closure,6.98257119e+11 * 1,diagnostic closure,not paper-derived,diagnostic modern CO18O closure
+CO18O_trop,troposphere,source,1.0,k_ST_CO18O_strat,1.00000000e+00 * CO18O_strat,printed; isotopologue analogy,Young Section 3.3,strat -> trop transport
+CO18O_trop,troposphere,source,1.0,resp_O18O,7.85700255e-04 * O18O_trop,printed; isotopologue fractionation,Young Table 2; Sections 3.4-3.5,Respiration fractionation constants are printed; isotopologue ODE is inferred.
+CO17O_trop,troposphere,sink,1.0,CO17O_ocean_infusion,1.17200000e-01 * CO17O_trop,inferred isotopologue analogue,Young Table 2; Eq. 27 analogue,Heavy-CO2 analogue is not written as a full ODE.
+CO17O_trop,troposphere,sink,1.0,CO17O_weathering,2.08000000e-04 * CO17O_trop,inferred isotopologue analogue,Young Table 2; Eq. 27 analogue,CO17O drawdown by weathering into geosphere O
+CO17O_trop,troposphere,sink,1.0,R8d,1.00000000e+00 * CO17O_trop,printed+folded reservoir,Young Table 2,CO17O + H2O -> CO2 + H2-17O
+CO17O_trop,troposphere,sink,1.0,k_TS_CO17O_trop,1.00000000e-01 * CO17O_trop,printed; isotopologue analogy,Young Section 3.3,trop -> strat transport
+CO17O_trop,troposphere,sink,1.0,photo_CO17O_sink,2.31608981e+13 * 1,ambiguous inferred term,Young Eq. 27 analogue,CO17O photosynthetic sink mode=o2_source_water
+CO17O_trop,troposphere,source,1.0,CO17O_source,2.23533160e+12 * 1,printed; isotopologue scaling,Young Table 2 footnotes,source scaled by R17_SMOW
+CO17O_trop,troposphere,source,1.0,R8c,3.89120395e-04 * CO2_trop,printed+folded reservoir,Young Table 2,CO2 + H2-17O -> CO17O + H2O
+CO17O_trop,troposphere,source,1.0,co17o_modern_closure,1.23585331e+11 * 1,diagnostic closure,not paper-derived,diagnostic modern CO17O closure
+CO17O_trop,troposphere,source,1.0,k_ST_CO17O_strat,1.00000000e+00 * CO17O_strat,printed; isotopologue analogy,Young Section 3.3,strat -> trop transport
+CO17O_trop,troposphere,source,1.0,resp_O17O,7.92604854e-04 * O17O_trop,printed; isotopologue fractionation,Young Table 2; Sections 3.4-3.5,Respiration fractionation constants are printed; isotopologue ODE is inferred.
+O_geo,geosphere,source,1.0,CO17O_weathering,2.08000000e-04 * CO17O_trop,inferred isotopologue analogue,Young Table 2; Eq. 27 analogue,CO17O drawdown by weathering into geosphere O
+O_geo,geosphere,source,1.0,CO18O_weathering,2.08000000e-04 * CO18O_trop,inferred isotopologue analogue,Young Table 2; Eq. 27 analogue,CO18O drawdown by weathering into geosphere O
+O_geo,geosphere,source,2.0,CO2_weathering,2.08000000e-04 * CO2_trop,printed,Young Table 2; Eq. 27,CO2 drawdown by weathering into geosphere O
+O_geo,geosphere,source,1.0,O17O_weathering_geo,6.00000000e-07 * O17O_trop,inferred isotopologue analogue,Young Table 2; Section 3.6,O17O weathering uptake by geosphere
+O_geo,geosphere,source,1.0,O18O_weathering_geo,6.00000000e-07 * O18O_trop,inferred isotopologue analogue,Young Table 2; Section 3.6,O18O weathering uptake by geosphere
+O_geo,geosphere,source,2.0,O2_weathering_geo,6.00000000e-07 * O2_trop,printed,Young Table 2; Section 3.6,O2 weathering uptake by geosphere
+O18_geo,geosphere,source,1.0,CO18O_weathering,2.08000000e-04 * CO18O_trop,inferred isotopologue analogue,Young Table 2; Eq. 27 analogue,CO18O drawdown by weathering into geosphere O
+O18_geo,geosphere,source,1.0,O18O_weathering_geo,6.00000000e-07 * O18O_trop,inferred isotopologue analogue,Young Table 2; Section 3.6,O18O weathering uptake by geosphere
+O17_geo,geosphere,source,1.0,CO17O_weathering,2.08000000e-04 * CO17O_trop,inferred isotopologue analogue,Young Table 2; Eq. 27 analogue,CO17O drawdown by weathering into geosphere O
+O17_geo,geosphere,source,1.0,O17O_weathering_geo,6.00000000e-07 * O17O_trop,inferred isotopologue analogue,Young Table 2; Section 3.6,O17O weathering uptake by geosphere

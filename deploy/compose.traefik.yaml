@@ -1,0 +1,53 @@
+name: atmo-mod
+
+services:
+  model-api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: "atmo-mod:${ATMO_MOD_VERSION:-0.1.0}"
+    restart: unless-stopped
+    environment:
+      O2_MODEL_CORS_ORIGINS: "${O2_MODEL_CORS_ORIGINS:-}"
+    expose:
+      - "8000"
+    ports:
+      - "127.0.0.1:${ATMO_MOD_LOCAL_PORT:-18000}:8000"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: "${ATMO_MOD_PIDS:-128}"
+    mem_limit: "${ATMO_MOD_MEMORY:-768m}"
+    cpus: "${ATMO_MOD_CPUS:-0.75}"
+    stop_grace_period: 30s
+    networks:
+      - traefik-global-proxy
+    labels:
+      - "traefik.enable=${ATMO_MOD_TRAEFIK_ENABLE:-false}"
+      - "traefik.docker.network=traefik-global-proxy"
+      - "traefik.http.routers.atmo-mod.rule=Host(`${ATMO_MOD_HOST:-model.example.org}`) && (Path(`/atmo-mod`) || PathPrefix(`/atmo-mod/`))"
+      - "traefik.http.routers.atmo-mod.entrypoints=websecure"
+      - "traefik.http.routers.atmo-mod.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.atmo-mod.middlewares=atmo-mod-slash,atmo-mod-strip"
+      - "traefik.http.middlewares.atmo-mod-slash.redirectregex.regex=^https?://([^/]+)/atmo-mod$$"
+      - "traefik.http.middlewares.atmo-mod-slash.redirectregex.replacement=https://$${1}/atmo-mod/"
+      - "traefik.http.middlewares.atmo-mod-slash.redirectregex.permanent=true"
+      - "traefik.http.middlewares.atmo-mod-strip.stripprefix.prefixes=/atmo-mod"
+      - "traefik.http.services.atmo-mod.loadbalancer.server.port=8000"
+      - "traefik.http.services.atmo-mod.loadbalancer.healthcheck.path=/api/v1/health"
+      - "traefik.http.services.atmo-mod.loadbalancer.healthcheck.interval=30s"
+      - "traefik.http.services.atmo-mod.loadbalancer.healthcheck.timeout=5s"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+networks:
+  traefik-global-proxy:
+    external: true
+    name: traefik-global-proxy

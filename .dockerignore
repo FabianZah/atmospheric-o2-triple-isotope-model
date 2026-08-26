@@ -1,0 +1,16 @@
+.git
+.github
+.pytest_cache
+__pycache__
+*.py[cod]
+*.pdf
+*.docx
+*.xlsx
+external_data
+outputs
+reference_texts
+validation
+docs
+code/streamlit_app.py
+_pytest_*
+deploy

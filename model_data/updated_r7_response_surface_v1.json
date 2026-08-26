@@ -1,0 +1,1193 @@
+{
+  "schema_version": 1,
+  "model_data_id": "updated_r7_response_surface_v1",
+  "surface": {
+    "po2_nodes_pal": [
+      0.1,
+      1.0,
+      2.0
+    ],
+    "pco2_nodes_ppm": [
+      50.0,
+      100.0,
+      150.0,
+      200.0,
+      250.0,
+      294.0,
+      300.0,
+      1000.0,
+      3000.0,
+      10000.0,
+      30000.0,
+      60000.0
+    ],
+    "operators": [
+      [
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -57245153.81854639,
+            -182695948.70579758,
+            239941102.52383333
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              7420856718.01479,
+              38198872241.22703
+            ],
+            [
+              -7455323508.6867285,
+              34708907.67742729
+            ],
+            [
+              34466790.611572266,
+              -38233581144.91987
+            ]
+          ],
+          "source": "native Photochem parent 0.1 PAL, 50 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 30.80632048845291
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -112355075.15223904,
+            -361603140.60726064,
+            473958215.7593551
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              14684663514.59031,
+              75589409285.7738
+            ],
+            [
+              -14752816229.245384,
+              68632845.24077797
+            ],
+            [
+              68152718.84210205,
+              -75658042129.2316
+            ]
+          ],
+          "source": "native Photochem parent 0.1 PAL, 100 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 60.94060268998146
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -166397888.15467885,
+            -540524201.8393271,
+            706922089.9945362
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              21944797055.716125,
+              112961417975.32529
+            ],
+            [
+              -22046618464.037247,
+              102538767.80737495
+            ],
+            [
+              101821405.41142273,
+              -113063956743.7748
+            ]
+          ],
+          "source": "native Photochem parent 0.1 PAL, 150 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 91.06063902378082
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -219365754.1433242,
+            -719475630.6854986,
+            938841384.82633
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              29201795560.6895,
+              150317658827.94946
+            ],
+            [
+              -29337271105.58088,
+              136429368.569458
+            ],
+            [
+              135475525.34410095,
+              -150454088183.06708
+            ]
+          ],
+          "source": "native Photochem parent 0.1 PAL, 200 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 121.16570943593979
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -271265878.6286579,
+            -898438817.4239906,
+            1169704696.0581815
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              36455025968.24368,
+              187654881029.51733
+            ],
+            [
+              -36624137944.82742,
+              170301517.9238243
+            ],
+            [
+              169111965.1956482,
+              -187825182539.2331
+            ]
+          ],
+          "source": "native Photochem parent 0.1 PAL, 250 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 151.25982719659805
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -316061805.8216863,
+            -1055949161.3619637,
+            1372010967.184203
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              42835289445.22342,
+              220498669066.80603
+            ],
+            [
+              -43033989134.360596,
+              200096040.528862
+            ],
+            [
+              198699681.0035553,
+              -220698765108.15646
+            ]
+          ],
+          "source": "native Photochem parent 0.1 PAL, 294 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 177.72563564777374
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -322109924.36322385,
+            -1077418358.2018292,
+            1399528282.564824
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              43704752379.58847,
+              224974445423.72916
+            ],
+            [
+              -43907484000.35303,
+              204156116.1475067
+            ],
+            [
+              202731611.09313965,
+              -225178601545.6198
+            ]
+          ],
+          "source": "native Photochem parent 0.1 PAL, 300 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 181.33564341068268
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -922687462.9018604,
+            -3585418876.5692725,
+            4508106339.460024
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              144847119994.6018,
+              745666019940.951
+            ],
+            [
+              -145518865498.1991,
+              676380289.077301
+            ],
+            [
+              671745503.1255493,
+              -746342400207.6368
+            ]
+          ],
+          "source": "native Photochem parent 0.1 PAL, 1000 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 600.8961527347565
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -1524812532.1495516,
+            -10771515865.028128,
+            12296328397.150797
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              430194822233.68066,
+              2215058782209.818
+            ],
+            [
+              -432189534249.9118,
+              2007725024.6244812
+            ],
+            [
+              1994711918.7355957,
+              -2217066507312.865
+            ]
+          ],
+          "source": "native Photochem parent 0.1 PAL, 3000 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 1784.3367495536804
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            8245440423.402985,
+            -36094837862.56364,
+            27849397439.25979
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              1388485785815.379,
+              7154002903777.469
+            ],
+            [
+              -1394921122579.8857,
+              6469172656.649048
+            ],
+            [
+              6435336764.243164,
+              -7160472076774.161
+            ]
+          ],
+          "source": "native Photochem parent 0.1 PAL, 10000 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 5755.792628765106
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            114465987870.66888,
+            -108575193990.72263,
+            -5890793879.608318
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              3821785014241.0254,
+              19724352236274.477
+            ],
+            [
+              -3839484808316.9014,
+              17736189065.731445
+            ],
+            [
+              17699795310.908203,
+              -19742088427470.938
+            ]
+          ],
+          "source": "native Photochem parent 0.1 PAL, 30000 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 15828.90219116211
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            402917837897.70807,
+            -213181899626.71494,
+            -189735938271.10684
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              6803548752093.434,
+              35185267940753.41
+            ],
+            [
+              -6835048484700.662,
+              31441740201.728027
+            ],
+            [
+              31499733867.59375,
+              -35216709681543.95
+            ]
+          ],
+          "source": "native Photochem parent 0.1 PAL, 60000 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 28172.150756835938
+        }
+      ],
+      [
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -46739707.74866026,
+            -126679252.28955735,
+            173418960.03879544
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              5220591266.813267,
+              26884029110.660667
+            ],
+            [
+              -5245387321.556447,
+              24916639.0247159
+            ],
+            [
+              24796054.23470688,
+              -26908945751.422043
+            ]
+          ],
+          "source": "native Photochem parent 1 PAL, 50 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 21.79244812577963
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -91673420.68529242,
+            -249735014.37329784,
+            341408435.0586191
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              10290445474.849785,
+              52991600373.88342
+            ],
+            [
+              -10339257087.864773,
+              49050947.58076954
+            ],
+            [
+              48811608.76060104,
+              -53040651318.20863
+            ]
+          ],
+          "source": "native Photochem parent 1 PAL, 100 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 42.9232113212347
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -136068329.43151188,
+            -372795497.18805164,
+            508863826.62288064
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              15358392792.9291,
+              79089546980.58115
+            ],
+            [
+              -15431210589.788734,
+              73175531.51926613
+            ],
+            [
+              72817794.0059433,
+              -79162722507.5365
+            ]
+          ],
+          "source": "native Photochem parent 1 PAL, 150 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 64.04244473576546
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -179926666.10980198,
+            -495865946.957171,
+            675792613.0664597
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              20424649539.867096,
+              105178981205.15773
+            ],
+            [
+              -20521464988.318657,
+              97291235.29082108
+            ],
+            [
+              96815445.32084656,
+              -105276272439.74323
+            ]
+          ],
+          "source": "native Photochem parent 1 PAL, 200 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 85.16065871715546
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -223249638.7412478,
+            -618947332.630357,
+            842196971.3726403
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              25489260960.52774,
+              131260135632.5096
+            ],
+            [
+              -25610065669.68836,
+              121398223.49854088
+            ],
+            [
+              120804723.931427,
+              -131381533849.11627
+            ]
+          ],
+          "source": "native Photochem parent 1 PAL, 250 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 106.2657550573349
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -260931470.34669936,
+            -727268222.0870358,
+            988199692.4334832
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              29944768333.90468,
+              154204755587.96353
+            ],
+            [
+              -30086676727.349365,
+              142605206.31026077
+            ],
+            [
+              141908407.4144745,
+              -154347360807.27942
+            ]
+          ],
+          "source": "native Photochem parent 1 PAL, 294 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 124.83219021558762
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -266037666.28030738,
+            -742040014.8746527,
+            1008077681.1564543
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              30552241342.10022,
+              157333083661.58264
+            ],
+            [
+              -30697027042.984474,
+              145496563.11598587
+            ],
+            [
+              144785698.55545044,
+              -157478580224.92
+            ]
+          ],
+          "source": "native Photochem parent 1 PAL, 300 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 127.3629754781723
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -809212312.3103658,
+            -2466533932.2631564,
+            3275746244.5576534
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              101264334569.71179,
+              521500924234.20123
+            ],
+            [
+              -101743988866.86353,
+              481972492.9591217
+            ],
+            [
+              479654309.6647339,
+              -521982896738.8016
+            ]
+          ],
+          "source": "native Photochem parent 1 PAL, 1000 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 422.03239917755127
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -1797196492.1557348,
+            -7405379226.17024,
+            9202575718.341253
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              301572629480.43335,
+              1553293922788.2297
+            ],
+            [
+              -303000252667.0154,
+              1434172086.3888855
+            ],
+            [
+              1427623136.7889404,
+              -1554728094898.1157
+            ]
+          ],
+          "source": "native Photochem parent 1 PAL, 3000 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 1256.1228995323181
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            910863427.3797791,
+            -24802794529.04746,
+            23891931101.65482
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              983133435101.8579,
+              5066276960935.318
+            ],
+            [
+              -987779800201.3723,
+              4663758502.642456
+            ],
+            [
+              4646365079.730469,
+              -5070940719801.554
+            ]
+          ],
+          "source": "native Photochem parent 1 PAL, 10000 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 4088.552495241165
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            52343432956.31187,
+            -74923856764.91185,
+            22580423808.285854
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              2777586252083.3438,
+              14331884150231.932
+            ],
+            [
+              -2790659745140.422,
+              13093546903.233887
+            ],
+            [
+              13073492070.564453,
+              -14344977696969.387
+            ]
+          ],
+          "source": "native Photochem parent 1 PAL, 30000 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 11505.933410644531
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            213012712586.11954,
+            -149189819663.3181,
+            -63822892923.15987
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              5110580804650.457,
+              26413089650851.92
+            ],
+            [
+              -5134518997082.684,
+              23906918714.104492
+            ],
+            [
+              23938194240.69336,
+              -26436996570817.15
+            ]
+          ],
+          "source": "native Photochem parent 1 PAL, 60000 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 21081.08172607422
+        }
+      ],
+      [
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -37405154.774594165,
+            -98651675.09716652,
+            136056829.87171453
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              4076576561.0563984,
+              20993949144.728874
+            ],
+            [
+              -4095949956.0860724,
+              19461945.894269943
+            ],
+            [
+              19373395.556451797,
+              -21013411090.858234
+            ]
+          ],
+          "source": "native Photochem parent 2 PAL, 50 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 17.011154770851135
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -73239515.34899083,
+            -193832118.84832066,
+            267071634.19639847
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              8009122502.7784,
+              41245856672.95061
+            ],
+            [
+              -8047120699.981135,
+              38173927.37256622
+            ],
+            [
+              37998199.26630783,
+              -41284030601.9998
+            ]
+          ],
+          "source": "native Photochem parent 2 PAL, 100 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 33.387459456920624
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -108750529.76049933,
+            -289010680.0342626,
+            397761209.7938124
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              11940344765.078484,
+              61491066101.40183
+            ],
+            [
+              -11996961417.807526,
+              56879346.041502
+            ],
+            [
+              56616655.024017334,
+              -61547945448.25205
+            ]
+          ],
+          "source": "native Photochem parent 2 PAL, 150 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 49.760023444890976
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -143940516.0724917,
+            -384193953.7870617,
+            528134469.8600597
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              15870513155.140137,
+              81730964922.69081
+            ],
+            [
+              -15945742973.671015,
+              75579269.33005333
+            ],
+            [
+              75229821.7009964,
+              -81806544202.59229
+            ]
+          ],
+          "source": "native Photochem parent 2 PAL, 200 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 66.12897425889969
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -178810341.73725733,
+            -479383196.1181068,
+            658193537.8542025
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              19799682052.334396,
+              101965832898.18925
+            ],
+            [
+              -19893519957.076088,
+              94273903.82922935
+            ],
+            [
+              93837903.31027985,
+              -102060106793.63042
+            ]
+          ],
+          "source": "native Photochem parent 2 PAL, 250 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 82.48986187577248
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -209231627.89366332,
+            -563154736.1068615,
+            772386363.9990046
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              23256531832.25688,
+              119768396019.92245
+            ],
+            [
+              -23366740656.233723,
+              110720819.17213821
+            ],
+            [
+              110208819.26586914,
+              -119879116842.75784
+            ]
+          ],
+          "source": "native Photochem parent 2 PAL, 294 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 96.89309531450272
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -213361230.79978263,
+            -574578044.8537662,
+            787939275.653142
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              23727847811.65567,
+              122195651538.3671
+            ],
+            [
+              -23840288657.440765,
+              112963187.3590889
+            ],
+            [
+              112440835.86787415,
+              -122308614712.43274
+            ]
+          ],
+          "source": "native Photochem parent 2 PAL, 300 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 98.84138429164886
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -663642448.9601068,
+            -1908012704.736806,
+            2571655153.696442
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              78621057978.39545,
+              404904532833.0364
+            ],
+            [
+              -78993421690.3779,
+              374073870.90367126
+            ],
+            [
+              372363725.07037354,
+              -405278606711.54474
+            ]
+          ],
+          "source": "native Photochem parent 2 PAL, 1000 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 327.4020529985428
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -1611341152.4375918,
+            -5724780401.5779085,
+            7336121554.048508
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              234426759114.44604,
+              1207452303413.1072
+            ],
+            [
+              -235536467403.56223,
+              1114598080.6057434
+            ],
+            [
+              1109708327.7042236,
+              -1208566901522.2532
+            ]
+          ],
+          "source": "native Photochem parent 2 PAL, 3000 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 975.777340888977
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            -1169547021.9947207,
+            -19152875696.713844,
+            20322422718.72391
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              767996879533.5308,
+              3957223322483.09
+            ],
+            [
+              -771627208636.0306,
+              3643967531.1412354
+            ],
+            [
+              3630328791.0253906,
+              -3960867289555.8438
+            ]
+          ],
+          "source": "native Photochem parent 2 PAL, 10000 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 3192.4752683639526
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            27870919342.591225,
+            -57850397662.788376,
+            29979478320.32727
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              2198594700348.505,
+              11340268673622.676
+            ],
+            [
+              -2208950415070.508,
+              10376653930.822266
+            ],
+            [
+              10355714567.97168,
+              -11350645328018.898
+            ]
+          ],
+          "source": "native Photochem parent 2 PAL, 30000 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 9108.594470977783
+        },
+        {
+          "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+          "reference_ratio_coordinates": [
+            1.0121014369677277,
+            1.0238806836957661
+          ],
+          "reference_tendency_mol_per_year": [
+            129138109417.51787,
+            -115730972172.98814,
+            -13407137244.354408
+          ],
+          "ratio_jacobian_mol_per_year": [
+            [
+              4116078036306.379,
+              21259389304201.64
+            ],
+            [
+              -4135378910783.1626,
+              19295443419.644043
+            ],
+            [
+              19300873328.958984,
+              -21278684745280.727
+            ]
+          ],
+          "source": "native Photochem parent 2 PAL, 60000 ppm",
+          "sample_condition": 4027.285822596888,
+          "maximum_sample_residual_mol_per_year": 16985.369018554688
+        }
+      ]
+    ],
+    "source": "Native Photochem 0.6.7 parent columns with Sander et al. (2006) R1-R7 isotope chemistry; conservative prime-isotope interpolation"
+  },
+  "construction": {
+    "native_parent_model": "Photochem 0.6.7",
+    "chemistry": "Sander et al. (2006) R1-R7 isotope mechanism",
+    "transport_reference": "ERA5 2-D tropopause geometry",
+    "interpolation": "PCHIP in log pO2/log pCO2 after conversion to conserved delta-prime tendency rates",
+    "no_output_fit": true,
+    "no_numerical_damping": true
+  },
+  "transfer_normalization": {
+    "convention": "equal_and_opposite_molecular_co2_o2_anomaly_isoflux",
+    "molecular_site_balance": 2.0,
+    "molecular_site_balance_source": "Liang et al. (2023), Eq. 3",
+    "native_400ppm_isoflux_permil_mol_per_year": 2607494836901499.0,
+    "era5_2d_400ppm_isoflux_permil_mol_per_year": 3269689729720996.5,
+    "era5_to_native_geometry_ratio": 1.2539582757549723,
+    "adnew_to_era5_scale": {
+      "minus_1sigma": 1.265556463330758,
+      "mean": 1.306298723719676,
+      "plus_1sigma": 1.3470409841085935
+    },
+    "native_surface_molecular_forcing_scale": {
+      "minus_1sigma": 3.1739100012575965,
+      "mean": 3.2760881904328913,
+      "plus_1sigma": 3.378266379608186
+    },
+    "observational_source": "Adnew et al. (2025)",
+    "observed_isoflux_permil_pgc_per_year": 51.3,
+    "observed_isoflux_uncertainty_permil_pgc_per_year": 1.6
+  },
+  "validation": {
+    "crossed_holdout_case_count": 20,
+    "cap_delta17_mean_absolute_residual_permil": 0.0006015286670706804,
+    "cap_delta17_maximum_absolute_residual_permil": 0.0016672699405724245,
+    "delta18_maximum_absolute_residual_permil": 0.2130665463413024,
+    "cumulative_holdout_policy": "The propagated response-surface guardrail is the maximum across the retained high-pCO2 and new low-pCO2 direct holdout audits.",
+    "holdout_axes": {
+      "po2_pal": [
+        0.1,
+        0.5,
+        1.0,
+        1.5,
+        2.0
+      ],
+      "pco2_ppm": [
+        75.0,
+        125.0,
+        5000.0,
+        20000.0
+      ],
+      "gpp_percent_of_young": [
+        10.0,
+        25.0,
+        100.0
+      ]
+    },
+    "direct_holdout_audits": [
+      {
+        "case_count": 12,
+        "cap_delta17_maximum_absolute_residual_permil": 1.1355484373365421e-05,
+        "delta18_maximum_absolute_residual_permil": 4.2529379484790297e-07
+      },
+      {
+        "case_count": 8,
+        "cap_delta17_maximum_absolute_residual_permil": 0.0016672699405724245,
+        "delta18_maximum_absolute_residual_permil": 0.2130665463413024
+      }
+    ],
+    "low_co2_holdouts": {
+      "status": "gate_passed",
+      "metrics": {
+        "case_count": 105,
+        "cap_delta17_prime_mean_absolute_residual_permil": 4.2133402424014505e-06,
+        "cap_delta17_prime_root_mean_square_residual_permil": 1.0783442239634348e-05,
+        "cap_delta17_prime_maximum_absolute_residual_permil": 5.6567353677428045e-05,
+        "delta18_prime_mean_absolute_residual_permil": 1.5682776414055731e-06,
+        "delta18_prime_maximum_absolute_residual_permil": 4.620835935398304e-05
+      },
+      "pco2_ppm": [
+        75.0,
+        125.0,
+        175.0,
+        225.0,
+        275.0
+      ],
+      "po2_pal": [
+        0.1,
+        1.0,
+        2.0
+      ],
+      "gpp_percent_of_Young": [
+        5.0,
+        10.0,
+        25.0,
+        50.0,
+        100.0,
+        150.0,
+        232.0
+      ]
+    }
+  },
+  "domain": {
+    "po2_pal": [
+      0.1,
+      2.0
+    ],
+    "pco2_ppm": [
+      50.0,
+      60000.0
+    ],
+    "gpp_pgC_per_year": [
+      1.0,
+      850.0
+    ],
+    "gpp_note": "The R7 surface is independent of GPP. This software guardrail covers the intended positive biological-turnover range; direct holdouts span 5-232% of the Young scale."
+  }
+}

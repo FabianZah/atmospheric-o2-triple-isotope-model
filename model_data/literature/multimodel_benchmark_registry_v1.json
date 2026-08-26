@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "registry_id": "atmospheric_o2_triple_isotope_multimodel_benchmark_v1",
+  "purpose": "Provenance and independence registry for response-shape benchmarking; no entry is a fitted calibration target.",
+  "comparison_policy": {
+    "absolute_and_baseline_relative_coordinates_required": true,
+    "digitized_extrapolation_may_be_fitted": false,
+    "independence_must_be_declared": true,
+    "empirical_discrepancy_calibration_precedes_benchmark": false
+  },
+  "models": [
+    {
+      "id": "young_2014",
+      "citation": "Young et al. (2014), Geochimica et Cosmochimica Acta 135, 102-125",
+      "doi": "10.1016/j.gca.2014.03.026",
+      "architecture": "27-state upper/lower atmosphere box model",
+      "independence_class": "historical source-model anchor",
+      "quantitative_material": ["Table 3", "Figure 7", "Figure 8", "Figure 9", "Figure 10", "printed reactions, rates, and isotope conventions"],
+      "source_code_available": false,
+      "benchmark_status": "implemented"
+    },
+    {
+      "id": "liu_2021",
+      "citation": "Liu et al. (2021), Proceedings of the National Academy of Sciences 118, e2105074118",
+      "doi": "10.1073/pnas.2105074118",
+      "architecture": "one-dimensional photochemistry coupled to ocean-atmosphere gas exchange",
+      "independence_class": "independent process model",
+      "quantitative_material": ["modern vertical profiles", "0.001-1 PAL pO2 response at 300 ppm CO2", "1-300 PAL pCO2 by 0.001-1 PAL pO2 grid", "air-sea O2 gas-transfer limitation", "archived source code and model outputs", "native 5-150 percent marine-GPP extension at 0.1-1 PAL pO2 and 300-60000 ppm pCO2"],
+      "source_code_available": true,
+      "archive": {
+        "concept_doi": "10.5281/zenodo.4609694",
+        "version_doi": "10.5281/zenodo.5602197",
+        "file": "photochem_OMIF.tar.gz",
+        "download_url": "https://zenodo.org/records/5602197/files/photochem_OMIF.tar.gz?download=1",
+        "size_mb": 11.4,
+        "md5": "f27ad3c9ff5a90db0468d5a0d1872206"
+      },
+      "benchmark_status": "archive_ingested_and_quantitatively_benchmarked; native 90-state low-GPP grid completed with dual-coordinate comparison"
+    },
+    {
+      "id": "cao_bao_2013",
+      "citation": "Cao and Bao (2013), Proceedings of the National Academy of Sciences 110, 14546-14550",
+      "doi": "10.1073/pnas.1302972110",
+      "architecture": "coupled four-box dynamic biosphere-atmosphere model",
+      "independence_class": "independent high-pCO2 dynamic model",
+      "quantitative_material": ["steady-state pCO2-pO2-productivity scenarios", "reduced balances S1c-S3c", "Figures S2-S6 transient sensitivities", "approximately -35 per mil ultra-high-pCO2 endpoint"],
+      "source_code_available": false,
+      "benchmark_status": "source_equations_implemented_and_quantitatively_benchmarked"
+    },
+    {
+      "id": "luz_1999",
+      "citation": "Luz et al. (1999), Nature 400, 547-550",
+      "doi": "10.1038/22987",
+      "architecture": "atmospheric O2 turnover and productivity isotope balance",
+      "independence_class": "independent inverse-architecture comparison; productivity values are derived from the same isotope and CO2 observations",
+      "quantitative_material": ["five GISP2 Table 2 isotope-CO2 states", "Equation 2 productivity balance", "Equation 3 normalized gross-production inversion", "HLA-relative 0.521 linear isotope coordinate", "9 per-meg analytical standard error"],
+      "source_code_available": false,
+      "benchmark_status": "implemented_inverse_architecture_benchmark"
+    },
+    {
+      "id": "koren_2019",
+      "citation": "Koren et al. (2019), Journal of Geophysical Research: Atmospheres 124, 8808-8836",
+      "doi": "10.1029/2019JD030387",
+      "architecture": "global three-dimensional atmospheric CO2 triple-isotope transport model",
+      "independence_class": "independent sub-process model",
+      "quantitative_material": ["CO2 isotope transport", "biosphere-hydrosphere exchange", "stratospheric source propagation"],
+      "source_code_available": false,
+      "benchmark_status": "subprocess_only"
+    },
+    {
+      "id": "yang_banerjee_ice_core",
+      "citation": "Yang et al. atmospheric O2 isotope record as archived and applied by Banerjee et al. (2026)",
+      "doi": "10.1029/2025JD045900",
+      "architecture": "observational record and published inversion",
+      "independence_class": "external observations with partially inherited inversion equations",
+      "quantitative_material": ["measured atmospheric O2 isotope variation", "independently measured ice-core CO2", "Banerjee GPP application"],
+      "source_code_available": false,
+      "benchmark_status": "implemented_observational_test"
+    },
+    {
+      "id": "brandon_2020",
+      "citation": "Brandon et al. (2020), Nature Communications 11, 2112",
+      "doi": "10.1038/s41467-020-15739-2",
+      "architecture": "observational event interpretation",
+      "independence_class": "external event-scale productivity constraint",
+      "quantitative_material": ["Termination V atmospheric O2 isotope excursion", "independent 110-130 percent productivity interpretation"],
+      "source_code_available": false,
+      "benchmark_status": "implemented_observational_test"
+    }
+  ]
+}

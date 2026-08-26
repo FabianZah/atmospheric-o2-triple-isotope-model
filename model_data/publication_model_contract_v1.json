@@ -1,0 +1,263 @@
+{
+  "schema_version": 1,
+  "publication_model_id": "atmospheric_o2_triple_isotope_model_v1",
+  "status": "active_publication_model",
+  "single_model_policy": {
+    "manuscript_model_count": 1,
+    "public_ui_model_count": 1,
+    "historical_reconstructions_are_validation_evidence": true,
+    "structural_endmembers_are_alternative_public_models": false,
+    "parameter_updates_must_change_declared_physical_inputs_or_equations": true,
+    "diagnostic_output_offsets_or_damping_are_permitted": false
+  },
+  "deterministic_model": {
+    "model_data_id": "updated_r7_response_surface_v1",
+    "model_class": "resolved Photochem R1-R7 atmospheric column coupled to a conservative global atmospheric-O2 and biological-turnover budget",
+    "central_kernel": "code/updated_molecular_forward_model.py",
+    "numerical_accelerator": {
+      "surface_data_id": "updated_molecular_output_surface_v1",
+      "implementation": "code/updated_output_surface.py",
+      "extrapolation_permitted": false,
+      "output_offset_applied": false,
+      "smoothing_applied": false
+    },
+    "inverse_solver": "code/updated_output_surface_inverse.py",
+    "conditional_posterior": "code/updated_output_surface_posterior.py",
+    "joint_posterior": "code/updated_output_surface_joint_posterior.py",
+    "transient_solver": "code/updated_molecular_transient.py"
+  },
+  "operational_domain": {
+    "pO2_PAL": {
+      "minimum": 0.1,
+      "maximum": 2.0,
+      "node_count": 9
+    },
+    "pCO2_ppm": {
+      "minimum": 50.0,
+      "maximum": 60000.0,
+      "node_count": 30
+    },
+    "GPP_PgC_per_year": {
+      "minimum": 18.256263999999998,
+      "maximum": 850.0,
+      "node_count": 21
+    },
+    "GPP_percent_of_290_PgC_per_year": {
+      "minimum": 6.295263448275862,
+      "maximum": 293.1034482758621
+    },
+    "outside_domain_policy": "reject; numerical extrapolation is not permitted"
+  },
+  "modern_reference_state": {
+    "inputs": {
+      "pO2_PAL": 1.0,
+      "pCO2_ppm": 294.0,
+      "GPP_PgC_per_year": 290.0
+    },
+    "raw_model": {
+      "Delta_prime_17O_permil": -0.42635313046373885,
+      "delta_prime_18O_permil": 23.404328779226688,
+      "conventional_delta_18O_permil": 23.6803593119586
+    },
+    "observational_reference": {
+      "source": "Pack (2021)",
+      "Delta_prime_17O_permil": -0.432,
+      "Delta_prime_17O_one_sigma_permil": 0.015,
+      "conventional_delta_18O_permil": 23.9,
+      "conventional_delta_18O_one_sigma_permil": 0.3
+    },
+    "raw_model_is_modified_to_match_observation": false
+  },
+  "reporting_policy": {
+    "primary_forward_output": "raw mechanistic model state",
+    "observation_referenced_output_is_same_model": true,
+    "observation_referenced_definition": "Pack (2021) modern value plus the unchanged mechanistic scenario-minus-modern differential",
+    "required_export_fields": [
+      "raw_modern",
+      "raw_scenario",
+      "mechanistic_differential",
+      "observation_referenced_scenario",
+      "structural_baseline_residual"
+    ]
+  },
+  "uncertainty": {
+    "contract_id": "updated_o2_uncertainty_layers_v1",
+    "implementation": "code/updated_uncertainty_layers.py",
+    "layers": [
+      "measurement_proxy",
+      "parameter",
+      "numerical",
+      "structural"
+    ],
+    "layers_remain_separate": true,
+    "combined_public_confidence_interval_available": false,
+    "whole_domain_structural_Gaussian_sigma_available": false,
+    "clima_role": "non-probabilistic structural sensitivity end member; not a central-model correction"
+  },
+  "validation": {
+    "evidence_matrix_id": "atmospheric_o2_triple_isotope_evidence_matrix_v1",
+    "evidence_bundle_id": "publication_validation_evidence_v1",
+    "evidence_bundle_manifest": "model_data/validation_evidence/manifest.json",
+    "evidence": [
+      {
+        "id": "young_2014_fig7_fig8",
+        "evidence_type": "digitized_historical_anchor",
+        "tested_quantity": "steady pCO2-GPP response shape and isotope amplitude",
+        "uncertainty_use": "structural_shape_diagnostic",
+        "probabilistic_discrepancy_eligible": false,
+        "source_report": "model_data/validation_evidence/updated_molecular_release_scorecard.json"
+      },
+      {
+        "id": "liu_2021_native_low_gpp_grid",
+        "evidence_type": "model_model_difference",
+        "tested_quantity": "baseline-relative pCO2-GPP-pO2 response topology and amplitude",
+        "uncertainty_use": "domain_dependent_structural_sensitivity_envelope",
+        "probabilistic_discrepancy_eligible": false,
+        "source_report": "model_data/validation_evidence/liu_2021_low_gpp_multimodel_benchmark.json"
+      },
+      {
+        "id": "cao_bao_2013_high_pco2",
+        "evidence_type": "model_model_difference",
+        "tested_quantity": "high-pCO2 response direction, pO2 dependence, and transient minima",
+        "uncertainty_use": "domain_dependent_structural_sensitivity_envelope",
+        "probabilistic_discrepancy_eligible": false,
+        "source_report": "model_data/validation_evidence/cao_bao_2013_multimodel_benchmark.json"
+      },
+      {
+        "id": "luz_1999_gisp2_productivity",
+        "evidence_type": "inverse_architecture_comparison",
+        "tested_quantity": "normalized-productivity response to measured isotope and pCO2 change",
+        "uncertainty_use": "inverse_response_architecture_diagnostic",
+        "probabilistic_discrepancy_eligible": false,
+        "source_report": "model_data/validation_evidence/luz_1999_productivity_benchmark.json"
+      },
+      {
+        "id": "yang_banerjee_low_co2_tracking",
+        "evidence_type": "observational_predictive_residual",
+        "tested_quantity": "CO2-driven atmospheric-O2 isotope prediction",
+        "uncertainty_use": "blocked_low_co2_predictive_error",
+        "probabilistic_discrepancy_eligible": "use_case_specific_only",
+        "source_report": "model_data/validation_evidence/yang_2022_co2_tracking_audit.json"
+      },
+      {
+        "id": "brandon_2020_termination_v",
+        "evidence_type": "observational_event_constraint",
+        "tested_quantity": "event-scale GPP response after measured CO2 forcing",
+        "uncertainty_use": "event_falsification_and_event_specific_residual",
+        "probabilistic_discrepancy_eligible": "event_specific_only",
+        "source_report": "model_data/validation_evidence/brandon_2020_termination_v_audit.json"
+      },
+      {
+        "id": "pack_2021_modern_air",
+        "evidence_type": "measurement_reference",
+        "tested_quantity": "absolute modern atmospheric-O2 isotope state",
+        "uncertainty_use": "measurement_reference_uncertainty_and_absolute_state_gate",
+        "probabilistic_discrepancy_eligible": false,
+        "source_report": "model_data/validation_evidence/updated_molecular_release_scorecard.json"
+      }
+    ],
+    "release_gate_generator": "validation/audit_updated_molecular_release_scorecard.py",
+    "integrated_acceptance_generator": "validation/audit_publication_model_acceptance.py",
+    "integrated_acceptance_report": "docs/publication_model_acceptance.md"
+  },
+  "manuscript_scope": {
+    "methods": "one deterministic model and its declared inputs",
+    "validation": "comparisons with observations and published models",
+    "uncertainty": "separate measurement, parameter, numerical, and structural layers",
+    "development_presets_or_branches_in_main_analysis": false
+  },
+  "source_files": {
+    "central_forward_implementation": {
+      "path": "code/updated_molecular_forward_model.py",
+      "sha256": "5cf6eac3c22241d0b55f461edc7dc6a21db089960fa866b6219072763ff5ccfc"
+    },
+    "accelerator_implementation": {
+      "path": "code/updated_output_surface.py",
+      "sha256": "7d1a567351d7761dcb4c0cc0d545d056891e12eb898d4e678ad682259dc180d1"
+    },
+    "inverse_implementation": {
+      "path": "code/updated_output_surface_inverse.py",
+      "sha256": "f8de916a6fa57b7408a325d7ced11c674307dd029ecab7bfed617a784e2ea677"
+    },
+    "conditional_posterior_implementation": {
+      "path": "code/updated_output_surface_posterior.py",
+      "sha256": "ce8cc277ad1536febdc19e23510e40bad5058f73754d594d95af433a6ff41657"
+    },
+    "joint_posterior_implementation": {
+      "path": "code/updated_output_surface_joint_posterior.py",
+      "sha256": "40839e9ad057e24a388ac8a910752ade0da75036628c3fe4e7e008e13c94efb8"
+    },
+    "transient_implementation": {
+      "path": "code/updated_molecular_transient.py",
+      "sha256": "6620180165bbbdf16ce3d7b537946fee8288ae567272107149b96ecb11b40528"
+    },
+    "uncertainty_implementation": {
+      "path": "code/updated_uncertainty_layers.py",
+      "sha256": "a78b76f7ed45c7fc4c7bb6d0c07cccb2cf16356a7ca3207c746a5f0e66ac1adf"
+    },
+    "observation_reference_implementation": {
+      "path": "code/observation_referenced_isotope.py",
+      "sha256": "c874ed661e8718c874a9e649a06abb0a71c02c43b04fa0dbda281b5242ae53d1"
+    },
+    "central_response_surface": {
+      "path": "model_data/updated_r7_response_surface_v1.json",
+      "sha256": "35fdf540ebe73264772fbe96892458a81f7e9f92313cdeb5f23e0392f2870c73"
+    },
+    "accelerated_output_surface": {
+      "path": "model_data/updated_molecular_output_surface_v1.json",
+      "sha256": "7f2e596ef44f3bc8e33c9fe1915e5b28bc9a00faf55ba91612628e48e9992951"
+    },
+    "uncertainty_contract": {
+      "path": "model_data/uncertainty/updated_o2_uncertainty_layers_v1.json",
+      "sha256": "75e52a788bf6f3b0e5de50af025aea707fa649d0ccfcb5b6c7c0ec5a79b3013c"
+    },
+    "validation_evidence_matrix": {
+      "path": "model_data/literature/multimodel_evidence_matrix_v1.json",
+      "sha256": "7e59b7748cdd824d52eefdf2cb15d84730b06c1af4ec9e691f64d0a5fe9c3096"
+    },
+    "validation_evidence_manifest": {
+      "path": "model_data/validation_evidence/manifest.json",
+      "sha256": "6270bf57c208c6f8cbdf40e9aa0a397db570f796dce1e9f2050adf2287c28794"
+    },
+    "validation_release_scorecard": {
+      "path": "model_data/validation_evidence/updated_molecular_release_scorecard.json",
+      "sha256": "8d42835ed3da7a6c6043eaf1491f09eb597692d365deddb07212f9f9097fb927"
+    },
+    "validation_liu_2021_benchmark": {
+      "path": "model_data/validation_evidence/liu_2021_low_gpp_multimodel_benchmark.json",
+      "sha256": "03c9aa45d154f11962a3096fe3342738280043261f2705bcf4caa74fa0ab609e"
+    },
+    "validation_cao_bao_2013_benchmark": {
+      "path": "model_data/validation_evidence/cao_bao_2013_multimodel_benchmark.json",
+      "sha256": "3f5ee0454c91905570063c714dba5e480982148cbfa32b28008d0cba1867f224"
+    },
+    "validation_luz_1999_benchmark": {
+      "path": "model_data/validation_evidence/luz_1999_productivity_benchmark.json",
+      "sha256": "68c870e1edde3377ad1b7797ce6c0d3faa8528be036d0f583344a9261e0b838b"
+    },
+    "validation_yang_2022_tracking": {
+      "path": "model_data/validation_evidence/yang_2022_co2_tracking_audit.json",
+      "sha256": "d9b01fa3c8f1dee97ce0b0b8363eaaed5f2aa4339fb642197545b07b3900cd0e"
+    },
+    "validation_brandon_2020_event": {
+      "path": "model_data/validation_evidence/brandon_2020_termination_v_audit.json",
+      "sha256": "e6ac950508a9375679bd4e42d46f96ef9830bb02c80c3649206f53fc3524cdc3"
+    },
+    "validation_marine_accessibility": {
+      "path": "model_data/validation_evidence/marine_o2_accessibility_audit.json",
+      "sha256": "d17cd0cd5d589f8774aa1daec4cefe9be2b72792bc87ca01912d629bd1df8732"
+    },
+    "validation_uncertainty_layers": {
+      "path": "model_data/validation_evidence/updated_uncertainty_layers_audit.json",
+      "sha256": "a5d751fb820c39c03860d81be41658cdc398f6e46a7534d18bcd20e04d87edc8"
+    },
+    "validation_evidence_exporter": {
+      "path": "validation/export_validation_evidence_bundle.py",
+      "sha256": "87b4ddcce4dadb3622ba2d26c21994232145a5ee4ec5c257929f3bb524491dcb"
+    },
+    "integrated_acceptance_implementation": {
+      "path": "validation/audit_publication_model_acceptance.py",
+      "sha256": "3cc34239ee108a4a6daa9d0a882df04e14d54eb327ff3df21a24d0dcfd863ae4"
+    }
+  }
+}

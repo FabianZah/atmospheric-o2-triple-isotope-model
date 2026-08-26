@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Atmospheric O2 Triple-Isotope Model</title>
+  <link rel="stylesheet" href="assets/styles.css?v=1.17.0">
+  <script defer src="assets/app.js?v=1.17.0"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Atmospheric O<sub>2</sub> triple-isotope model</h1>
+      <p>Constrained pCO<sub>2</sub>, GPP, and pO<sub>2</sub> inference</p>
+    </div>
+    <div class="model-state" id="model-state"><span></span> Connecting</div>
+  </header>
+
+  <nav class="tabs" aria-label="Model views">
+    <button class="tab active" data-tab="solver">Model solver</button>
+    <button class="tab" data-tab="surface">Isotope field</button>
+    <button class="tab" data-tab="transient">Time response</button>
+    <button class="tab" data-tab="guide">Guide &amp; notation</button>
+    <button class="tab" data-tab="references">References</button>
+  </nav>
+
+  <main>
+    <section class="view active" id="view-solver">
+      <div class="workspace-grid">
+        <aside class="control-panel">
+          <div class="section-heading">
+            <span>Input constraints</span>
+            <button class="text-button" id="reset-inputs" type="button">Reset</button>
+          </div>
+
+          <fieldset>
+            <legend>Isotope source</legend>
+            <div class="segmented" id="source-selector">
+              <button type="button" class="active" data-source="air">Direct air</button>
+              <button type="button" data-source="spherule">I-type cosmic spherule</button>
+            </div>
+          </fieldset>
+
+          <div id="air-inputs" class="input-group">
+            <label for="air-d17">Air O<sub>2</sub> Δ′<sup>17</sup>O<sub>0.528</sub> <span>‰</span></label>
+            <input id="air-d17" type="text" inputmode="decimal" value="-0.432">
+            <label for="air-d18">Air O<sub>2</sub> δ<sup>18</sup>O <span>‰ VSMOW</span></label>
+            <input id="air-d18" type="text" inputmode="decimal" value="23.900">
+            <div class="paired-inputs">
+              <div>
+                <label for="air-sigma">Δ′<sup>17</sup>O 1σ</label>
+                <input id="air-sigma" type="text" inputmode="decimal" value="0.015">
+              </div>
+              <div>
+                <label for="air-d18-sigma">δ<sup>18</sup>O 1σ</label>
+                <input id="air-d18-sigma" type="text" inputmode="decimal" value="0.300">
+              </div>
+            </div>
+          </div>
+
+          <div id="spherule-inputs" class="input-group hidden">
+            <label for="spherule-d17">Spherule Δ′<sup>17</sup>O<sub>0.528</sub> <span>‰</span></label>
+            <input id="spherule-d17" type="text" inputmode="decimal" value="-0.660">
+            <label for="spherule-d18">Spherule δ<sup>18</sup>O <span>‰ VSMOW</span></label>
+            <input id="spherule-d18" type="text" inputmode="decimal" value="43.269">
+            <div class="paired-inputs">
+              <div>
+                <label for="spherule-d17-sigma">Δ′<sup>17</sup>O 1σ</label>
+                <input id="spherule-d17-sigma" type="text" inputmode="decimal" value="0.060">
+              </div>
+              <div>
+                <label for="spherule-d18-sigma">δ<sup>18</sup>O 1σ</label>
+                <input id="spherule-d18-sigma" type="text" inputmode="decimal" value="0.500">
+              </div>
+            </div>
+            <output id="converted-air" class="conversion-output"></output>
+          </div>
+
+          <fieldset>
+            <legend>Solve for</legend>
+            <div class="segmented three" id="solve-selector">
+              <button type="button" class="active" data-coordinate="pCO2">pCO<sub>2</sub></button>
+              <button type="button" data-coordinate="GPP">GPP</button>
+              <button type="button" data-coordinate="pO2">pO<sub>2</sub></button>
+            </div>
+          </fieldset>
+
+          <div class="input-group constraints">
+            <label for="pco2" id="pco2-value-label">pCO<sub>2</sub> <span>ppm</span></label>
+            <input id="pco2" type="text" inputmode="decimal" value="294" disabled>
+            <label for="gpp" id="gpp-value-label">GPP <span>% modern</span></label>
+            <input id="gpp" type="text" inputmode="decimal" value="100.0">
+            <label for="po2" id="po2-value-label">pO<sub>2</sub> <span>PAL</span></label>
+            <input id="po2" type="text" inputmode="decimal" value="1.00">
+          </div>
+
+          <div id="coordinate-constraint-inputs">
+            <fieldset class="constraint-definition hidden" id="pco2-constraint-definition">
+              <legend>pCO<sub>2</sub> constraint</legend>
+              <div class="segmented three constraint-mode" id="pco2-constraint-mode">
+                <button type="button" class="active" data-mode="fixed">Fixed</button>
+                <button type="button" data-mode="normal">Value ± 1σ</button>
+                <button type="button" data-mode="range">Exact range</button>
+              </div>
+              <div class="constraint-extra hidden" id="pco2-normal-fields">
+                <label for="pco2-sigma">pCO<sub>2</sub> 1σ <span>ppm</span></label>
+                <input id="pco2-sigma" type="text" inputmode="decimal" placeholder="Enter 1σ">
+              </div>
+              <div class="paired-inputs constraint-extra hidden" id="pco2-range-fields">
+                <div><label for="pco2-lower">Lower <span>ppm</span></label><input id="pco2-lower" type="text" inputmode="decimal" placeholder="Lower bound"></div>
+                <div><label for="pco2-upper">Upper <span>ppm</span></label><input id="pco2-upper" type="text" inputmode="decimal" placeholder="Upper bound"></div>
+              </div>
+            </fieldset>
+
+            <fieldset class="constraint-definition" id="gpp-constraint-definition">
+              <legend>GPP constraint</legend>
+              <div class="segmented three constraint-mode" id="gpp-constraint-mode">
+                <button type="button" class="active" data-mode="fixed">Fixed</button>
+                <button type="button" data-mode="normal">Value ± 1σ</button>
+                <button type="button" data-mode="range">Exact range</button>
+              </div>
+              <div class="constraint-extra hidden" id="gpp-normal-fields">
+                <label for="gpp-sigma">GPP 1σ <span>% modern</span></label>
+                <input id="gpp-sigma" type="text" inputmode="decimal" placeholder="Enter 1σ">
+              </div>
+              <div class="paired-inputs constraint-extra hidden" id="gpp-range-fields">
+                <div><label for="gpp-lower">Lower <span>% modern</span></label><input id="gpp-lower" type="text" inputmode="decimal" placeholder="Lower bound"></div>
+                <div><label for="gpp-upper">Upper <span>% modern</span></label><input id="gpp-upper" type="text" inputmode="decimal" placeholder="Upper bound"></div>
+              </div>
+            </fieldset>
+
+            <fieldset class="constraint-definition" id="po2-constraint-definition">
+              <legend>pO<sub>2</sub> constraint</legend>
+              <div class="segmented three constraint-mode" id="po2-constraint-mode">
+                <button type="button" class="active" data-mode="fixed">Fixed</button>
+                <button type="button" data-mode="normal">Value ± 1σ</button>
+                <button type="button" data-mode="range">Exact range</button>
+              </div>
+              <div class="constraint-extra hidden" id="po2-normal-fields">
+                <label for="po2-sigma">pO<sub>2</sub> 1σ <span>PAL</span></label>
+                <input id="po2-sigma" type="text" inputmode="decimal" placeholder="Enter 1σ">
+              </div>
+              <div class="paired-inputs constraint-extra hidden" id="po2-range-fields">
+                <div><label for="po2-lower">Lower <span>PAL</span></label><input id="po2-lower" type="text" inputmode="decimal" placeholder="Lower bound"></div>
+                <div><label for="po2-upper">Upper <span>PAL</span></label><input id="po2-upper" type="text" inputmode="decimal" placeholder="Upper bound"></div>
+              </div>
+            </fieldset>
+          </div>
+
+          <button class="primary-command" id="run-solver" type="button">Calculate constrained solution</button>
+          <p class="error-message" id="solver-error" role="alert"></p>
+        </aside>
+
+        <div class="result-area">
+          <div class="result-header">
+            <div>
+              <h2 id="result-title">pCO<sub>2</sub> solution</h2>
+            </div>
+            <div class="result-actions">
+              <button class="secondary-command" id="download-result" type="button" disabled>Download CSV</button>
+              <button class="secondary-command" id="download-result-xlsx" type="button" disabled>Download XLSX</button>
+            </div>
+          </div>
+          <div class="empty-state" id="solver-empty">
+            <strong>Ready to calculate</strong>
+          </div>
+          <div class="solver-result hidden" id="solver-result">
+            <div class="primary-result">
+              <span id="result-coordinate">pCO<sub>2</sub></span>
+              <strong id="result-value"></strong>
+              <small id="result-interval"></small>
+            </div>
+            <div class="result-strip">
+              <div><span>Input constraints</span><strong id="result-constraints"></strong></div>
+            </div>
+            <div class="solver-marginal">
+              <div class="solver-probability-heading">
+                <div><h3 id="solver-marginal-title">Probability distribution</h3></div>
+                <button class="plot-export" type="button" data-canvas="solver-marginal-canvas" data-filename="constrained_solution_distribution" disabled title="Download plot as PNG">↓ PNG</button>
+              </div>
+              <canvas id="solver-marginal-canvas" width="980" height="330"></canvas>
+              <div class="marginal-key" aria-label="Solution distribution legend">
+                <span><i class="density-mark" aria-hidden="true"></i>Blue profile: relative probability density</span>
+                <span><i class="interval-mark" aria-hidden="true"></i>Yellow band: central 95% credible interval</span>
+                <span><i class="median-mark" aria-hidden="true"></i>Black line: posterior median</span>
+              </div>
+            </div>
+            <p class="method-note hidden" id="solver-method-note"></p>
+            <div class="solver-probability hidden" id="solver-probability">
+              <div class="solver-probability-heading">
+                <div><h3 id="solver-probability-title">Joint probability field</h3></div>
+                <button class="plot-export" type="button" data-canvas="solver-probability-canvas" data-filename="constrained_pco2_gpp_probability" disabled title="Download plot as PNG">↓ PNG</button>
+              </div>
+              <canvas id="solver-probability-canvas" width="980" height="560"></canvas>
+              <div class="probability-caption" id="solver-probability-caption"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-surface">
+      <div class="band-heading">
+        <div><h2>Atmospheric O<sub>2</sub> Δ′<sup>17</sup>O<sub>0.528</sub> field</h2></div>
+        <div class="surface-actions">
+          <button class="primary-command compact" id="run-surface" type="button">Generate isotope map</button>
+        </div>
+      </div>
+      <div class="surface-controls">
+        <label><span class="control-label">pCO<sub>2</sub> minimum</span><input id="surface-xmin" type="text" inputmode="decimal" value="50"></label>
+        <label><span class="control-label">pCO<sub>2</sub> maximum</span><input id="surface-xmax" type="text" inputmode="decimal" value="60000"></label>
+        <label><span class="control-label">GPP minimum <small>% modern</small></span><input id="surface-ymin" type="text" inputmode="decimal" value="6.3"></label>
+        <label><span class="control-label">GPP maximum <small>% modern</small></span><input id="surface-ymax" type="text" inputmode="decimal" value="150"></label>
+        <label><span class="control-label">pO<sub>2</sub> <small>PAL</small></span><input id="surface-po2" type="text" inputmode="decimal" value="1.00"></label>
+      </div>
+      <p class="error-message" id="surface-error" role="alert"></p>
+      <div class="surface-layout" id="isotope-surface-view">
+        <div class="plot-panel">
+          <button class="plot-export" type="button" data-canvas="isotope-canvas" data-filename="pco2_gpp_delta17_isotope_field" disabled title="Download plot as PNG">↓ PNG</button>
+          <canvas id="isotope-canvas" width="980" height="560" role="img" aria-label="Atmospheric oxygen isotope field"></canvas>
+        </div>
+        <aside class="summary-panel" id="isotope-summary">
+          <h3>Model isotope field</h3>
+        </aside>
+      </div>
+    </section>
+
+    <section class="view" id="view-transient">
+      <div class="band-heading">
+        <div><h2>Atmospheric isotope time response</h2></div>
+        <div class="transient-actions">
+          <button class="secondary-command" id="download-transient-xlsx" type="button" disabled>Download XLSX</button>
+          <button class="primary-command compact" id="run-transient" type="button">Run experiment</button>
+        </div>
+      </div>
+      <div class="transient-controls">
+        <label>Experiment
+          <select id="transient-type">
+            <option value="pCO2">pCO2 step</option>
+            <option value="pO2">pO2 step</option>
+            <option value="GPP">GPP step at fixed pO2</option>
+            <option value="photosynthesis">Photosynthesis step with O2 response</option>
+          </select>
+        </label>
+        <label id="transient-final-label"><span class="control-label" id="transient-final-caption">Final pCO<sub>2</sub> <small>ppm</small></span><input id="transient-final" type="text" inputmode="decimal" value="1000"></label>
+        <label><span class="control-label">Displayed duration <small>years</small></span><input id="transient-duration" type="text" inputmode="decimal" value="12000"></label>
+      </div>
+      <p class="error-message" id="transient-error" role="alert"></p>
+      <div class="transient-summary" id="transient-summary"></div>
+      <div class="transient-plots">
+        <div class="plot-panel" id="transient-forcing-panel">
+          <button class="plot-export" type="button" data-canvas="transient-forcing" data-filename="transient_forcing" disabled title="Download plot as PNG">↓ PNG</button>
+          <canvas id="transient-forcing" width="1520" height="390"></canvas>
+        </div>
+        <div class="plot-panel hidden" id="transient-pco2-panel">
+          <button class="plot-export" type="button" data-canvas="transient-pco2" data-filename="transient_pco2_response" disabled title="Download plot as PNG">↓ PNG</button>
+          <canvas id="transient-pco2" width="760" height="390"></canvas>
+        </div>
+        <div class="plot-panel">
+          <button class="plot-export" type="button" data-canvas="transient-d17" data-filename="transient_Delta_prime_17O" disabled title="Download plot as PNG">↓ PNG</button>
+          <canvas id="transient-d17" width="760" height="390"></canvas>
+        </div>
+        <div class="plot-panel">
+          <button class="plot-export" type="button" data-canvas="transient-d18" data-filename="transient_delta_prime_18O" disabled title="Download plot as PNG">↓ PNG</button>
+          <canvas id="transient-d18" width="760" height="390"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="view prose-view" id="view-guide">
+      <div class="prose-columns">
+        <article>
+          <h2>Notation</h2>
+          <div class="equation">δ<sup>x</sup>O = 1000 [(R<sup>x</sup><sub>sample</sub> / R<sup>x</sup><sub>VSMOW</sub>) − 1], &nbsp;R<sup>x</sup> = <sup>x</sup>O / <sup>16</sup>O, &nbsp;x ∈ {17, 18}</div>
+          <div class="equation">δ′<sup>x</sup>O = 1000 ln(δ<sup>x</sup>O / 1000 + 1), &nbsp;x ∈ {17, 18}</div>
+          <div class="equation">Δ′<sup>17</sup>O<sub>0.528</sub> = δ′<sup>17</sup>O − 0.528 δ′<sup>18</sup>O</div>
+          <dl class="notation-list">
+            <div><dt>δ<sup>x</sup>O</dt><dd>Conventional oxygen-isotope composition relative to VSMOW, in ‰.</dd></div>
+            <div><dt>δ′<sup>x</sup>O</dt><dd>Logarithmic oxygen-isotope composition, in ‰.</dd></div>
+            <div><dt>Δ′<sup>17</sup>O<sub>0.528</sub></dt><dd>Triple-oxygen-isotope deviation from the 0.528 reference line, in ‰.</dd></div>
+            <div><dt>VSMOW</dt><dd>Vienna Standard Mean Ocean Water isotope-ratio reference.</dd></div>
+            <div><dt>pCO<sub>2</sub></dt><dd>Atmospheric CO<sub>2</sub> partial pressure, reported in ppm.</dd></div>
+            <div><dt>pO<sub>2</sub></dt><dd>Atmospheric O<sub>2</sub> partial pressure, reported relative to PAL.</dd></div>
+            <div><dt>PAL</dt><dd>Present atmospheric level; 1.00 PAL corresponds to 21.2% atmospheric O<sub>2</sub> in this interface.</dd></div>
+            <div><dt>GPP</dt><dd>Gross primary production; 100% modern corresponds to 290 PgC yr<sup>−1</sup> in this interface.</dd></div>
+          </dl>
+          <h2>Inference</h2>
+          <p>An isotope measurement defines a family of compatible pCO<sub>2</sub>, GPP, and pO<sub>2</sub> states. A one-coordinate solution is reported only after the other two coordinates are constrained.</p>
+        </article>
+        <article>
+          <h2>Frequently asked questions</h2>
+          <details open><summary>Why must two variables be constrained before solving for the third?</summary><p>Atmospheric O<sub>2</sub> Δ′<sup>17</sup>O does not uniquely determine pCO<sub>2</sub>, GPP, and pO<sub>2</sub> simultaneously. Independent constraints on two coordinates restrict the family of compatible atmospheric states and allow the remaining coordinate to be inferred.</p></details>
+          <details><summary>What does the solution uncertainty interval include?</summary><p>The displayed interval combines analytical isotope uncertainty with the two coordinate constraints entered by the user. A value ± 1σ is treated as Gaussian and an exact range as uniform within its bounds. Structural model uncertainty is assessed separately.</p></details>
+          <details><summary>How is the probability distribution calculated?</summary><p>The model is evaluated across its accepted domain and weighted by the isotope analytical likelihood and entered constraints. Uncertainty in the other coordinates is integrated out. The solved coordinate has a uniform prior in its reported units; a stated range is uniform within its bounds and a 1σ constraint is Gaussian. The displayed profile focuses on the central 99.8% of posterior probability.</p></details>
+          <details><summary>What is the difference between the isotope field and the constrained solution?</summary><p>The isotope field shows deterministic central-model Δ′<sup>17</sup>O predictions across pCO<sub>2</sub> and GPP at one fixed pO<sub>2</sub>. The constrained solver combines an isotope measurement and its analytical uncertainty with independent constraints to produce a probability distribution for one requested coordinate.</p></details>
+          <details><summary>What assumptions are made about input uncertainties?</summary><p>The isotope measurements and entered coordinate constraints are treated as statistically independent. Correlations or covariance between inputs are not included by the interface and require a separate joint analysis.</p></details>
+          <details><summary>What does a boundary-limited solution mean?</summary><p>Appreciable posterior probability reaches an edge of the accepted model domain. The reported interval is therefore limited by that boundary and should not be interpreted as evidence that the true value lies at the boundary.</p></details>
+          <details><summary>Does the main solver represent steady state?</summary><p>Yes. The isotope field and constrained solver use steady-state model outputs. Time-dependent adjustment after a change in pCO<sub>2</sub>, GPP, pO<sub>2</sub>, or photosynthesis is calculated separately in the Time response view.</p></details>
+          <details><summary>How should the time-response experiments be interpreted?</summary><p>Each experiment applies an imposed change at year zero; negative displayed times show the initial state. Operational equilibrium is reached when both isotope coordinates enter and remain within 0.001‰ of the long-run state. The equilibrium search is independent of the displayed duration and extends to 100,000 years.</p></details>
+          <details><summary>Can the model be applied to ancient atmospheres?</summary><p>Yes, when the requested state lies inside the accepted model domain and independent evidence constrains the other atmospheric coordinates. Geological interpretations should also consider structural model uncertainty and the applicability of the model assumptions to the investigated interval.</p></details>
+          <details><summary>How are cosmic spherules converted?</summary><p>I-type cosmic spherule measurements are converted to atmospheric O<sub>2</sub> using Zahnow et al. (2025), Eq. 3, calibrated by Fischer et al. (2021).</p></details>
+          <details><summary>How should cosmic-spherule uncertainties be entered?</summary><p>Enter the analytical 1σ uncertainties of both spherule Δ′<sup>17</sup>O and δ<sup>18</sup>O. They are propagated through the atmospheric conversion. Calibration-parameter sensitivity is assessed separately and is not added to the displayed analytical 1σ interval.</p></details>
+          <details><summary>What happens outside the model domain?</summary><p>The calculation is rejected. The accepted surface is not numerically extrapolated.</p></details>
+        </article>
+      </div>
+    </section>
+
+    <section class="view prose-view" id="view-references">
+      <section class="citation-panel" aria-labelledby="citation-heading">
+        <div>
+          <h2 id="citation-heading">How to cite</h2>
+          <p>Zahnow, F. (2026). <i>Atmospheric O<sub>2</sub> Triple-Isotope Model</i> (Version 0.1.0) [Computer software]. GitHub.</p>
+          <a class="citation-repository" href="https://github.com/FabianZah/atmospheric-o2-triple-isotope-model" target="_blank" rel="noopener noreferrer">github.com/FabianZah/atmospheric-o2-triple-isotope-model</a>
+        </div>
+        <div class="citation-actions" aria-label="Download citation">
+          <a class="secondary-command" href="citation/model.bib" download>Download BibTeX</a>
+          <a class="secondary-command" href="citation/model.ris" download>Download RIS</a>
+          <a class="secondary-command" href="citation/CITATION.cff" download>Download CFF</a>
+        </div>
+      </section>
+      <header class="reference-intro">
+        <h2>Scientific references</h2>
+      </header>
+
+      <section class="reference-group" aria-labelledby="references-foundation">
+        <h3 id="references-foundation">Model foundations and numerical implementation</h3>
+        <div class="reference-list">
+          <article>
+            <strong>Young, E. D., Yeung, L. Y., &amp; Kohl, I. E. (2014)</strong>
+            <span>On the Δ<sup>17</sup>O budget of atmospheric O<sub>2</sub>. <i>Geochimica et Cosmochimica Acta</i>, 135, 102–125.</span>
+            <a href="https://doi.org/10.1016/j.gca.2014.03.026" target="_blank" rel="noopener noreferrer">doi:10.1016/j.gca.2014.03.026</a>
+          </article>
+          <article>
+            <strong>Yung, Y. L., DeMore, W. B., &amp; Pinto, J. P. (1991)</strong>
+            <span>Isotopic exchange between carbon dioxide and ozone via O(<sup>1</sup>D) in the stratosphere. <i>Geophysical Research Letters</i>, 18, 13–16.</span>
+            <a href="https://doi.org/10.1029/90GL02478" target="_blank" rel="noopener noreferrer">doi:10.1029/90GL02478</a>
+          </article>
+          <article>
+            <strong>Liang, M.-C., Blake, G. A., Lewis, B. R., &amp; Yung, Y. L. (2007)</strong>
+            <span>Oxygen isotopic composition of carbon dioxide in the middle atmosphere. <i>Proceedings of the National Academy of Sciences</i>, 104, 21–25.</span>
+            <a href="https://doi.org/10.1073/pnas.0610009104" target="_blank" rel="noopener noreferrer">doi:10.1073/pnas.0610009104</a>
+          </article>
+          <article>
+            <strong>Lasaga, A. C., &amp; Ohmoto, H. (2002)</strong>
+            <span>The oxygen geochemical cycle: dynamics and stability. <i>Geochimica et Cosmochimica Acta</i>, 66, 361–381.</span>
+            <a href="https://doi.org/10.1016/S0016-7037(01)00685-8" target="_blank" rel="noopener noreferrer">doi:10.1016/S0016-7037(01)00685-8</a>
+          </article>
+          <article>
+            <strong>Sander, S. P., et al. (2006)</strong>
+            <span>Chemical kinetics and photochemical data for use in atmospheric studies, Evaluation Number 15. <i>NASA Jet Propulsion Laboratory Publication</i> 06-2.</span>
+            <a href="https://jpldataeval.jpl.nasa.gov/" target="_blank" rel="noopener noreferrer">JPL atmospheric kinetics evaluation</a>
+          </article>
+          <article>
+            <strong>Hersbach, H., et al. (2020)</strong>
+            <span>The ERA5 global reanalysis. <i>Quarterly Journal of the Royal Meteorological Society</i>, 146, 1999–2049.</span>
+            <a href="https://doi.org/10.1002/qj.3803" target="_blank" rel="noopener noreferrer">doi:10.1002/qj.3803</a>
+          </article>
+          <article>
+            <strong>Wogan, N. F., et al. (2025)</strong>
+            <span>The open-source Photochem code: A general chemical and climate model for interpreting (exo)planet observations. <i>The Planetary Science Journal</i>, 6, 256.</span>
+            <a href="https://doi.org/10.3847/PSJ/ae0e1c" target="_blank" rel="noopener noreferrer">doi:10.3847/PSJ/ae0e1c</a>
+          </article>
+        </div>
+      </section>
+
+      <section class="reference-group" aria-labelledby="references-observations">
+        <h3 id="references-observations">Modern isotope and flux constraints</h3>
+        <div class="reference-list">
+          <article>
+            <strong>Boering, K. A., et al. (2004)</strong>
+            <span>Observations of the anomalous oxygen isotopic composition of carbon dioxide in the lower stratosphere and the flux of the anomaly to the troposphere. <i>Geophysical Research Letters</i>, 31, L03109.</span>
+            <a href="https://doi.org/10.1029/2003GL018451" target="_blank" rel="noopener noreferrer">doi:10.1029/2003GL018451</a>
+          </article>
+          <article>
+            <strong>Pack, A. (2021)</strong>
+            <span>Isotopic traces of atmospheric O<sub>2</sub> in rocks, minerals, and melts. <i>Reviews in Mineralogy and Geochemistry</i>, 86, 217–240.</span>
+            <a href="https://doi.org/10.2138/rmg.2021.86.07" target="_blank" rel="noopener noreferrer">doi:10.2138/rmg.2021.86.07</a>
+          </article>
+          <article>
+            <strong>Liang, M.-C., et al. (2023)</strong>
+            <span>New constraints of terrestrial and oceanic global gross primary productions from the triple oxygen isotopic composition of atmospheric CO<sub>2</sub> and O<sub>2</sub>. <i>Scientific Reports</i>, 13, 2162.</span>
+            <a href="https://doi.org/10.1038/s41598-023-29389-z" target="_blank" rel="noopener noreferrer">doi:10.1038/s41598-023-29389-z</a>
+          </article>
+          <article>
+            <strong>Adnew, G. A., et al. (2025)</strong>
+            <span>Triple oxygen isotope composition of CO<sub>2</sub> in the upper troposphere and stratosphere. <i>Atmospheric Measurement Techniques</i>, 18, 2701–2719.</span>
+            <a href="https://doi.org/10.5194/amt-18-2701-2025" target="_blank" rel="noopener noreferrer">doi:10.5194/amt-18-2701-2025</a>
+          </article>
+        </div>
+      </section>
+
+      <section class="reference-group" aria-labelledby="references-benchmarks">
+        <h3 id="references-benchmarks">Independent models and validation data</h3>
+        <div class="reference-list">
+          <article>
+            <strong>Luz, B., Barkan, E., Bender, M. L., Thiemens, M. H., &amp; Boering, K. A. (1999)</strong>
+            <span>Triple-isotope composition of atmospheric oxygen as a tracer of biosphere productivity. <i>Nature</i>, 400, 547–550.</span>
+            <a href="https://doi.org/10.1038/22987" target="_blank" rel="noopener noreferrer">doi:10.1038/22987</a>
+          </article>
+          <article>
+            <strong>Cao, X., &amp; Bao, H. (2013)</strong>
+            <span>Dynamic model constraints on oxygen-17 depletion in atmospheric O<sub>2</sub> after a snowball Earth. <i>Proceedings of the National Academy of Sciences</i>, 110, 14546–14550.</span>
+            <a href="https://doi.org/10.1073/pnas.1302972110" target="_blank" rel="noopener noreferrer">doi:10.1073/pnas.1302972110</a>
+          </article>
+          <article>
+            <strong>Koren, G., et al. (2019)</strong>
+            <span>Global 3-D simulations of the triple oxygen isotope signature Δ<sup>17</sup>O in atmospheric CO<sub>2</sub>. <i>Journal of Geophysical Research: Atmospheres</i>, 124, 8808–8836.</span>
+            <a href="https://doi.org/10.1029/2019JD030387" target="_blank" rel="noopener noreferrer">doi:10.1029/2019JD030387</a>
+          </article>
+          <article>
+            <strong>Liu, P., et al. (2021)</strong>
+            <span>Triple oxygen isotope constraints on atmospheric O<sub>2</sub> and biological productivity during the mid-Proterozoic. <i>Proceedings of the National Academy of Sciences</i>, 118, e2105074118.</span>
+            <a href="https://doi.org/10.1073/pnas.2105074118" target="_blank" rel="noopener noreferrer">doi:10.1073/pnas.2105074118</a>
+          </article>
+          <article>
+            <strong>Brandon, M., et al. (2020)</strong>
+            <span>Exceptionally high biosphere productivity at the beginning of marine isotopic stage 11. <i>Nature Communications</i>, 11, 2112.</span>
+            <a href="https://doi.org/10.1038/s41467-020-15739-2" target="_blank" rel="noopener noreferrer">doi:10.1038/s41467-020-15739-2</a>
+          </article>
+          <article>
+            <strong>Yang, J.-W., et al. (2022)</strong>
+            <span>Global biosphere primary productivity changes during the past eight glacial cycles. <i>Science</i>, 375, 1145–1151.</span>
+            <a href="https://doi.org/10.1126/science.abj8826" target="_blank" rel="noopener noreferrer">doi:10.1126/science.abj8826</a>
+          </article>
+          <article>
+            <strong>Banerjee, A., et al. (2026)</strong>
+            <span>Triple isotopes of oxygen as a proxy for carbon dioxide in altered Early Pleistocene ice core samples. <i>Journal of Geophysical Research: Atmospheres</i>, 131, e2025JD045900.</span>
+            <a href="https://doi.org/10.1029/2025JD045900" target="_blank" rel="noopener noreferrer">doi:10.1029/2025JD045900</a>
+          </article>
+        </div>
+      </section>
+
+      <section class="reference-group" aria-labelledby="references-proxy">
+        <h3 id="references-proxy">Cosmic-spherule proxy calibration</h3>
+        <div class="reference-list">
+          <article>
+            <strong>Fischer, M. B., et al. (2021)</strong>
+            <span>I-type cosmic spherules as proxy for the Δ′<sup>17</sup>O of the atmosphere—A calibration with Quaternary air. <i>Paleoceanography and Paleoclimatology</i>, 36, e2020PA004159.</span>
+            <a href="https://doi.org/10.1029/2020PA004159" target="_blank" rel="noopener noreferrer">doi:10.1029/2020PA004159</a>
+          </article>
+          <article>
+            <strong>Zahnow, F., et al. (2025)</strong>
+            <span>Traces of the oxygen isotope composition of ancient air in fossilized cosmic dust. <i>Communications Earth &amp; Environment</i>, 6, 577.</span>
+            <a href="https://doi.org/10.1038/s43247-025-02541-5" target="_blank" rel="noopener noreferrer">doi:10.1038/s43247-025-02541-5</a>
+          </article>
+        </div>
+      </section>
+
+      <section class="reference-group" aria-labelledby="references-domain">
+        <h3 id="references-domain">Earth-history application constraints</h3>
+        <div class="reference-list">
+          <article>
+            <strong>Beerling, D. J. (1999)</strong>
+            <span>Quantitative estimates of changes in marine and terrestrial primary productivity over the past 300 million years. <i>Proceedings of the Royal Society B</i>, 266, 1821–1827.</span>
+            <a href="https://doi.org/10.1098/rspb.1999.0852" target="_blank" rel="noopener noreferrer">doi:10.1098/rspb.1999.0852</a>
+          </article>
+          <article>
+            <strong>Mills, B. J. W., Krause, A. J., Jarvis, I., &amp; Cramer, B. D. (2023)</strong>
+            <span>Evolution of atmospheric O<sub>2</sub> through the Phanerozoic, revisited. <i>Annual Review of Earth and Planetary Sciences</i>, 51, 253–276.</span>
+            <a href="https://doi.org/10.1146/annurev-earth-032320-095425" target="_blank" rel="noopener noreferrer">doi:10.1146/annurev-earth-032320-095425</a>
+          </article>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer><span id="footer-model">Model contract loading</span><a href="docs">API documentation</a></footer>
+</body>
+</html>

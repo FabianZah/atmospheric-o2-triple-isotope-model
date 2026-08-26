@@ -1,0 +1,2 @@
+Marker file: identifies the project/archive root for path resolution.
+Used by code/ and validation/ modules to locate outputs/, reference_texts/, docs/.

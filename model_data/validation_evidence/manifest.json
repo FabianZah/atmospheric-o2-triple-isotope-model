@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "bundle_id": "publication_validation_evidence_v1",
+  "purpose": "Canonical machine-readable evidence required to reproduce the integrated publication-model acceptance decision from a clean checkout",
+  "files": {
+    "updated_molecular_release_scorecard.json": {
+      "path": "model_data/validation_evidence/updated_molecular_release_scorecard.json",
+      "sha256": "8d42835ed3da7a6c6043eaf1491f09eb597692d365deddb07212f9f9097fb927",
+      "bytes": 250007,
+      "generator": "validation/audit_updated_molecular_release_scorecard.py",
+      "role": "central release gates and observational comparisons",
+      "development_source": "outputs/updated_molecular_release_scorecard.json"
+    },
+    "liu_2021_low_gpp_multimodel_benchmark.json": {
+      "path": "model_data/validation_evidence/liu_2021_low_gpp_multimodel_benchmark.json",
+      "sha256": "03c9aa45d154f11962a3096fe3342738280043261f2705bcf4caa74fa0ab609e",
+      "bytes": 139621,
+      "generator": "validation/merge_liu_2021_gpp_grid.py",
+      "role": "low-GPP published-model comparison",
+      "development_source": "outputs/liu_2021_low_gpp_multimodel_benchmark.json"
+    },
+    "cao_bao_2013_multimodel_benchmark.json": {
+      "path": "model_data/validation_evidence/cao_bao_2013_multimodel_benchmark.json",
+      "sha256": "3f5ee0454c91905570063c714dba5e480982148cbfa32b28008d0cba1867f224",
+      "bytes": 14149,
+      "generator": "validation/audit_cao_bao_2013_benchmark.py",
+      "role": "high-pCO2 published-model comparison",
+      "development_source": "outputs/cao_bao_2013_multimodel_benchmark.json"
+    },
+    "luz_1999_productivity_benchmark.json": {
+      "path": "model_data/validation_evidence/luz_1999_productivity_benchmark.json",
+      "sha256": "68c870e1edde3377ad1b7797ce6c0d3faa8528be036d0f583344a9261e0b838b",
+      "bytes": 13155,
+      "generator": "validation/audit_luz_1999_productivity.py",
+      "role": "inverse productivity architecture comparison",
+      "development_source": "outputs/luz_1999_productivity_benchmark.json"
+    },
+    "yang_2022_co2_tracking_audit.json": {
+      "path": "model_data/validation_evidence/yang_2022_co2_tracking_audit.json",
+      "sha256": "d9b01fa3c8f1dee97ce0b0b8363eaaed5f2aa4339fb642197545b07b3900cd0e",
+      "bytes": 6271,
+      "generator": "validation/audit_yang_2022_co2_tracking.py",
+      "role": "low-CO2 observational predictive validation",
+      "development_source": "outputs/yang_2022_co2_tracking_audit.json"
+    },
+    "brandon_2020_termination_v_audit.json": {
+      "path": "model_data/validation_evidence/brandon_2020_termination_v_audit.json",
+      "sha256": "e6ac950508a9375679bd4e42d46f96ef9830bb02c80c3649206f53fc3524cdc3",
+      "bytes": 4858,
+      "generator": "validation/audit_brandon_2020_termination_v.py",
+      "role": "event-scale observational productivity validation",
+      "development_source": "outputs/brandon_2020_termination_v_audit.json"
+    },
+    "marine_o2_accessibility_audit.json": {
+      "path": "model_data/validation_evidence/marine_o2_accessibility_audit.json",
+      "sha256": "d17cd0cd5d589f8774aa1daec4cefe9be2b72792bc87ca01912d629bd1df8732",
+      "bytes": 91774,
+      "generator": "validation/audit_marine_o2_accessibility.py",
+      "role": "rejected structural marine-access sensitivity",
+      "development_source": "outputs/marine_o2_accessibility_audit.json"
+    },
+    "updated_uncertainty_layers_audit.json": {
+      "path": "model_data/validation_evidence/updated_uncertainty_layers_audit.json",
+      "sha256": "a5d751fb820c39c03860d81be41658cdc398f6e46a7534d18bcd20e04d87edc8",
+      "bytes": 10113,
+      "generator": "validation/audit_uncertainty_layers.py",
+      "role": "separated uncertainty-layer validation",
+      "development_source": "outputs/updated_uncertainty_layers_audit.json"
+    },
+    "clima_global_o2_response.json": {
+      "path": "model_data/validation_evidence/clima_global_o2_response.json",
+      "sha256": "6cb773a61a7ea7d865bf499b56117a28d58f3e0e86bf95cbc3b744ba89203534",
+      "bytes": 23453,
+      "generator": "validation/audit_clima_global_o2_response.py",
+      "role": "one-PAL additive-CO2 climate structural end member",
+      "development_source": "outputs/clima_global_o2_response.json"
+    },
+    "clima_global_o2_response_fixed_total.json": {
+      "path": "model_data/validation_evidence/clima_global_o2_response_fixed_total.json",
+      "sha256": "95bfcbcfe09e4c964ddab5fa56bd41996d503c988c7b96e619be1d2e785fa774",
+      "bytes": 23483,
+      "generator": "validation/audit_clima_global_o2_response.py",
+      "role": "one-PAL fixed-total-pressure climate structural end member",
+      "development_source": "outputs/clima_global_o2_response_fixed_total.json"
+    },
+    "clima_global_o2_response_0p1pal.json": {
+      "path": "model_data/validation_evidence/clima_global_o2_response_0p1pal.json",
+      "sha256": "6d09b23dc0386c2372a831ec6fd1d0f8b346efe97f05fc941f46a670369ca37c",
+      "bytes": 16031,
+      "generator": "validation/audit_clima_global_o2_response.py",
+      "role": "low-pO2 climate structural end member",
+      "development_source": "outputs/clima_global_o2_response_0p1pal.json"
+    },
+    "clima_global_o2_response_2pal.json": {
+      "path": "model_data/validation_evidence/clima_global_o2_response_2pal.json",
+      "sha256": "57cbcbe8093f63241c6abcccc5c20184ae6b60ffd2edfc56768a0d391b7071ca",
+      "bytes": 16058,
+      "generator": "validation/audit_clima_global_o2_response.py",
+      "role": "high-pO2 climate structural end member",
+      "development_source": "outputs/clima_global_o2_response_2pal.json"
+    },
+    "clima_pressure_convention_audit.json": {
+      "path": "model_data/validation_evidence/clima_pressure_convention_audit.json",
+      "sha256": "e165c77046e52e1fed236327a202b7d1b779986f73e896e06abf1c2c8fd61008",
+      "bytes": 13734,
+      "generator": "validation/audit_clima_pressure_conventions.py",
+      "role": "climate pressure-convention robustness audit",
+      "development_source": "outputs/clima_pressure_convention_audit.json"
+    },
+    "clima_po2_cross_audit.json": {
+      "path": "model_data/validation_evidence/clima_po2_cross_audit.json",
+      "sha256": "2116d9d89330e01540d5dc48d208c5d8c434aa9e82e9628a91ecbef3b2d99968",
+      "bytes": 20520,
+      "generator": "validation/audit_clima_po2_cross.py",
+      "role": "climate and pO2 interaction audit",
+      "development_source": "outputs/clima_po2_cross_audit.json"
+    },
+    "yang_lowco2_predictive_error.json": {
+      "path": "model_data/validation_evidence/yang_lowco2_predictive_error.json",
+      "sha256": "8532f9d4c8faef6a42be0a390aca790365a4cd2778b35b17feb54599049671cf",
+      "bytes": 2106,
+      "generator": "validation/audit_yang_lowco2_predictive_error.py",
+      "role": "low-CO2 predictive-error candidate",
+      "development_source": "outputs/yang_lowco2_predictive_error.json"
+    }
+  }
+}

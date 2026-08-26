@@ -1,0 +1,51 @@
+{
+  "audit": "Yang et al. (2022) domain-limited low-CO2 predictive error",
+  "status": "candidate_domain_specific_predictive_scale",
+  "probabilistic_scope": {
+    "eligible": true,
+    "promoted_to_public_default": false,
+    "reason": "The residuals are age-block held out, but the fitted excess scale also contains unmodeled GPP/pO2 variability and reference-coordinate effects; it is not pure structural model error."
+  },
+  "domain": {
+    "age_ka_BP": [
+      58.016,
+      796.297
+    ],
+    "pCO2_ppm": [
+      177.83712970638283,
+      279.1553547028091
+    ],
+    "pO2_PAL": 1.0,
+    "GPP_PgC_per_year": 290.0,
+    "isotope_coordinate": "modern-air-relative Delta-17O, lambda=0.516"
+  },
+  "cross_validation": {
+    "age_contiguous_blocks": 8,
+    "all_rows": 269,
+    "variance_decomposition_rows": 249,
+    "rows_with_unavailable_isotope_sigma": 20,
+    "held_out_residual_bias_ppm": -0.001158477350102824,
+    "held_out_residual_RMSE_ppm": 14.284572862668991,
+    "held_out_residual_MAE_ppm": 11.68580312009191
+  },
+  "variance_decomposition": {
+    "method": "heteroscedastic Gaussian maximum likelihood",
+    "known_variance_components": [
+      "reported Delta-17O analytical one-sigma",
+      "CO2 analytical one-sigma propagated through local model slope"
+    ],
+    "median_reported_isotope_sigma_ppm": 6.0,
+    "median_propagated_co2_sigma_ppm": 0.5368287869996518,
+    "candidate_excess_predictive_sigma_ppm": 13.241475925036143,
+    "candidate_excess_predictive_sigma_permil": 0.013241475925036144,
+    "standardized_residual_RMSE": 0.9774048515949144,
+    "coverage_within_one_total_sigma": 0.6827309236947792,
+    "coverage_within_two_total_sigma": 0.963855421686747
+  },
+  "interpretation": {
+    "permitted": "Use as a sensitivity likelihood only for a declared late-Quaternary, 1 PAL, fixed-GPP application with the Yang reference convention.",
+    "not_permitted": "Do not extrapolate this scale to high pCO2, low pO2, low GPP, spherule conversion, or the full model domain.",
+    "central_model_changed": false
+  },
+  "surface_data_id": "updated_molecular_output_surface_v1"
+}

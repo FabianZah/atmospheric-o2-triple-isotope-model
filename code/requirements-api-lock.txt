@@ -1,0 +1,22 @@
+# Exact direct and transitive Linux runtime used by the v0.1.0 production image.
+# The supported version ranges for non-container installations remain in
+# requirements-api.txt.
+annotated-doc==0.0.4
+annotated-types==0.7.0
+anyio==4.12.1
+click==8.3.1
+et-xmlfile==1.1.0
+fastapi==0.129.0
+h11==0.16.0
+h5py==3.11.0
+idna==3.11
+numpy==1.26.4
+openpyxl==3.1.5
+pydantic==2.12.5
+pydantic_core==2.41.5
+PyYAML==6.0.3
+scipy==1.13.1
+starlette==0.52.1
+typing_extensions==4.15.0
+typing-inspection==0.4.2
+uvicorn==0.40.0

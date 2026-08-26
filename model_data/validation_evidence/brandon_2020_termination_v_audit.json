@@ -1,0 +1,146 @@
+{
+  "audit": "Brandon et al. (2020) Termination V CO2-Delta17 decoupling",
+  "status": "complete",
+  "observations": {
+    "paper_doi": "10.1038/s41467-020-15739-2",
+    "dataset_doi": "10.1594/PANGAEA.914283",
+    "rows": 50,
+    "coordinate": "modern-air-relative logarithmic Delta-17O, lambda=0.516",
+    "reported_pooled_analytical_precision_ppm": 6.0
+  },
+  "predeclared_design": {
+    "published_decoupling_window_ka_bp": [
+      415.0,
+      430.0
+    ],
+    "offset_training_window_ka_bp": [
+      ">430",
+      444.114
+    ],
+    "fixed_pO2_PAL": 1.0,
+    "baseline_GPP_PgC_per_year": 290.0,
+    "fitted_quantities": [
+      "one event-window GPP multiplier"
+    ],
+    "not_fitted": [
+      "event timing",
+      "response time",
+      "CO2 forcing",
+      "isotope response amplitude"
+    ]
+  },
+  "co2_forcing": {
+    "source": "Bereiter et al. (2015) corrected Antarctic composite",
+    "dataset_doi": "10.25921/n8y4-bp27",
+    "sample_range_ppm": [
+      200.35050370890139,
+      285.3547551782948
+    ]
+  },
+  "model_runs": {
+    "fixed_GPP": {
+      "method": "scipy.solve_ivp DOP853",
+      "relative_tolerance": 1e-09,
+      "absolute_tolerance_scaled_inventory": 1e-11,
+      "maximum_step_years": 200.0,
+      "function_evaluations": 5312,
+      "success": true
+    },
+    "linear_response_factor": 1.2,
+    "linear_response": {
+      "method": "scipy.solve_ivp DOP853",
+      "relative_tolerance": 1e-09,
+      "absolute_tolerance_scaled_inventory": 1e-11,
+      "maximum_step_years": 200.0,
+      "function_evaluations": 5588,
+      "success": true
+    },
+    "inferred_pulse": {
+      "method": "scipy.solve_ivp DOP853",
+      "relative_tolerance": 1e-09,
+      "absolute_tolerance_scaled_inventory": 1e-11,
+      "maximum_step_years": 200.0,
+      "function_evaluations": 5474,
+      "success": true
+    },
+    "pre_event_reference_offset_ppm": 6.905068570427522,
+    "maximum_linearization_error_ppm": 0.9435625516508637,
+    "reference_window_sensitivity": {
+      "older_than_430_ka": {
+        "rows": 8,
+        "offset_ppm": 6.905068570427522,
+        "linearized_inferred_GPP_percent": 112.31667134301135
+      },
+      "older_than_433_ka": {
+        "rows": 6,
+        "offset_ppm": 5.4118455041709765,
+        "linearized_inferred_GPP_percent": 113.70636913805932
+      },
+      "older_than_435_ka": {
+        "rows": 5,
+        "offset_ppm": 4.449033107840238,
+        "linearized_inferred_GPP_percent": 114.6024296761409
+      }
+    }
+  },
+  "fixed_GPP_test": {
+    "pre_event_control": {
+      "rows": 8,
+      "mean_residual_ppm": -1.7763568394002505e-15,
+      "rmse_ppm": 6.02385442759663,
+      "mean_absolute_residual_ppm": 5.015725711171955,
+      "residual_standard_deviation_ppm": 6.439771261676526
+    },
+    "published_event_window": {
+      "rows": 20,
+      "mean_residual_ppm": 12.93620114800093,
+      "rmse_ppm": 15.854808454670131,
+      "mean_absolute_residual_ppm": 13.053716566677064,
+      "residual_standard_deviation_ppm": 9.404906389905385
+    },
+    "post_event": {
+      "rows": 22,
+      "mean_residual_ppm": 6.435005723755043,
+      "rmse_ppm": 11.069338391813721,
+      "mean_absolute_residual_ppm": 9.220342105863407,
+      "residual_standard_deviation_ppm": 9.218668902183692
+    }
+  },
+  "GPP_pulse_test": {
+    "inferred_factor_of_preindustrial": 1.1231667134301135,
+    "inferred_percent_of_preindustrial": 112.31667134301135,
+    "analytical_only_95_percent_interval_percent": [
+      107.72196403601293,
+      116.91137865000978
+    ],
+    "empirical_residual_95_percent_interval_percent": [
+      106.68274735602559,
+      117.95059532999713
+    ],
+    "Brandon_reported_range_percent": [
+      110.0,
+      130.0
+    ],
+    "Brandon_reported_average_percent": 117.0,
+    "within_reported_range": true,
+    "published_event_window": {
+      "rows": 20,
+      "mean_residual_ppm": -0.8001831433496566,
+      "rmse_ppm": 9.021586333162755,
+      "mean_absolute_residual_ppm": 6.915109934712177,
+      "residual_standard_deviation_ppm": 9.219471779811755
+    },
+    "event_SSE_reduction_fraction": 0.6762246214292345,
+    "post_event": {
+      "rows": 22,
+      "mean_residual_ppm": 4.106616123374977,
+      "rmse_ppm": 10.696105946285515,
+      "mean_absolute_residual_ppm": 9.147058077007424,
+      "residual_standard_deviation_ppm": 10.108771536327161
+    }
+  },
+  "interpretation": {
+    "falsification_logic": "A coherent event residual in the fixed-GPP run is required before GPP is varied. Agreement of the one-parameter inferred amplitude with Brandon's independently reported 10-30% range is an external concordance check, not a fit target.",
+    "limits": "The 6 ppm value is analytical precision before corrections, not total proxy-model uncertainty. The inferred pulse is an interval-average diagnostic and does not uniquely exclude ozone or biosphere-isotope changes."
+  }
+}

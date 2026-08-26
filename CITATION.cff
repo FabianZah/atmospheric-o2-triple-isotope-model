@@ -1,0 +1,40 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite this record and the scientific sources relevant to your application."
+title: "Atmospheric O2 triple-isotope model"
+abstract: >-
+  A transparent, reproducible atmospheric O2 triple-oxygen-isotope model that
+  couples altitude-resolved photochemistry to a conservative global O2 and
+  biological-turnover budget. The software supports forward calculations,
+  constrained one-coordinate inversions, solution surfaces, transient
+  experiments, and separated uncertainty layers.
+type: software
+version: "0.1.0"
+license: MIT  # code; data/docs are CC-BY-4.0 (see LICENSING.md)
+authors:
+  - family-names: "Zahnow"
+    given-names: "Fabian"
+    email: "fabs2906@gmail.com"
+    # orcid: "https://orcid.org/0000-0000-0000-0000"
+keywords:
+  - "triple oxygen isotopes"
+  - "Delta-17O"
+  - "atmospheric O2"
+  - "paleo-pCO2"
+  - "paleo-pO2"
+  - "gross primary productivity"
+  - "box model"
+  - "stratospheric photochemistry"
+repository-code: "https://github.com/FabianZah/atmospheric-o2-triple-isotope-model"
+references:
+  - type: article
+    title: "On the Delta'17O budget of atmospheric O2"
+    authors:
+      - family-names: "Young"
+        given-names: "Edward D."
+      - name: "et al."
+    journal: "Geochimica et Cosmochimica Acta"
+    volume: 135
+    start: 102
+    end: 125
+    year: 2014
+    notes: "Historical atmospheric O2 Delta'17O response anchor."
