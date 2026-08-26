@@ -114,7 +114,15 @@ def run(
         "joint_posterior_implementation": ROOT
         / "code"
         / "updated_output_surface_joint_posterior.py",
-        "transient_implementation": ROOT / "code" / "updated_molecular_transient.py",
+        "state_step_transient_implementation": ROOT
+        / "code"
+        / "updated_molecular_transient.py",
+        "photosynthesis_step_transient_implementation": ROOT
+        / "code"
+        / "updated_photosynthesis_transient.py",
+        "pco2_trajectory_transient_implementation": ROOT
+        / "code"
+        / "updated_pco2_trajectory_transient.py",
         "uncertainty_implementation": ROOT / "code" / "updated_uncertainty_layers.py",
         "observation_reference_implementation": ROOT
         / "code"
@@ -150,15 +158,17 @@ def run(
 
     contract: dict[str, Any] = {
         "schema_version": 1,
-        "publication_model_id": "atmospheric_o2_triple_isotope_model_v1",
+        "publication_model_id": "oxytib_publication_model_v1",
         "status": "active_publication_model",
         "single_model_policy": {
-            "manuscript_model_count": 1,
-            "public_ui_model_count": 1,
-            "historical_reconstructions_are_validation_evidence": True,
-            "structural_endmembers_are_alternative_public_models": False,
-            "parameter_updates_must_change_declared_physical_inputs_or_equations": True,
-            "diagnostic_output_offsets_or_damping_are_permitted": False,
+            "release_model_count": 1,
+            "public_interface_model_count": 1,
+            "historical_reconstructions_role": "validation evidence",
+            "structural_endmembers_role": "structural sensitivity evidence",
+            "parameter_update_policy": (
+                "changes require declared physical inputs or equations"
+            ),
+            "output_adjustment_policy": "raw mechanistic outputs are preserved",
         },
         "deterministic_model": {
             "model_data_id": model_id,
@@ -183,7 +193,13 @@ def run(
             "inverse_solver": "code/updated_output_surface_inverse.py",
             "conditional_posterior": "code/updated_output_surface_posterior.py",
             "joint_posterior": "code/updated_output_surface_joint_posterior.py",
-            "transient_solver": "code/updated_molecular_transient.py",
+            "transient_solvers": {
+                "atmospheric_state_step": "code/updated_molecular_transient.py",
+                "photosynthesis_step": "code/updated_photosynthesis_transient.py",
+                "gradual_pCO2_trajectory": (
+                    "code/updated_pco2_trajectory_transient.py"
+                ),
+            },
         },
         "operational_domain": {
             "pO2_PAL": _axis_summary(axes["po2_pal"]),
@@ -213,7 +229,7 @@ def run(
                 "conventional_delta_18O_permil": 23.9,
                 "conventional_delta_18O_one_sigma_permil": 0.3,
             },
-            "raw_model_is_modified_to_match_observation": False,
+            "raw_model_reporting": "unadjusted mechanistic state",
         },
         "reporting_policy": {
             "primary_forward_output": "raw mechanistic model state",
@@ -248,8 +264,8 @@ def run(
                 ]
             ),
             "clima_role": (
-                "non-probabilistic structural sensitivity end member; not a "
-                "central-model correction"
+                "non-probabilistic structural sensitivity end member used to "
+                "quantify climate-architecture response"
             ),
         },
         "validation": {
@@ -281,11 +297,11 @@ def run(
                 "docs/publication_model_acceptance.md"
             ),
         },
-        "manuscript_scope": {
-            "methods": "one deterministic model and its declared inputs",
+        "publication_scope": {
+            "model": "one deterministic model and its declared inputs",
             "validation": "comparisons with observations and published models",
             "uncertainty": "separate measurement, parameter, numerical, and structural layers",
-            "development_presets_or_branches_in_main_analysis": False,
+            "historical_reconstruction_role": "validation provenance",
         },
         "source_files": {
             name: {

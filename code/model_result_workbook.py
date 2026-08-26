@@ -158,7 +158,7 @@ def build_coordinate_inference_workbook(
 
     result = envelope["result"]
     workbook = Workbook()
-    workbook.properties.creator = "Atmospheric O2 triple-isotope model"
+    workbook.properties.creator = "OXYTIB"
     workbook.properties.title = "Constrained atmospheric O2 isotope inference"
     workbook.properties.subject = envelope["publication_model_id"]
 
@@ -259,7 +259,7 @@ def build_transient_workbook(
     request = result["request"]
     equilibrium = result.get("operational_equilibrium", {})
     workbook = Workbook()
-    workbook.properties.creator = "Atmospheric O2 triple-isotope model"
+    workbook.properties.creator = "OXYTIB"
     workbook.properties.title = "Atmospheric O2 isotope time-response experiment"
     workbook.properties.subject = envelope["publication_model_id"]
 
@@ -328,11 +328,17 @@ def build_transient_workbook(
     _prepare_sheet(timeseries, title="Model time series", headers=headers)
     states = result["states"]
     is_photosynthesis = experiment_type == "photosynthesis"
+    is_trajectory = experiment_type == "pCO2_trajectory"
     if is_photosynthesis:
         pco2_values = result["pco2_ppm"]
         carbon_po2_values = result["carbon_driver_po2_pal"]
         gpp_value = request["initial"]["gpp_pgC_per_year"]
         photosynthesis_fraction = request["photosynthesis_fraction"]
+    elif is_trajectory:
+        pco2_values = result["pco2_ppm"]
+        carbon_po2_values = [None] * len(states)
+        gpp_value = request["initial"]["gpp_pgC_per_year"]
+        photosynthesis_fraction = None
     else:
         pco2_values = [request["final"]["p_co2_ppm"]] * len(states)
         carbon_po2_values = [None] * len(states)

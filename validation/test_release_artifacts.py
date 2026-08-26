@@ -68,4 +68,4 @@ def test_public_markdown_links_resolve() -> None:
 def test_compose_disables_cross_origin_access_by_default() -> None:
     compose = yaml.safe_load((ROOT / "compose.yaml").read_text(encoding="utf-8"))
     environment = compose["services"]["model-api"]["environment"]
-    assert environment["O2_MODEL_CORS_ORIGINS"] == "${O2_MODEL_CORS_ORIGINS:-}"
+    assert environment["OXYTIB_CORS_ORIGINS"] == "${OXYTIB_CORS_ORIGINS:-}"

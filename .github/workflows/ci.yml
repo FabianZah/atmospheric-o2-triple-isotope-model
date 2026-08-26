@@ -41,6 +41,7 @@ jobs:
         run: |
           python -m pytest \
             validation/test_web_api.py \
+            validation/test_public_cli.py \
             validation/test_isotope_field_contours.py \
             validation/test_constrained_coordinate_resolution.py \
             validation/test_spherule_inversion_acceptance.py -q
@@ -62,7 +63,8 @@ jobs:
         run: |
           python -m pytest \
             validation/test_updated_molecular_transient.py \
-            validation/test_updated_photosynthesis_transient.py -q
+            validation/test_updated_photosynthesis_transient.py \
+            validation/test_updated_pco2_trajectory_transient.py -q
 
       - name: Core regression tests
         run: python -m pytest validation/test_core.py -q
@@ -87,21 +89,21 @@ jobs:
             --env-file deploy/.env.traefik.example \
             -f deploy/compose.traefik.yaml config --quiet
           docker run --rm \
-            -e O2_MODEL_DOMAIN=model.example.org \
+            -e OXYTIB_DOMAIN=model.example.org \
             -e ACME_EMAIL=researcher@example.org \
             -v "$PWD/deploy/caddy:/etc/caddy:ro" \
             caddy:2.11.4-alpine caddy validate --config /etc/caddy/Caddyfile
 
       - name: Build production application image
-        run: docker build --tag o2-budget-model:ci .
+        run: docker build --tag oxytib:ci .
 
       - name: Start hardened application container
         run: |
-          docker run --detach --name o2-budget-model-ci \
+          docker run --detach --name oxytib-ci \
             --publish 127.0.0.1:8000:8000 \
             --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m \
             --cap-drop ALL --security-opt no-new-privileges \
-            o2-budget-model:ci
+            oxytib:ci
 
       - name: Verify deployed model identity and known answer
         run: |
@@ -110,7 +112,7 @@ jobs:
               break
             fi
             if [ "$attempt" -eq 30 ]; then
-              docker logs o2-budget-model-ci
+              docker logs oxytib-ci
               exit 1
             fi
             sleep 2
@@ -120,8 +122,8 @@ jobs:
 
       - name: Show container logs on failure
         if: failure()
-        run: docker logs o2-budget-model-ci
+        run: docker logs oxytib-ci
 
       - name: Stop application container
         if: always()
-        run: docker rm --force o2-budget-model-ci || true
+        run: docker rm --force oxytib-ci || true

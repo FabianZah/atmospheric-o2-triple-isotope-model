@@ -1,4 +1,4 @@
-# Tooling configuration for the atmospheric O2 triple-isotope model.
+# Tooling configuration for OXYTIB.
 #
 # Note: the code uses a flat two-directory layout (code/ + validation/) with a
 # shared sys.path bootstrap (conftest.py and per-script bootstraps), so it is run

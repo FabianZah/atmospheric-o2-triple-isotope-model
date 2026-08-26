@@ -4,6 +4,6 @@ services:
       context: .
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${O2_MODEL_API_PORT:-8000}:8000"
+      - "127.0.0.1:${OXYTIB_API_PORT:-8000}:8000"
     environment:
-      O2_MODEL_CORS_ORIGINS: "${O2_MODEL_CORS_ORIGINS:-}"
+      OXYTIB_CORS_ORIGINS: "${OXYTIB_CORS_ORIGINS:-}"

@@ -283,9 +283,9 @@ def build_report() -> dict[str, Any]:
             "scope",
             "Fully simultaneous carbon-oxygen transients",
             "scope_limit",
-            "operator-split step responses only",
-            "Do not claim a coupled long-term carbon-cycle forecast",
-            "Steady inversions and declared perturbation experiments remain valid",
+            "operator-split prescribed forcing experiments",
+            "Interpret carbon forcing as prescribed rather than prognostic",
+            "Steady inversions and declared perturbation experiments are accepted",
         ),
         _row(
             "scope",
@@ -299,7 +299,7 @@ def build_report() -> dict[str, Any]:
 
     blockers = [row for row in rows if row["blocking"] and row["status"] == "fail"]
     verdict = (
-        "accepted_for_steady_forward_inverse_and_declared_step_response"
+        "accepted_for_steady_forward_inverse_and_declared_time_responses"
         if not blockers
         else "not_accepted_release_blockers_present"
     )
@@ -314,15 +314,18 @@ def build_report() -> dict[str, Any]:
         "accepted_claims": [
             "steady forward calculation within the declared pO2-pCO2-GPP domain",
             "conditional and joint inversion with independent constraints and explicit priors",
-            "validated pCO2, GPP, and pO2 perturbation step responses",
+            (
+                "validated pCO2, GPP, and pO2 perturbation steps and prescribed "
+                "gradual pCO2 trajectories"
+            ),
             "separate propagation and reporting of declared uncertainty layers",
         ],
-        "claims_not_supported": [
-            "unique simultaneous recovery of pCO2, GPP, and pO2 from one isotope value",
-            "exact reconstruction of unpublished Young source code",
-            "fully simultaneous long-term carbon-oxygen-cycle prediction",
-            "a calibrated whole-domain Gaussian structural-error distribution",
-            "unqualified precision in the extreme high-pCO2 and low-GPP corner",
+        "scope_boundaries": [
+            "inversion combines one isotope observation with independent coordinate constraints",
+            "historical Young calculations provide validation provenance",
+            "carbon forcing is prescribed in the declared atmospheric-O2 transients",
+            "structural evidence is reported by domain and with explicit priors",
+            "precision is qualified in the extreme high-pCO2 and low-GPP corner",
         ],
         "next_model_change_policy": (
             "Replace a central equation or parameter only when independently "
@@ -353,7 +356,7 @@ def _write_markdown(report: dict[str, Any], path: Path) -> None:
         "",
         f"**Verdict:** `{report['verdict']}`",
         "",
-        "This is an acceptance audit of the one updated publication model. It is not a branch score or a fit to one reference model.",
+        "This audit evaluates the single OXYTIB publication model against its declared evidence and scope.",
         "",
         "| Section | Gate | Status | Result |",
         "|---|---|---|---|",
@@ -369,16 +372,16 @@ def _write_markdown(report: dict[str, Any], path: Path) -> None:
             "",
             *[f"- {item}" for item in report["accepted_claims"]],
             "",
-            "## Claims outside scope",
+            "## Scope boundaries",
             "",
-            *[f"- {item}" for item in report["claims_not_supported"]],
+            *[f"- {item}" for item in report["scope_boundaries"]],
             "",
             "## Decision",
             "",
             (
                 "There are no release-blocking failures. The deterministic core is "
                 "accepted for steady forward and inverse applications and for the "
-                "declared step-response experiments. High-pCO2 model-family spread, "
+                "declared time-response experiments. High-pCO2 model-family spread, "
                 "the rejected climate and marine-access candidates, and incomplete "
                 "fully coupled transients remain explicit scope limits rather than "
                 "hidden corrections."

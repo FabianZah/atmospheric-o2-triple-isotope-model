@@ -19,6 +19,35 @@ const state = {
 };
 const $ = (id) => document.getElementById(id);
 
+function preferredTheme() {
+  try {
+    const stored = window.localStorage.getItem("oxytib-theme");
+    if (stored === "light" || stored === "dark") return stored;
+  } catch (_error) {
+    // Browser storage may be unavailable in privacy-restricted sessions.
+  }
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function applyTheme(theme, persist = true) {
+  const dark = theme === "dark";
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+  const toggle = $("theme-toggle");
+  if (toggle) {
+    toggle.checked = dark;
+    toggle.setAttribute("aria-label", dark ? "Use light appearance" : "Use dark appearance");
+  }
+  const label = $("theme-label");
+  if (label) label.textContent = dark ? "Light" : "Dark";
+  if (persist) {
+    try {
+      window.localStorage.setItem("oxytib-theme", dark ? "dark" : "light");
+    } catch (_error) {
+      // The active theme still applies for this page.
+    }
+  }
+}
+
 function applicationUrl(path) {
   const normalized = path.startsWith("/") ? path : `/${path}`;
   return `${APPLICATION_BASE_PATH}${normalized}`;
@@ -292,7 +321,7 @@ function renderConstrainedCoordinate(result, target, inputs, constraints, reques
     const marginalizedText = marginalized
       ? ` Uncertainty in ${marginalized} is integrated out using its entered constraint.`
       : "";
-    $("solver-probability-caption").innerHTML = `Dark outline: joint 95% highest-posterior-density region.${marginalizedText}`;
+    $("solver-probability-caption").innerHTML = marginalizedText.trim();
   }
   $("download-result").disabled = false;
   $("download-result-xlsx").disabled = false;
@@ -394,7 +423,7 @@ function downloadResult() {
   const csv = rows.map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(",")).join("\n");
   const link = document.createElement("a");
   link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-  link.download = `o2_model_${coordinate}_solution.csv`;
+  link.download = `oxytib_${coordinate}_solution.csv`;
   link.click();
   URL.revokeObjectURL(link.href);
 }
@@ -429,7 +458,7 @@ async function downloadWorkbook() {
     const blob = await response.blob();
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `o2_model_${coordinate}_solution.xlsx`;
+    link.download = `oxytib_${coordinate}_solution.xlsx`;
     link.click();
     URL.revokeObjectURL(link.href);
   } catch (error) {
@@ -483,6 +512,53 @@ function heatColor(value, stops = posteriorColorStops) {
   return `rgb(${rgb.join(",")})`;
 }
 
+function drawColorLegend(ctx, x, y, width, stops, title, lowLabel, highLabel) {
+  const gradient = ctx.createLinearGradient(x, 0, x + width, 0);
+  stops.forEach((color, index) => {
+    gradient.addColorStop(index / (stops.length - 1), `rgb(${color.join(",")})`);
+  });
+  ctx.fillStyle = "#17212b";
+  ctx.font = "600 10px system-ui";
+  ctx.textAlign = "left";
+  ctx.fillText(title, x, y - 5);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(x, y, width, 9);
+  ctx.strokeStyle = "#52616a";
+  ctx.lineWidth = 0.8;
+  ctx.strokeRect(x, y, width, 9);
+  ctx.fillStyle = "#43515a";
+  ctx.font = "9px system-ui";
+  ctx.fillText(lowLabel, x, y + 21);
+  ctx.textAlign = "right";
+  ctx.fillText(highLabel, x + width, y + 21);
+}
+
+function drawMarginalLegend(ctx, width) {
+  const y = 17;
+  const starts = [58, Math.max(215, width * 0.34), Math.max(390, width * 0.67)];
+  ctx.font = "10px system-ui";
+  ctx.textAlign = "left";
+  ctx.fillStyle = "rgba(33, 102, 172, 0.18)";
+  ctx.fillRect(starts[0], y - 7, 22, 10);
+  ctx.strokeStyle = "#2166ac";
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(starts[0], y - 2); ctx.lineTo(starts[0] + 22, y - 2); ctx.stroke();
+  ctx.fillStyle = "#43515a";
+  ctx.fillText("Relative probability density", starts[0] + 28, y + 2);
+  ctx.fillStyle = "rgba(193, 139, 40, 0.24)";
+  ctx.fillRect(starts[1], y - 7, 22, 10);
+  ctx.strokeStyle = "rgba(193, 139, 40, 0.7)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(starts[1], y - 7, 22, 10);
+  ctx.fillStyle = "#43515a";
+  ctx.fillText("Central 95% credible interval", starts[1] + 28, y + 2);
+  ctx.strokeStyle = "#17212b";
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(starts[2] + 10, y - 9); ctx.lineTo(starts[2] + 10, y + 5); ctx.stroke();
+  ctx.fillStyle = "#43515a";
+  ctx.fillText("Posterior median", starts[2] + 20, y + 2);
+}
+
 function axisDisplayValues(coordinate, values) {
   return coordinate === "GPP" ? values.map((value) => 100 * value / MODERN_GPP) : values;
 }
@@ -493,17 +569,29 @@ function axisLabel(coordinate, logarithmic = false) {
   return "pO₂ (PAL)";
 }
 
-function axisTickValues(coordinate, values) {
+function axisTickValues(coordinate, values, pixelWidth = Infinity) {
   const minimum = values[0];
   const maximum = values[values.length - 1];
   if (coordinate === "pCO2") {
     const preferred = [50, 100, 150, 200, 250, 300, 350, 400, 500, 750, 1000, 2000, 3000, 5000, 10000, 20000, 30000, 60000]
       .filter((value) => value >= minimum && value <= maximum);
-    if (preferred.length >= 3) return preferred;
-    return [...new Set([0, 0.25, 0.5, 0.75, 1].map((fraction) => {
+    const candidates = preferred.length >= 3 ? preferred : [...new Set([0, 0.25, 0.5, 0.75, 1].map((fraction) => {
       const value = 10 ** (Math.log10(minimum) + fraction * (Math.log10(maximum) - Math.log10(minimum)));
       return Math.round(value);
     }))];
+    if (!Number.isFinite(pixelWidth)) return candidates;
+    const transformedMinimum = Math.log10(minimum);
+    const transformedSpan = Math.log10(maximum) - transformedMinimum;
+    const selected = [];
+    let lastPixel = -Infinity;
+    for (const value of candidates) {
+      const pixel = (Math.log10(value) - transformedMinimum) / transformedSpan * pixelWidth;
+      if (pixel - lastPixel >= 34) {
+        selected.push(value);
+        lastPixel = pixel;
+      }
+    }
+    return selected;
   }
   const scale = niceAxisScale(minimum, maximum, 5);
   return scale.ticks.filter((value) => value >= minimum && value <= maximum);
@@ -533,7 +621,7 @@ function posteriorQuantile(axis, probabilityMass, probability) {
 
 function drawMarginalPosterior(axis, density, probabilityMass, coordinate, low, high, median) {
   const { ctx, width, height } = canvasContext("solver-marginal-canvas", 3.0);
-  const margin = { left: 58, right: 20, top: 24, bottom: 52 };
+  const margin = { left: 58, right: 20, top: 42, bottom: 52 };
   const plotW = width - margin.left - margin.right;
   const plotH = height - margin.top - margin.bottom;
   const xs = axisDisplayValues(coordinate, axis);
@@ -573,6 +661,7 @@ function drawMarginalPosterior(axis, density, probabilityMass, coordinate, low, 
 
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, width, height);
+  drawMarginalLegend(ctx, width);
   ctx.save();
   ctx.beginPath();
   ctx.rect(margin.left, margin.top, plotW, plotH);
@@ -610,7 +699,7 @@ function drawMarginalPosterior(axis, density, probabilityMass, coordinate, low, 
   ctx.textAlign = "center";
   const visibleMinimum = logarithmic ? 10 ** xmin : xmin;
   const visibleMaximum = logarithmic ? 10 ** xmax : xmax;
-  axisTickValues(coordinate, [visibleMinimum, visibleMaximum]).forEach((tick) => {
+  axisTickValues(coordinate, [visibleMinimum, visibleMaximum], plotW).forEach((tick) => {
     ctx.fillText(axisTickText(coordinate, tick), xPixel(tick), margin.top + plotH + 18);
   });
   ctx.fillText(axisLabel(coordinate, logarithmic), margin.left + plotW / 2, height - 12);
@@ -643,6 +732,24 @@ function drawProbabilityField(canvasId, xCoordinate, yCoordinate, xAxis, yAxis, 
 
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, width, height);
+  drawColorLegend(
+    ctx,
+    margin.left,
+    21,
+    Math.min(220, plotW * 0.38),
+    posteriorColorStops,
+    "Relative probability density",
+    "Low",
+    "High",
+  );
+  const regionX = margin.left + Math.min(220, plotW * 0.38) + 42;
+  ctx.strokeStyle = "#17212b";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(regionX, 22, 22, 10);
+  ctx.fillStyle = "#43515a";
+  ctx.font = "10px system-ui";
+  ctx.textAlign = "left";
+  ctx.fillText("95% credible region", regionX + 30, 31);
   for (let ix = 0; ix < nx - 1; ix += 1) {
     for (let iy = 0; iy < ny - 1; iy += 1) {
       const index = ix * ny + iy;
@@ -676,7 +783,7 @@ function drawProbabilityField(canvasId, xCoordinate, yCoordinate, xAxis, yAxis, 
   ctx.fillStyle = "#43515a";
   ctx.font = "11px system-ui";
   ctx.textAlign = "center";
-  const xTicks = axisTickValues(xCoordinate, xs);
+  const xTicks = axisTickValues(xCoordinate, xs, plotW);
   xTicks.forEach((tick) => {
     const x = xPixel(tick);
     ctx.strokeStyle = "rgba(255,255,255,0.45)";
@@ -686,7 +793,7 @@ function drawProbabilityField(canvasId, xCoordinate, yCoordinate, xAxis, yAxis, 
   });
   ctx.fillText(axisLabel(xCoordinate, xLogarithmic), margin.left + plotW / 2, height - 14);
   ctx.textAlign = "right";
-  for (const tick of axisTickValues(yCoordinate, ys)) {
+  for (const tick of axisTickValues(yCoordinate, ys, plotH)) {
     const y = yPixel(tick);
     ctx.strokeStyle = "rgba(255,255,255,0.45)";
     ctx.beginPath(); ctx.moveTo(margin.left, y); ctx.lineTo(margin.left + plotW, y); ctx.stroke();
@@ -792,6 +899,16 @@ function drawIsotopeField(result) {
 
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, width, height);
+  drawColorLegend(
+    ctx,
+    margin.left,
+    21,
+    Math.min(260, plotW * 0.46),
+    isotopeColorStops,
+    "Atmospheric O₂ Δ′¹⁷O (‰)",
+    format(result.minimum_cap_delta17_permil, result.contour_label_decimals),
+    format(result.maximum_cap_delta17_permil, result.contour_label_decimals),
+  );
   for (let ix = 0; ix < nx - 1; ix += 1) {
     for (let iy = 0; iy < ny - 1; iy += 1) {
       const index = ix * ny + iy;
@@ -982,16 +1099,30 @@ function transientFinalLabel() {
   const caption = $("transient-final-caption");
   const input = $("transient-final");
   const durationInput = $("transient-duration");
+  const trajectory = type === "pCO2_trajectory";
+  $("transient-final-label").classList.toggle("hidden", trajectory);
+  $("trajectory-controls").classList.toggle("hidden", !trajectory);
   const settings = {
     pCO2: ["Final pCO<sub>2</sub>", "ppm", "1000", "1", "12000"],
+    pCO2_trajectory: ["", "", "", "", "12000"],
     pO2: ["Final pO<sub>2</sub>", "PAL", "0.50", "0.01", "12000"],
     GPP: ["Final GPP", "% modern", "50.0", "0.1", "18000"],
     photosynthesis: ["Final photosynthesis", "% initial", "50.0", "0.1", "22000"],
   }[type];
-  caption.innerHTML = `${settings[0]} <small>${settings[1]}</small>`;
-  input.value = settings[2];
-  input.step = settings[3];
+  if (!trajectory) {
+    caption.innerHTML = `${settings[0]} <small>${settings[1]}</small>`;
+    input.value = settings[2];
+    input.step = settings[3];
+  }
   durationInput.value = settings[4];
+}
+
+function applyTrajectoryPreset() {
+  if ($("trajectory-preset").value !== "historical") return;
+  $("trajectory-start").value = "285.5";
+  $("trajectory-end").value = "422.8";
+  $("trajectory-duration").value = "174";
+  $("trajectory-interpolation").value = "smoothstep";
 }
 
 async function runTransient() {
@@ -1004,11 +1135,29 @@ async function runTransient() {
   try {
     const initial = currentForwardState();
     const duration = finite(number("transient-duration"), "Duration");
-    const finalValue = finite(number("transient-final"), "Final value");
     const type = $("transient-type").value;
+    const finalValue = type === "pCO2_trajectory"
+      ? finite(number("trajectory-end"), "Final pCO2")
+      : finite(number("transient-final"), "Final value");
     let path;
     let request;
-    if (type === "photosynthesis") {
+    if (type === "pCO2_trajectory") {
+      initial.p_co2_ppm = finite(number("trajectory-start"), "Initial pCO2");
+      const transitionDuration = finite(number("trajectory-duration"), "Transition duration");
+      if (transitionDuration <= 0 || transitionDuration > 100000) {
+        throw new Error("Transition duration must be between 0 and 100,000 years.");
+      }
+      path = "/api/v1/transients/pco2-trajectory";
+      request = {
+        initial,
+        final_pco2_ppm: finalValue,
+        transition_duration_years: transitionDuration,
+        interpolation: $("trajectory-interpolation").value,
+        duration_years: duration,
+        sample_count: 241,
+        equilibrium_search_max_years: Math.max(100000, duration, transitionDuration),
+      };
+    } else if (type === "photosynthesis") {
       path = "/api/v1/transients/photosynthesis-step";
       request = {
         initial,
@@ -1045,7 +1194,13 @@ async function runTransient() {
     let forcingInitial;
     let forcingFinal;
     let forcingDigits;
-    if (type === "pCO2") {
+    if (type === "pCO2_trajectory") {
+      forcingTitle = "Prescribed pCO₂ trajectory";
+      forcingUnit = "pCO₂ (ppm)";
+      forcingInitial = initial.p_co2_ppm;
+      forcingFinal = finalValue;
+      forcingDigits = 0;
+    } else if (type === "pCO2") {
       forcingTitle = "Imposed pCO₂ step";
       forcingUnit = "pCO₂ (ppm)";
       forcingInitial = initial.p_co2_ppm;
@@ -1070,10 +1225,25 @@ async function runTransient() {
       forcingFinal = finalValue;
       forcingDigits = 1;
     }
+    const trajectoryPlotEnd = type === "pCO2_trajectory"
+      ? Math.min(duration, request.transition_duration_years * 1.5)
+      : duration;
+    const trajectoryIndices = type === "pCO2_trajectory"
+      ? times.map((time, index) => ({ time, index })).filter((item) => item.time <= trajectoryPlotEnd)
+      : [];
+    const trajectoryPreDuration = type === "pCO2_trajectory"
+      ? Math.min(request.transition_duration_years * 0.25, 50)
+      : preStepDuration;
+    const forcingTimes = type === "pCO2_trajectory"
+      ? [-trajectoryPreDuration, ...trajectoryIndices.map((item) => item.time)]
+      : [-preStepDuration, 0, 0, duration];
+    const forcingValues = type === "pCO2_trajectory"
+      ? [result.pco2_ppm[0], ...trajectoryIndices.map((item) => result.pco2_ppm[item.index])]
+      : [forcingInitial, forcingInitial, forcingFinal, forcingFinal];
     drawLine(
       "transient-forcing",
-      [-preStepDuration, 0, 0, duration],
-      [forcingInitial, forcingInitial, forcingFinal, forcingFinal],
+      forcingTimes,
+      forcingValues,
       forcingTitle,
       forcingUnit,
       "#c18b28",
@@ -1126,7 +1296,9 @@ async function downloadTransientWorkbook() {
       experiment_type: type,
       ...(type === "photosynthesis"
         ? { photosynthesis_step: request }
-        : { state_step: request }),
+        : type === "pCO2_trajectory"
+          ? { pco2_trajectory: request }
+          : { state_step: request }),
     };
     const response = await fetch(applicationUrl("/api/v1/export/transient.xlsx"), {
       method: "POST",
@@ -1140,7 +1312,7 @@ async function downloadTransientWorkbook() {
     const blob = await response.blob();
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `o2_model_${type.toLowerCase()}_time_response.xlsx`;
+    link.download = `oxytib_${type.toLowerCase()}_time_response.xlsx`;
     link.click();
     URL.revokeObjectURL(link.href);
   } catch (error) {
@@ -1195,6 +1367,9 @@ function resetInputs() {
 }
 
 function bindInterface() {
+  $("theme-toggle").addEventListener("change", (event) => {
+    applyTheme(event.target.checked ? "dark" : "light");
+  });
   document.querySelectorAll(".tab").forEach((button) => button.addEventListener("click", () => {
     document.querySelectorAll(".tab").forEach((item) => item.classList.toggle("active", item === button));
     document.querySelectorAll(".view").forEach((view) => view.classList.remove("active"));
@@ -1222,6 +1397,10 @@ function bindInterface() {
   $("run-transient").addEventListener("click", runTransient);
   $("download-transient-xlsx").addEventListener("click", downloadTransientWorkbook);
   $("transient-type").addEventListener("change", transientFinalLabel);
+  $("trajectory-preset").addEventListener("change", applyTrajectoryPreset);
+  ["trajectory-start", "trajectory-end", "trajectory-duration", "trajectory-interpolation"].forEach((id) => {
+    $(id).addEventListener("change", () => { $("trajectory-preset").value = "custom"; });
+  });
   $("download-result").addEventListener("click", downloadResult);
   $("download-result-xlsx").addEventListener("click", downloadWorkbook);
   document.querySelectorAll(".plot-export").forEach((button) => {
@@ -1231,6 +1410,7 @@ function bindInterface() {
 }
 
 async function initialize() {
+  applyTheme(preferredTheme(), false);
   bindInterface();
   setConstraintMode("pCO2", "fixed");
   setConstraintMode("GPP", "fixed");

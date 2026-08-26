@@ -26,7 +26,7 @@ def test_publication_model_has_no_release_blockers() -> None:
     report = build_report()
     assert report["release_blocker_count"] == 0
     assert report["verdict"] == (
-        "accepted_for_steady_forward_inverse_and_declared_step_response"
+        "accepted_for_steady_forward_inverse_and_declared_time_responses"
     )
 
 
@@ -39,8 +39,8 @@ def test_qualified_evidence_does_not_mutate_the_central_model() -> None:
     assert statuses["pCO2-dependent climate profile"] == "excluded"
 
 
-def test_claim_boundary_keeps_inverse_nonuniqueness_explicit() -> None:
+def test_scope_boundary_keeps_inference_constraints_explicit() -> None:
     report = build_report()
-    unsupported = " ".join(report["claims_not_supported"])
-    assert "unique simultaneous recovery" in unsupported
-    assert "whole-domain Gaussian" in unsupported
+    boundaries = " ".join(report["scope_boundaries"])
+    assert "independent coordinate constraints" in boundaries
+    assert "structural evidence is reported by domain" in boundaries

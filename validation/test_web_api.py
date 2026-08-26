@@ -21,18 +21,18 @@ client = TestClient(app)
 
 def test_frontend_assets_and_api_work_when_mounted_below_prefix() -> None:
     prefixed = FastAPI()
-    prefixed.mount("/atmo-mod", app)
+    prefixed.mount("/oxytib", app)
     prefixed_client = TestClient(prefixed)
 
-    root = prefixed_client.get("/atmo-mod/")
-    script = prefixed_client.get("/atmo-mod/assets/app.js")
-    styles = prefixed_client.get("/atmo-mod/assets/styles.css")
-    health = prefixed_client.get("/atmo-mod/api/v1/health")
-    citation = prefixed_client.get("/atmo-mod/citation/model.bib")
+    root = prefixed_client.get("/oxytib/")
+    script = prefixed_client.get("/oxytib/assets/app.js")
+    styles = prefixed_client.get("/oxytib/assets/styles.css")
+    health = prefixed_client.get("/oxytib/api/v1/health")
+    citation = prefixed_client.get("/oxytib/citation/model.bib")
 
     assert root.status_code == 200
-    assert 'href="assets/styles.css?v=1.17.0"' in root.text
-    assert 'src="assets/app.js?v=1.17.0"' in root.text
+    assert 'href="assets/styles.css?v=1.19.0"' in root.text
+    assert 'src="assets/app.js?v=1.19.0"' in root.text
     assert script.status_code == 200
     assert styles.status_code == 200
     assert health.status_code == 200
@@ -41,10 +41,10 @@ def test_frontend_assets_and_api_work_when_mounted_below_prefix() -> None:
 
 
 def test_cors_is_opt_in(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("O2_MODEL_CORS_ORIGINS", raising=False)
+    monkeypatch.delenv("OXYTIB_CORS_ORIGINS", raising=False)
     assert _cors_origins() == []
     monkeypatch.setenv(
-        "O2_MODEL_CORS_ORIGINS",
+        "OXYTIB_CORS_ORIGINS",
         "https://model.example.org, https://analysis.example.org",
     )
     assert _cors_origins() == [
@@ -53,10 +53,32 @@ def test_cors_is_opt_in(monkeypatch: pytest.MonkeyPatch) -> None:
     ]
 
 
+def test_public_responses_include_browser_security_headers() -> None:
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.headers["x-frame-options"] == "DENY"
+    assert response.headers["referrer-policy"] == "no-referrer"
+    assert response.headers["permissions-policy"] == (
+        "camera=(), microphone=(), geolocation=()"
+    )
+    assert "frame-ancestors 'none'" in response.headers["content-security-policy"]
+
+
+def test_oversized_request_body_is_rejected_before_model_execution() -> None:
+    response = client.post(
+        "/api/v1/forward",
+        content=b"x" * (web_api.MAX_REQUEST_BYTES + 1),
+        headers={"Content-Type": "application/json"},
+    )
+    assert response.status_code == 413
+    assert response.json()["detail"] == "request body exceeds the public API size limit"
+
+
 def test_root_serves_independent_frontend_and_static_assets() -> None:
     root = client.get("/")
     assert root.status_code == 200
-    assert "Atmospheric O<sub>2</sub> triple-isotope model" in root.text
+    assert "<h1>OXYTIB</h1>" in root.text
     assert "streamlit" not in root.text.lower()
     assert 'type="number"' not in root.text
     assert 'id="transient-forcing"' in root.text
@@ -64,8 +86,9 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert root.text.count('class="plot-export"') == 7
     assert 'id="download-result-xlsx"' in root.text
     assert 'id="download-transient-xlsx"' in root.text
-    assert 'href="assets/styles.css?v=1.17.0"' in root.text
-    assert 'src="assets/app.js?v=1.17.0"' in root.text
+    assert 'href="assets/styles.css?v=1.19.0"' in root.text
+    assert 'src="assets/app.js?v=1.19.0"' in root.text
+    assert 'id="theme-toggle"' in root.text
     assert 'href="/assets/' not in root.text
     assert 'src="/assets/' not in root.text
     assert "x ∈ {17, 18}" in root.text
@@ -104,7 +127,7 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert '<a href="docs">API documentation</a>' in root.text
     assert 'href="/docs"' not in root.text
     assert root.text.count('class="reference-group"') == 5
-    assert root.text.count("<article>", root.text.index('id="view-references"')) == 22
+    assert root.text.count("<article>", root.text.index('id="view-references"')) == 24
     for citation_url in (
         "https://jpldataeval.jpl.nasa.gov/",
         "https://doi.org/10.1002/qj.3803",
@@ -113,7 +136,9 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
         "https://doi.org/10.5194/amt-18-2701-2025",
         "https://doi.org/10.1126/science.abj8826",
         "https://doi.org/10.1098/rspb.1999.0852",
-        "https://doi.org/10.1146/annurev-earth-032320-095425",
+            "https://doi.org/10.1146/annurev-earth-032320-095425",
+            "https://www.ipcc.ch/report/ar6/wg1/chapter/chapter-2/",
+            "https://gml.noaa.gov/aggi/aggi.html",
     ):
         assert citation_url in root.text
     assert "<i>Scientific Reports</i>, 13, 2162." in root.text
@@ -141,7 +166,9 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert "balanced across the plotted field" in script.text
     assert "level === -24 || level === -26" not in script.text
     assert "Color encodes the model-predicted atmospheric" not in script.text
-    assert "Dark outline: joint 95% highest-posterior-density region" in script.text
+    assert "drawMarginalLegend(ctx, width)" in script.text
+    assert '"95% credible region"' in script.text
+    assert '"Atmospheric O₂ Δ′¹⁷O (‰)"' in script.text
     assert "Peak grid compatibility" not in script.text
     assert "function drawMarginalPosterior" in script.text
     assert 'prior: state.solveFor === "pO2" ? "uniform" : "log_uniform"' not in script.text
@@ -165,7 +192,7 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
 @pytest.mark.parametrize(
     ("path", "marker"),
     [
-        ("/citation/model.bib", "@software{zahnow_atmospheric_o2_model_2026"),
+        ("/citation/model.bib", "@software{zahnow_oxytib_2026"),
         ("/citation/model.ris", "TY  - COMP"),
         ("/citation/CITATION.cff", "cff-version: 1.2.0"),
     ],
@@ -202,14 +229,14 @@ def test_coordinate_xlsx_export_contains_provenance_and_posterior_data() -> None
     assert response.headers["content-type"].startswith(
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-    assert "o2_model_pco2_solution.xlsx" in response.headers["content-disposition"]
+    assert "oxytib_pco2_solution.xlsx" in response.headers["content-disposition"]
     workbook = load_workbook(BytesIO(response.content), data_only=False)
     assert workbook.sheetnames == ["Summary", "Posterior"]
     summary = {
         row[0].value: row[1].value
         for row in workbook["Summary"].iter_rows(min_row=4, max_col=2)
     }
-    assert summary["publication_model_id"] == "atmospheric_o2_triple_isotope_model_v1"
+    assert summary["publication_model_id"] == "oxytib_publication_model_v1"
     assert summary["isotope_source"] == "Direct air O2"
     assert summary["solved_coordinate"] == "pCO2"
     assert summary["GPP_constraint_kind"] == "fixed"
@@ -247,7 +274,7 @@ def test_transient_xlsx_export_reuses_run_and_contains_metadata(
     assert export.status_code == 200
     assert calls == 1
     assert export.content[:2] == b"PK"
-    assert "o2_model_pco2_time_response.xlsx" in export.headers[
+    assert "oxytib_pco2_time_response.xlsx" in export.headers[
         "content-disposition"
     ]
     workbook = load_workbook(BytesIO(export.content), data_only=False)
@@ -256,10 +283,52 @@ def test_transient_xlsx_export_reuses_run_and_contains_metadata(
         row[0].value: row[1].value
         for row in workbook["Summary"].iter_rows(min_row=4, max_col=2)
     }
-    assert summary["publication_model_id"] == "atmospheric_o2_triple_isotope_model_v1"
+    assert summary["publication_model_id"] == "oxytib_publication_model_v1"
     assert summary["experiment_type"] == "pCO2"
     assert summary["sample_count"] == 3
     assert workbook["Time series"].max_row == 6
+
+
+def test_gradual_pco2_trajectory_endpoint_and_xlsx_export() -> None:
+    experiment = {
+        "initial": {
+            "p_o2_pal": 1.0,
+            "p_co2_ppm": 285.5,
+            "gpp_pgC_per_year": 290.0,
+        },
+        "final_pco2_ppm": 422.8,
+        "transition_duration_years": 174.0,
+        "interpolation": "smoothstep",
+        "duration_years": 200.0,
+        "sample_count": 9,
+        "equilibrium_search_max_years": 200.0,
+    }
+    run = client.post("/api/v1/transients/pco2-trajectory", json=experiment)
+    export = client.post(
+        "/api/v1/export/transient.xlsx",
+        json={
+            "experiment_type": "pCO2_trajectory",
+            "pco2_trajectory": experiment,
+        },
+    )
+
+    assert run.status_code == 200
+    body = run.json()
+    assert body["calculation"] == "pco2_trajectory_transient"
+    assert body["result"]["pco2_ppm"][0] == pytest.approx(285.5)
+    assert body["result"]["pco2_ppm"][-1] == pytest.approx(422.8)
+    assert export.status_code == 200
+    assert export.content[:2] == b"PK"
+    assert "oxytib_pco2_trajectory_time_response.xlsx" in export.headers[
+        "content-disposition"
+    ]
+    workbook = load_workbook(BytesIO(export.content), data_only=False)
+    summary = {
+        row[0].value: row[1].value
+        for row in workbook["Summary"].iter_rows(min_row=4, max_col=2)
+    }
+    assert summary["experiment_type"] == "pCO2_trajectory"
+    assert workbook["Time series"].max_row == 12
 
 
 def test_coordinate_xlsx_export_includes_spherule_context_and_joint_field() -> None:
@@ -306,7 +375,7 @@ def test_health_and_model_metadata_expose_one_accepted_model() -> None:
     assert health.json() == {
         "status": "ok",
         "api_version": "1.0",
-        "publication_model_id": "atmospheric_o2_triple_isotope_model_v1",
+        "publication_model_id": "oxytib_publication_model_v1",
     }
 
     metadata = client.get("/api/v1/model")
@@ -557,7 +626,7 @@ def test_deterministic_isotope_field_is_separate_from_the_posterior() -> None:
     assert 8 <= len(result["contour_levels_permil"]) <= 10
     assert result["contour_levels_permil"] == sorted(result["contour_levels_permil"])
     assert result["contour_selection_strategy"] == "plot_area_balanced_readable"
-    assert "no measurement likelihood" in result["field_scope"]
+    assert "handled by inference endpoints" in result["field_scope"]
 
 
 def test_out_of_domain_and_unknown_fields_are_rejected() -> None:

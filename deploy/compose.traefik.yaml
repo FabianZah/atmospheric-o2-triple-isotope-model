@@ -1,18 +1,21 @@
-name: atmo-mod
+name: oxytib
 
 services:
   model-api:
     build:
       context: ..
       dockerfile: Dockerfile
-    image: "atmo-mod:${ATMO_MOD_VERSION:-0.1.0}"
+    image: "oxytib:${OXYTIB_VERSION:-0.1.0}"
     restart: unless-stopped
     environment:
-      O2_MODEL_CORS_ORIGINS: "${O2_MODEL_CORS_ORIGINS:-}"
+      OXYTIB_CORS_ORIGINS: "${OXYTIB_CORS_ORIGINS:-}"
+      OXYTIB_MAX_REQUEST_BYTES: "${OXYTIB_MAX_REQUEST_BYTES:-1048576}"
+      OXYTIB_MAX_COMPUTE_REQUESTS: "${OXYTIB_MAX_COMPUTE_REQUESTS:-2}"
+      OXYTIB_COMPUTE_QUEUE_TIMEOUT_SECONDS: "${OXYTIB_COMPUTE_QUEUE_TIMEOUT_SECONDS:-1.0}"
     expose:
       - "8000"
     ports:
-      - "127.0.0.1:${ATMO_MOD_LOCAL_PORT:-18000}:8000"
+      - "127.0.0.1:${OXYTIB_LOCAL_PORT:-18000}:8000"
     read_only: true
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=64m
@@ -20,27 +23,44 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
-    pids_limit: "${ATMO_MOD_PIDS:-128}"
-    mem_limit: "${ATMO_MOD_MEMORY:-768m}"
-    cpus: "${ATMO_MOD_CPUS:-0.75}"
+    pids_limit: "${OXYTIB_PIDS:-128}"
+    mem_limit: "${OXYTIB_MEMORY:-768m}"
+    cpus: "${OXYTIB_CPUS:-0.75}"
     stop_grace_period: 30s
     networks:
       - traefik-global-proxy
     labels:
-      - "traefik.enable=${ATMO_MOD_TRAEFIK_ENABLE:-false}"
+      - "traefik.enable=${OXYTIB_TRAEFIK_ENABLE:-false}"
       - "traefik.docker.network=traefik-global-proxy"
-      - "traefik.http.routers.atmo-mod.rule=Host(`${ATMO_MOD_HOST:-model.example.org}`) && (Path(`/atmo-mod`) || PathPrefix(`/atmo-mod/`))"
-      - "traefik.http.routers.atmo-mod.entrypoints=websecure"
-      - "traefik.http.routers.atmo-mod.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.atmo-mod.middlewares=atmo-mod-slash,atmo-mod-strip"
-      - "traefik.http.middlewares.atmo-mod-slash.redirectregex.regex=^https?://([^/]+)/atmo-mod$$"
-      - "traefik.http.middlewares.atmo-mod-slash.redirectregex.replacement=https://$${1}/atmo-mod/"
-      - "traefik.http.middlewares.atmo-mod-slash.redirectregex.permanent=true"
-      - "traefik.http.middlewares.atmo-mod-strip.stripprefix.prefixes=/atmo-mod"
-      - "traefik.http.services.atmo-mod.loadbalancer.server.port=8000"
-      - "traefik.http.services.atmo-mod.loadbalancer.healthcheck.path=/api/v1/health"
-      - "traefik.http.services.atmo-mod.loadbalancer.healthcheck.interval=30s"
-      - "traefik.http.services.atmo-mod.loadbalancer.healthcheck.timeout=5s"
+      - "traefik.http.routers.oxytib.rule=Host(`${OXYTIB_HOST:-model.example.org}`) && (Path(`/oxytib`) || PathPrefix(`/oxytib/`))"
+      - "traefik.http.routers.oxytib.entrypoints=websecure"
+      - "traefik.http.routers.oxytib.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.oxytib.middlewares=oxytib-slash,oxytib-rate,oxytib-inflight,oxytib-security,oxytib-strip"
+      - "traefik.http.middlewares.oxytib-slash.redirectregex.regex=^https?://([^/]+)/oxytib$$"
+      - "traefik.http.middlewares.oxytib-slash.redirectregex.replacement=https://$${1}/oxytib/"
+      - "traefik.http.middlewares.oxytib-slash.redirectregex.permanent=true"
+      - "traefik.http.middlewares.oxytib-strip.stripprefix.prefixes=/oxytib"
+      - "traefik.http.middlewares.oxytib-rate.ratelimit.average=${OXYTIB_RATE_AVERAGE:-30}"
+      - "traefik.http.middlewares.oxytib-rate.ratelimit.period=${OXYTIB_RATE_PERIOD:-1m}"
+      - "traefik.http.middlewares.oxytib-rate.ratelimit.burst=${OXYTIB_RATE_BURST:-10}"
+      - "traefik.http.middlewares.oxytib-inflight.inflightreq.amount=${OXYTIB_INFLIGHT_REQUESTS:-4}"
+      - "traefik.http.middlewares.oxytib-security.headers.contenttypenosniff=true"
+      - "traefik.http.middlewares.oxytib-security.headers.framedeny=true"
+      - "traefik.http.middlewares.oxytib-security.headers.referrerpolicy=no-referrer"
+      - "traefik.http.middlewares.oxytib-security.headers.permissionspolicy=camera=(), microphone=(), geolocation=()"
+      - "traefik.http.middlewares.oxytib-security.headers.stsseconds=31536000"
+      - "traefik.http.middlewares.oxytib-security.headers.contentsecuritypolicy=default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+      - "traefik.http.services.oxytib.loadbalancer.server.port=8000"
+      - "traefik.http.services.oxytib.loadbalancer.healthcheck.path=/api/v1/health"
+      - "traefik.http.services.oxytib.loadbalancer.healthcheck.interval=30s"
+      - "traefik.http.services.oxytib.loadbalancer.healthcheck.timeout=5s"
+      - "traefik.http.routers.oxytib-legacy.rule=Host(`${OXYTIB_HOST:-model.example.org}`) && (Path(`/atmo-mod`) || PathPrefix(`/atmo-mod/`))"
+      - "traefik.http.routers.oxytib-legacy.entrypoints=websecure"
+      - "traefik.http.routers.oxytib-legacy.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.oxytib-legacy.middlewares=oxytib-legacy-redirect"
+      - "traefik.http.middlewares.oxytib-legacy-redirect.redirectregex.regex=^https?://([^/]+)/atmo-mod(.*)"
+      - "traefik.http.middlewares.oxytib-legacy-redirect.redirectregex.replacement=https://$${1}/oxytib$${2}"
+      - "traefik.http.middlewares.oxytib-legacy-redirect.redirectregex.permanent=true"
     logging:
       driver: json-file
       options:

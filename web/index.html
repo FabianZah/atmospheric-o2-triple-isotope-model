@@ -3,17 +3,24 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Atmospheric O2 Triple-Isotope Model</title>
-  <link rel="stylesheet" href="assets/styles.css?v=1.17.0">
-  <script defer src="assets/app.js?v=1.17.0"></script>
+  <title>OXYTIB</title>
+  <link rel="stylesheet" href="assets/styles.css?v=1.19.0">
+  <script defer src="assets/app.js?v=1.19.0"></script>
 </head>
 <body>
   <header class="topbar">
     <div>
-      <h1>Atmospheric O<sub>2</sub> triple-isotope model</h1>
-      <p>Constrained pCO<sub>2</sub>, GPP, and pO<sub>2</sub> inference</p>
+      <h1>OXYTIB</h1>
+      <p>Atmospheric oxygen triple-isotope budget and inference model</p>
     </div>
-    <div class="model-state" id="model-state"><span></span> Connecting</div>
+    <div class="topbar-actions">
+      <label class="theme-switch" for="theme-toggle">
+        <input id="theme-toggle" type="checkbox" role="switch" aria-label="Use dark appearance">
+        <span class="theme-track" aria-hidden="true"><i></i></span>
+        <span id="theme-label">Dark</span>
+      </label>
+      <div class="model-state" id="model-state"><span></span> Connecting</div>
+    </div>
   </header>
 
   <nav class="tabs" aria-label="Model views">
@@ -180,9 +187,9 @@
               </div>
               <canvas id="solver-marginal-canvas" width="980" height="330"></canvas>
               <div class="marginal-key" aria-label="Solution distribution legend">
-                <span><i class="density-mark" aria-hidden="true"></i>Blue profile: relative probability density</span>
-                <span><i class="interval-mark" aria-hidden="true"></i>Yellow band: central 95% credible interval</span>
-                <span><i class="median-mark" aria-hidden="true"></i>Black line: posterior median</span>
+                <span><i class="density-mark" aria-hidden="true"></i>Relative probability density</span>
+                <span><i class="interval-mark" aria-hidden="true"></i>Central 95% credible interval</span>
+                <span><i class="median-mark" aria-hidden="true"></i>Posterior median</span>
               </div>
             </div>
             <p class="method-note hidden" id="solver-method-note"></p>
@@ -192,6 +199,10 @@
                 <button class="plot-export" type="button" data-canvas="solver-probability-canvas" data-filename="constrained_pco2_gpp_probability" disabled title="Download plot as PNG">↓ PNG</button>
               </div>
               <canvas id="solver-probability-canvas" width="980" height="560"></canvas>
+              <div class="marginal-key" aria-label="Probability field legend">
+                <span><i class="probability-scale-mark" aria-hidden="true"></i>Relative probability density</span>
+                <span><i class="hpd-mark" aria-hidden="true"></i>95% credible region</span>
+              </div>
               <div class="probability-caption" id="solver-probability-caption"></div>
             </div>
           </div>
@@ -237,6 +248,7 @@
         <label>Experiment
           <select id="transient-type">
             <option value="pCO2">pCO2 step</option>
+            <option value="pCO2_trajectory">Gradual pCO2 trajectory</option>
             <option value="pO2">pO2 step</option>
             <option value="GPP">GPP step at fixed pO2</option>
             <option value="photosynthesis">Photosynthesis step with O2 response</option>
@@ -244,6 +256,23 @@
         </label>
         <label id="transient-final-label"><span class="control-label" id="transient-final-caption">Final pCO<sub>2</sub> <small>ppm</small></span><input id="transient-final" type="text" inputmode="decimal" value="1000"></label>
         <label><span class="control-label">Displayed duration <small>years</small></span><input id="transient-duration" type="text" inputmode="decimal" value="12000"></label>
+      </div>
+      <div class="transient-controls trajectory-controls hidden" id="trajectory-controls">
+        <label>Endpoint preset
+          <select id="trajectory-preset">
+            <option value="historical">1850–2024 reference</option>
+            <option value="custom">Custom endpoints</option>
+          </select>
+        </label>
+        <label><span class="control-label">Initial pCO<sub>2</sub> <small>ppm</small></span><input id="trajectory-start" type="text" inputmode="decimal" value="285.5"></label>
+        <label><span class="control-label">Final pCO<sub>2</sub> <small>ppm</small></span><input id="trajectory-end" type="text" inputmode="decimal" value="422.8"></label>
+        <label><span class="control-label">Transition duration <small>years</small></span><input id="trajectory-duration" type="text" inputmode="decimal" value="174"></label>
+        <label>Interpolation
+          <select id="trajectory-interpolation">
+            <option value="smoothstep">Smooth endpoints</option>
+            <option value="linear">Linear</option>
+          </select>
+        </label>
       </div>
       <p class="error-message" id="transient-error" role="alert"></p>
       <div class="transient-summary" id="transient-summary"></div>
@@ -284,12 +313,10 @@
             <div><dt>PAL</dt><dd>Present atmospheric level; 1.00 PAL corresponds to 21.2% atmospheric O<sub>2</sub> in this interface.</dd></div>
             <div><dt>GPP</dt><dd>Gross primary production; 100% modern corresponds to 290 PgC yr<sup>−1</sup> in this interface.</dd></div>
           </dl>
-          <h2>Inference</h2>
-          <p>An isotope measurement defines a family of compatible pCO<sub>2</sub>, GPP, and pO<sub>2</sub> states. A one-coordinate solution is reported only after the other two coordinates are constrained.</p>
         </article>
         <article>
           <h2>Frequently asked questions</h2>
-          <details open><summary>Why must two variables be constrained before solving for the third?</summary><p>Atmospheric O<sub>2</sub> Δ′<sup>17</sup>O does not uniquely determine pCO<sub>2</sub>, GPP, and pO<sub>2</sub> simultaneously. Independent constraints on two coordinates restrict the family of compatible atmospheric states and allow the remaining coordinate to be inferred.</p></details>
+          <details open><summary>Why must two variables be constrained before solving for the third?</summary><p>One atmospheric O<sub>2</sub> Δ′<sup>17</sup>O observation defines a family of compatible pCO<sub>2</sub>, GPP, and pO<sub>2</sub> states. Independent constraints on two coordinates restrict that family and allow the remaining coordinate to be inferred.</p></details>
           <details><summary>What does the solution uncertainty interval include?</summary><p>The displayed interval combines analytical isotope uncertainty with the two coordinate constraints entered by the user. A value ± 1σ is treated as Gaussian and an exact range as uniform within its bounds. Structural model uncertainty is assessed separately.</p></details>
           <details><summary>How is the probability distribution calculated?</summary><p>The model is evaluated across its accepted domain and weighted by the isotope analytical likelihood and entered constraints. Uncertainty in the other coordinates is integrated out. The solved coordinate has a uniform prior in its reported units; a stated range is uniform within its bounds and a 1σ constraint is Gaussian. The displayed profile focuses on the central 99.8% of posterior probability.</p></details>
           <details><summary>What is the difference between the isotope field and the constrained solution?</summary><p>The isotope field shows deterministic central-model Δ′<sup>17</sup>O predictions across pCO<sub>2</sub> and GPP at one fixed pO<sub>2</sub>. The constrained solver combines an isotope measurement and its analytical uncertainty with independent constraints to produce a probability distribution for one requested coordinate.</p></details>
@@ -309,7 +336,7 @@
       <section class="citation-panel" aria-labelledby="citation-heading">
         <div>
           <h2 id="citation-heading">How to cite</h2>
-          <p>Zahnow, F. (2026). <i>Atmospheric O<sub>2</sub> Triple-Isotope Model</i> (Version 0.1.0) [Computer software]. GitHub.</p>
+          <p>Zahnow, F. (2026). <i>OXYTIB: Atmospheric Oxygen Triple-Isotope Budget and Inference Model</i> (Version 0.1.0) [Computer software]. GitHub.</p>
           <a class="citation-repository" href="https://github.com/FabianZah/atmospheric-o2-triple-isotope-model" target="_blank" rel="noopener noreferrer">github.com/FabianZah/atmospheric-o2-triple-isotope-model</a>
         </div>
         <div class="citation-actions" aria-label="Download citation">
@@ -385,6 +412,16 @@
             <strong>Adnew, G. A., et al. (2025)</strong>
             <span>Triple oxygen isotope composition of CO<sub>2</sub> in the upper troposphere and stratosphere. <i>Atmospheric Measurement Techniques</i>, 18, 2701–2719.</span>
             <a href="https://doi.org/10.5194/amt-18-2701-2025" target="_blank" rel="noopener noreferrer">doi:10.5194/amt-18-2701-2025</a>
+          </article>
+          <article>
+            <strong>IPCC (2021)</strong>
+            <span><i>Climate Change 2021: The Physical Science Basis</i>. Contribution of Working Group I to the Sixth Assessment Report, Chapter 2.</span>
+            <a href="https://www.ipcc.ch/report/ar6/wg1/chapter/chapter-2/" target="_blank" rel="noopener noreferrer">IPCC AR6 Chapter 2</a>
+          </article>
+          <article>
+            <strong>NOAA Global Monitoring Laboratory (2025)</strong>
+            <span>Annual Greenhouse Gas Index: globally averaged atmospheric CO<sub>2</sub> abundance for 2024.</span>
+            <a href="https://gml.noaa.gov/aggi/aggi.html" target="_blank" rel="noopener noreferrer">NOAA Annual Greenhouse Gas Index</a>
           </article>
         </div>
       </section>

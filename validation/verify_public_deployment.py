@@ -11,7 +11,7 @@ from urllib.parse import urljoin
 from urllib.request import Request, urlopen
 
 
-EXPECTED_MODEL_ID = "atmospheric_o2_triple_isotope_model_v1"
+EXPECTED_MODEL_ID = "oxytib_publication_model_v1"
 EXPECTED_MODERN_DELTA17_PERMIL = -0.42635313046373885
 
 
