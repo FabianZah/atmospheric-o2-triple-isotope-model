@@ -1,11 +1,10 @@
 # Direct package versions in the environment used to verify this snapshot.
-# Transitive packages remain platform-specific; use requirements.txt for normal
-# installation and this file when reproducing the tested direct stack.
+# Transitive packages remain platform-specific; use requirements-api.txt for
+# normal installation and this file when reproducing the tested direct stack.
 numpy==1.26.4
 scipy==1.13.1
 pandas==2.2.2
 matplotlib==3.9.2
-streamlit==1.37.1
 pillow==12.1.1
 openpyxl==3.1.5
 h5py==3.11.0
