@@ -238,7 +238,7 @@ h3 { font-size: 14px; letter-spacing: 0; }
 .probability-caption { margin-top: 8px; color: var(--muted); font-size: 12px; line-height: 1.55; }
 
 .band-heading { max-width: 1500px; margin: 0 auto 17px; }
-.transient-actions { display: flex; align-items: center; gap: 10px; }
+.transient-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .surface-actions { display: flex; align-items: center; gap: 12px; }
 .surface-mode { width: 220px; }
 .surface-controls, .transient-controls {

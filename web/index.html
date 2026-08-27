@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OXYTIB</title>
-  <link rel="stylesheet" href="assets/styles.css?v=1.20.6">
-  <script defer src="assets/app.js?v=1.20.6"></script>
+  <link rel="stylesheet" href="assets/styles.css?v=1.20.7">
+  <script defer src="assets/app.js?v=1.20.7"></script>
 </head>
 <body>
   <header class="topbar">
@@ -214,6 +214,7 @@
       <div class="band-heading">
         <div><h2>Atmospheric O<sub>2</sub> Δ′<sup>17</sup>O<sub>0.528</sub> field</h2></div>
         <div class="surface-actions">
+          <button class="text-button" id="reset-surface" type="button">Reset</button>
           <button class="primary-command compact" id="run-surface" type="button">Generate isotope map</button>
         </div>
       </div>
@@ -237,6 +238,7 @@
       <div class="band-heading">
         <div><h2>Atmospheric isotope time response</h2></div>
         <div class="transient-actions">
+          <button class="text-button" id="reset-transient" type="button">Reset</button>
           <button class="secondary-command" id="download-transient-xlsx" type="button" disabled>Download XLSX</button>
           <button class="primary-command compact" id="run-transient" type="button">Run experiment</button>
         </div>
