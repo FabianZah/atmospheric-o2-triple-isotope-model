@@ -1,132 +1,139 @@
-# Atmospheric O2 triple-isotope model
+# OXYTIB
 
-This repository contains a literature-updated model of the atmospheric O2
-triple-oxygen-isotope budget, its inverse tools, an independent HTTP API, and
-the validation evidence used to define the publication model. The public user
-interface is a framework-independent browser application served by FastAPI.
+**Atmospheric oxygen triple-isotope budget and inference model**
 
-The model calculates atmospheric O2 Delta-prime-17O and delta-prime-18O for
-specified pCO2, pO2, and gross primary production (GPP). It can solve for one
-of those physical coordinates when the other two are constrained. It does not
-claim that one isotope measurement uniquely determines pCO2, pO2, and GPP
-simultaneously.
+OXYTIB links atmospheric O₂ triple-isotope composition to pCO₂, pO₂, and
+gross primary production (GPP). It provides steady forward calculations,
+constrained inference of one coordinate, isotope fields, time-response
+experiments, and traceable scientific exports.
 
-The hosted interface is available at
-[mycompton.de/atmo-mod](https://mycompton.de/atmo-mod/).
+The hosted application is available at
+[mycompton.de/oxytib](https://mycompton.de/oxytib/).
 
-## Publication model
+## Scientific model
 
-The manuscript and public interface use one deterministic model: an
-altitude-resolved Photochem R1-R7 atmospheric column coupled to a conservative
-global atmospheric-O2 and biological-turnover budget. The versioned output
-surface accelerates repeated evaluation without applying smoothing, output
-offsets, or extrapolation.
+The deterministic model couples altitude-resolved R1-R7 photochemistry to a
+conservative global atmospheric-O₂ and biological-turnover budget. A versioned
+output surface accelerates repeated evaluation while preserving the validated
+central calculation.
 
-The accepted operational domain is:
+OXYTIB predicts atmospheric O₂ Δ′¹⁷O and δ′¹⁸O for specified pCO₂, pO₂, and
+GPP. Inference solves one coordinate from an isotope observation and
+independent constraints on the other two. The accepted operational domain is:
 
-- pO2: 0.1-2.0 PAL
-- pCO2: 50-60,000 ppm
-- absolute GPP: 18.256-850 PgC yr-1
+| Coordinate | Minimum | Maximum |
+|---|---:|---:|
+| pO₂ | 0.10 PAL | 2.00 PAL |
+| pCO₂ | 50 ppm | 60,000 ppm |
+| GPP | 18.256 Pg C yr⁻¹ | 850 Pg C yr⁻¹ |
 
-The exact model identity, runtime data, domain, modern reference state, and
-claim limits are pinned in
-[`model_data/publication_model_contract_v1.json`](model_data/publication_model_contract_v1.json).
-The compact machine-readable evidence used by the acceptance decision is
-versioned under `model_data/validation_evidence/` with a SHA-256 manifest.
-The integrated scientific decision is recorded in
-[`docs/publication_model_acceptance.md`](docs/publication_model_acceptance.md).
+The machine-readable definition in
+[`model_data/publication_model_contract_v1.json`](model_data/publication_model_contract_v1.json)
+pins the model identity, numerical data, domain, modern reference state,
+uncertainty policy, and scientific evidence.
 
-## Quick start
+## Use OXYTIB
 
-Python 3.11 or newer is recommended. From the repository root:
+Python 3.11 or newer is recommended.
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install -r code/requirements-api.txt
-python run_model.py api --host 127.0.0.1 --port 8000
 ```
 
-On Linux or macOS, activate the environment with `source .venv/bin/activate`.
-The API command is otherwise the same. Open `http://127.0.0.1:8000/` for the
-independent browser interface or `http://127.0.0.1:8000/docs` for generated API
-documentation.
-Constrained solutions can be exported as a compact CSV summary or as an XLSX
-workbook containing provenance, inputs, the marginal posterior, and any joint
-probability field. Time-response experiments can be exported as an XLSX
-workbook containing the experiment inputs, complete time series, equilibrium
-metadata, solver settings, and model provenance. The intended proxy sequence
-and uncertainty separation are documented in
-[`docs/spherule_inversion_workflow.md`](docs/spherule_inversion_workflow.md).
-
-For a Linux server, use the hardened Compose and Caddy bundle under `deploy/`;
-see [`docs/server_deployment.md`](docs/server_deployment.md).
-
-## Verify the snapshot
-
-The fast smoke test checks runtime data, two forward evaluations, a
-forward-to-inverse round trip, the API and browser assets, and the integrated
-acceptance verdict:
+Run a steady forward calculation:
 
 ```powershell
-python run_model.py smoke
+python run_model.py calculate forward --po2 1 --pco2 294 --gpp 290
 ```
 
-Run the complete integrated acceptance report with:
+Infer pCO₂ at fixed pO₂ and GPP:
 
 ```powershell
-python run_model.py acceptance
+python run_model.py calculate infer `
+  --target-d17o -0.426 --sigma 0.004 `
+  --solve-for pCO2 --po2 1 --gpp 290
 ```
 
-Developer and CI dependencies are installed with:
+Export a pCO₂ step response:
+
+```powershell
+python run_model.py calculate transient `
+  --experiment pCO2 --initial-pco2 280 --final-value 420 `
+  --duration 12000 --format xlsx --output oxytib_pco2_step.xlsx
+```
+
+Run a gradual pCO₂ trajectory using the historical-reference endpoints:
+
+```powershell
+python run_model.py calculate transient `
+  --experiment pCO2-trajectory --initial-pco2 285.5 --final-value 422.8 `
+  --trajectory-duration 174 --duration 12000 `
+  --format xlsx --output oxytib_pco2_trajectory.xlsx
+```
+
+The endpoint preset uses the IPCC AR6 estimate for 1850 and the NOAA Global
+Monitoring Laboratory global mean for 2024. Both endpoints, duration, and the
+linear or smooth interpolation are editable.
+
+Every calculation uses the same service functions and versioned model data as
+the hosted application. JSON is the default console format; time responses can
+also be exported as CSV or XLSX. Command-specific options are listed with, for
+example, `python run_model.py calculate infer --help`.
+
+## Validate the release
+
+Install the release-validation dependencies and run the integrated checks:
 
 ```powershell
 python -m pip install -r code/requirements-dev.txt
-python -m pytest validation/test_publication_package_smoke.py `
-  validation/test_publication_model_contract.py `
-  validation/test_publication_model_acceptance.py -q
+python run_model.py validate
 ```
 
-Exact direct dependency versions from the accepted local environment are
-listed in `code/requirements-tested.txt`. See [`SETUP.md`](SETUP.md) for the
-full reproducibility sequence.
+This verifies runtime data integrity, steady and transient calculations,
+forward-to-inverse closure, API and browser assets, and the integrated
+scientific acceptance decision. Exact direct dependency versions from the
+accepted environment are recorded in `code/requirements-tested.txt`.
 
-## Evidence and scope
+## Evidence
 
-Young et al. (2014) remains an important historical response anchor. Published
-model comparisons, observational tests, Clima experiments, and marine-access
-experiments are validation evidence or structural-sensitivity end members;
-they are not alternative public models and do not silently alter the central
-calculation. Measurement, parameter, numerical, and structural uncertainty
-remain separate.
+Validation combines modern atmospheric O₂ observations, ice-core behavior,
+published productivity constraints, numerical holdouts, conservation checks,
+and comparisons with published atmospheric-isotope models. Young et al. (2014)
+provides the foundational atmospheric O₂ budget architecture and published
+response curves; later literature constrains photochemistry, biological
+fractionation, proxy conversion, modern isotope composition, and structural
+sensitivity.
 
-Historical reconstruction scripts are retained for scientific provenance.
-They are not normal user entry points. Optional external datasets and compiled
-Photochem experiments are documented under `docs/` and are not required to run
-the accepted model or its interface.
+The compact evidence bundle is stored under
+`model_data/validation_evidence/`. The integrated assessment is summarized in
+[`docs/publication_model_acceptance.md`](docs/publication_model_acceptance.md),
+and the scientific model is defined in
+[`docs/publication_model_definition.md`](docs/publication_model_definition.md).
 
-## Repository layout
+## Repository guide
 
-- `code/`: model, inverse tools, HTTP API, and scientific plotting tools.
-- `web/`: independent browser interface served by the HTTP API.
-- `model_data/`: versioned runtime surfaces, contracts, and compact metadata.
-- `validation/`: tests, audits, published-model comparisons, and provenance.
-- `docs/`: methods, validation evidence, limitations, and developer notes.
-- `outputs/`: generated local reports and figures; normally not versioned.
-- `.github/workflows/`: release regression and container CI.
+- `run_model.py`: stable console entry point.
+- `code/`: model, inference, transient, export, and API implementation.
+- `web/`: hosted browser interface.
+- `model_data/`: versioned runtime surfaces, contracts, and evidence records.
+- `validation/`: regression tests and reproducible scientific audits.
+- `docs/`: model definition, methods, uncertainty, validation, and deployment.
+- `deploy/`: Docker and reverse-proxy configuration for an independent server.
 
-The flat `code/` layout is intentionally retained for this release to preserve
-the audited import graph. The repository includes that import closure and the
-release-validation suite, while excluding exploratory workflows, discarded
-branches, private literature, and generated development outputs.
-`run_model.py` is the stable public launcher.
+The release contains the operational dependency closure and validation
+evidence needed to reproduce the published calculations. Large third-party
+datasets, copyrighted literature, exploratory downloads, and generated local
+outputs remain outside the release runtime.
 
 ## Citation and license
 
-Citation metadata are supplied as [`CITATION.cff`](CITATION.cff),
-[`CITATION.bib`](CITATION.bib), and [`CITATION.ris`](CITATION.ris). Source code
-is MIT licensed; project documentation and reconstructed data are CC BY 4.0.
-Third-party scientific inputs retain their original licenses and are handled
-as described in [`LICENSING.md`](LICENSING.md).
-Release changes are listed in [`CHANGELOG.md`](CHANGELOG.md).
+Citation records are supplied as [`CITATION.cff`](CITATION.cff),
+[`CITATION.bib`](CITATION.bib), and [`CITATION.ris`](CITATION.ris). The DOI will
+be added to these records when the v0.1.0 archive is deposited.
+
+Source code is MIT licensed. Project documentation and original model data are
+CC BY 4.0. Third-party scientific inputs retain their original licenses; see
+[`LICENSING.md`](LICENSING.md).

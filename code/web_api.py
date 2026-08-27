@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
 from functools import lru_cache
 import os
 from pathlib import Path
@@ -25,6 +26,7 @@ from public_model_service import (
     isotope_field,
     joint_posterior,
     model_metadata,
+    pco2_trajectory_transient,
     photosynthesis_step_transient,
     spherule_to_air,
     state_step_transient,
@@ -40,6 +42,7 @@ from updated_output_surface_inverse import UpdatedSurfaceInverseInput
 from updated_output_surface_joint_posterior import UpdatedJointPosteriorInput
 from updated_output_surface_posterior import UpdatedConditionalPosteriorInput
 from updated_photosynthesis_transient import UpdatedPhotosynthesisTransientInput
+from updated_pco2_trajectory_transient import UpdatedPCO2TrajectoryInput
 from model_result_workbook import (
     build_coordinate_inference_workbook,
     build_transient_workbook,
@@ -52,6 +55,147 @@ ROOT = next(
     path for path in Path(__file__).resolve().parents if (path / ".project-root").exists()
 )
 WEB_ROOT = ROOT / "web"
+
+MAX_REQUEST_BYTES = int(os.environ.get("OXYTIB_MAX_REQUEST_BYTES", 1_048_576))
+MAX_COMPUTE_REQUESTS = int(os.environ.get("OXYTIB_MAX_COMPUTE_REQUESTS", 2))
+COMPUTE_QUEUE_TIMEOUT_SECONDS = float(
+    os.environ.get("OXYTIB_COMPUTE_QUEUE_TIMEOUT_SECONDS", 1.0)
+)
+ROOT_PATH = os.environ.get("OXYTIB_ROOT_PATH", "").strip()
+if ROOT_PATH:
+    ROOT_PATH = "/" + ROOT_PATH.strip("/")
+
+if MAX_REQUEST_BYTES < 1:
+    raise ValueError("OXYTIB_MAX_REQUEST_BYTES must be positive")
+if MAX_COMPUTE_REQUESTS < 1:
+    raise ValueError("OXYTIB_MAX_COMPUTE_REQUESTS must be positive")
+if COMPUTE_QUEUE_TIMEOUT_SECONDS <= 0.0:
+    raise ValueError("OXYTIB_COMPUTE_QUEUE_TIMEOUT_SECONDS must be positive")
+
+SECURITY_HEADERS = {
+    "Content-Security-Policy": (
+        "default-src 'self'; img-src 'self' data: blob:; "
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "script-src 'self' https://cdn.jsdelivr.net; connect-src 'self'; "
+        "object-src 'none'; frame-ancestors 'none'; base-uri 'self'; "
+        "form-action 'self'"
+    ),
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Referrer-Policy": "no-referrer",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+}
+
+
+class RequestBodyLimitMiddleware:
+    """Reject request bodies that exceed the public API envelope."""
+
+    def __init__(self, app, max_bytes: int) -> None:
+        self.app = app
+        self.max_bytes = max_bytes
+
+    async def __call__(self, scope, receive, send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        headers = dict(scope.get("headers", []))
+        content_length = headers.get(b"content-length")
+        if content_length is not None:
+            try:
+                declared_size = int(content_length)
+            except ValueError:
+                declared_size = self.max_bytes + 1
+            if declared_size > self.max_bytes:
+                await JSONResponse(
+                    status_code=413,
+                    content={"detail": "request body exceeds the public API size limit"},
+                )(scope, receive, send)
+                return
+
+        received = 0
+        response_started = False
+
+        async def limited_receive():
+            nonlocal received
+            message = await receive()
+            if message["type"] == "http.request":
+                received += len(message.get("body", b""))
+                if received > self.max_bytes:
+                    raise OverflowError("request body limit exceeded")
+            return message
+
+        async def tracked_send(message) -> None:
+            nonlocal response_started
+            if message["type"] == "http.response.start":
+                response_started = True
+            await send(message)
+
+        try:
+            await self.app(scope, limited_receive, tracked_send)
+        except OverflowError:
+            if response_started:
+                raise
+            await JSONResponse(
+                status_code=413,
+                content={"detail": "request body exceeds the public API size limit"},
+            )(scope, receive, send)
+
+
+class ComputeConcurrencyMiddleware:
+    """Bound simultaneous model calculations while keeping static routes responsive."""
+
+    def __init__(self, app, maximum: int, queue_timeout_seconds: float) -> None:
+        self.app = app
+        self.semaphore = asyncio.Semaphore(maximum)
+        self.queue_timeout_seconds = queue_timeout_seconds
+
+    async def __call__(self, scope, receive, send) -> None:
+        is_calculation = (
+            scope["type"] == "http"
+            and scope.get("method") == "POST"
+            and scope.get("path", "").startswith("/api/v1/")
+        )
+        if not is_calculation:
+            await self.app(scope, receive, send)
+            return
+        try:
+            await asyncio.wait_for(
+                self.semaphore.acquire(), timeout=self.queue_timeout_seconds
+            )
+        except TimeoutError:
+            await JSONResponse(
+                status_code=503,
+                content={"detail": "model capacity is temporarily occupied; retry shortly"},
+                headers={"Retry-After": "2"},
+            )(scope, receive, send)
+            return
+        try:
+            await self.app(scope, receive, send)
+        finally:
+            self.semaphore.release()
+
+
+class SecurityHeadersMiddleware:
+    """Attach a consistent browser-security policy to every response."""
+
+    def __init__(self, app, headers: dict[str, str]) -> None:
+        self.app = app
+        self.headers = [
+            (name.lower().encode("latin-1"), value.encode("latin-1"))
+            for name, value in headers.items()
+        ]
+
+    async def __call__(self, scope, receive, send) -> None:
+        async def secured_send(message) -> None:
+            if message["type"] == "http.response.start":
+                existing = {name.lower() for name, _value in message["headers"]}
+                message["headers"].extend(
+                    (name, value) for name, value in self.headers if name not in existing
+                )
+            await send(message)
+
+        await self.app(scope, receive, secured_send)
 
 
 class StrictRequest(BaseModel):
@@ -356,19 +500,62 @@ class PhotosynthesisStepRequest(StrictRequest):
         )
 
 
+class PCO2TrajectoryRequest(StrictRequest):
+    initial: ForwardRequest
+    final_pco2_ppm: float = Field(gt=0.0)
+    transition_duration_years: float = Field(gt=0.0, le=100000.0)
+    interpolation: Literal["linear", "smoothstep"] = "smoothstep"
+    duration_years: float = Field(default=12000.0, gt=0.0, le=100000.0)
+    sample_count: int = Field(default=181, ge=2, le=2001)
+    equilibrium_search_max_years: float = Field(
+        default=100000.0, gt=0.0, le=100000.0
+    )
+
+    def solver_input(self) -> UpdatedPCO2TrajectoryInput:
+        return UpdatedPCO2TrajectoryInput(
+            initial=self.initial.solver_input(),
+            final_pco2_ppm=self.final_pco2_ppm,
+            transition_duration_years=self.transition_duration_years,
+            interpolation=self.interpolation,
+            duration_years=self.duration_years,
+            sample_count=self.sample_count,
+            equilibrium_search_max_years=self.equilibrium_search_max_years,
+        )
+
+
 class TransientWorkbookRequest(StrictRequest):
-    experiment_type: Literal["pCO2", "pO2", "GPP", "photosynthesis"]
+    experiment_type: Literal[
+        "pCO2", "pO2", "GPP", "photosynthesis", "pCO2_trajectory"
+    ]
     state_step: StateStepRequest | None = None
     photosynthesis_step: PhotosynthesisStepRequest | None = None
+    pco2_trajectory: PCO2TrajectoryRequest | None = None
 
     @model_validator(mode="after")
     def matching_experiment(self) -> "TransientWorkbookRequest":
         if self.experiment_type == "photosynthesis":
-            if self.photosynthesis_step is None or self.state_step is not None:
+            if (
+                self.photosynthesis_step is None
+                or self.state_step is not None
+                or self.pco2_trajectory is not None
+            ):
                 raise ValueError(
                     "photosynthesis export requires only photosynthesis_step"
                 )
-        elif self.state_step is None or self.photosynthesis_step is not None:
+        elif self.experiment_type == "pCO2_trajectory":
+            if (
+                self.pco2_trajectory is None
+                or self.state_step is not None
+                or self.photosynthesis_step is not None
+            ):
+                raise ValueError(
+                    "pCO2 trajectory export requires only pco2_trajectory"
+                )
+        elif (
+            self.state_step is None
+            or self.photosynthesis_step is not None
+            or self.pco2_trajectory is not None
+        ):
             raise ValueError("state-step export requires only state_step")
         return self
 
@@ -385,23 +572,30 @@ def _cached_photosynthesis_step(request_json: str) -> dict:
     return photosynthesis_step_transient(request.solver_input())
 
 
+@lru_cache(maxsize=8)
+def _cached_pco2_trajectory(request_json: str) -> dict:
+    request = PCO2TrajectoryRequest.model_validate_json(request_json)
+    return pco2_trajectory_transient(request.solver_input())
+
+
 def _cors_origins() -> list[str]:
-    configured = os.environ.get("O2_MODEL_CORS_ORIGINS", "")
+    configured = os.environ.get("OXYTIB_CORS_ORIGINS", "")
     if configured.strip():
         return [item.strip() for item in configured.split(",") if item.strip()]
     return []
 
 
 app = FastAPI(
-    title="Atmospheric O2 Triple-Isotope Model API",
+    title="OXYTIB API",
     version=API_VERSION,
     description=(
         "Typed calculation API for the single accepted updated model. "
         "Numerical extrapolation outside the published surface is rejected."
     ),
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=None,
+    redoc_url=None,
     openapi_url="/openapi.json",
+    root_path=ROOT_PATH,
 )
 app.add_middleware(
     CORSMiddleware,
@@ -410,6 +604,13 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
+app.add_middleware(
+    ComputeConcurrencyMiddleware,
+    maximum=MAX_COMPUTE_REQUESTS,
+    queue_timeout_seconds=COMPUTE_QUEUE_TIMEOUT_SECONDS,
+)
+app.add_middleware(RequestBodyLimitMiddleware, max_bytes=MAX_REQUEST_BYTES)
+app.add_middleware(SecurityHeadersMiddleware, headers=SECURITY_HEADERS)
 app.mount("/assets", StaticFiles(directory=WEB_ROOT), name="web-assets")
 
 
@@ -423,12 +624,17 @@ def root() -> FileResponse:
     return FileResponse(WEB_ROOT / "index.html")
 
 
+@app.get("/docs", include_in_schema=False)
+def api_documentation() -> FileResponse:
+    return FileResponse(WEB_ROOT / "api-docs.html")
+
+
 @app.get("/citation/model.bib")
 def citation_bibtex() -> FileResponse:
     return FileResponse(
         ROOT / "CITATION.bib",
         media_type="application/x-bibtex",
-        filename="atmospheric_o2_triple_isotope_model.bib",
+        filename="oxytib.bib",
     )
 
 
@@ -437,7 +643,7 @@ def citation_ris() -> FileResponse:
     return FileResponse(
         ROOT / "CITATION.ris",
         media_type="application/x-research-info-systems",
-        filename="atmospheric_o2_triple_isotope_model.ris",
+        filename="oxytib.ris",
     )
 
 
@@ -513,7 +719,7 @@ def constrained_coordinate_workbook(
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={
             "Content-Disposition": (
-                f'attachment; filename="o2_model_{coordinate}_solution.xlsx"'
+                f'attachment; filename="oxytib_{coordinate}_solution.xlsx"'
             )
         },
     )
@@ -539,11 +745,20 @@ def photosynthesis_step(request: PhotosynthesisStepRequest) -> dict:
     return _cached_photosynthesis_step(request.model_dump_json())
 
 
+@app.post("/api/v1/transients/pco2-trajectory")
+def pco2_trajectory(request: PCO2TrajectoryRequest) -> dict:
+    return _cached_pco2_trajectory(request.model_dump_json())
+
+
 @app.post("/api/v1/export/transient.xlsx")
 def transient_workbook(request: TransientWorkbookRequest) -> Response:
     if request.experiment_type == "photosynthesis":
         envelope = _cached_photosynthesis_step(
             request.photosynthesis_step.model_dump_json()
+        )
+    elif request.experiment_type == "pCO2_trajectory":
+        envelope = _cached_pco2_trajectory(
+            request.pco2_trajectory.model_dump_json()
         )
     else:
         envelope = _cached_state_step(request.state_step.model_dump_json())
@@ -554,7 +769,7 @@ def transient_workbook(request: TransientWorkbookRequest) -> Response:
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={
             "Content-Disposition": (
-                f'attachment; filename="o2_model_{name}_time_response.xlsx"'
+                f'attachment; filename="oxytib_{name}_time_response.xlsx"'
             )
         },
     )

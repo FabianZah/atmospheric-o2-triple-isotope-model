@@ -2,11 +2,11 @@
 	email {$ACME_EMAIL}
 }
 
-{$O2_MODEL_DOMAIN} {
+{$OXYTIB_DOMAIN} {
 	encode zstd gzip
 
 	request_body {
-		max_size 2MB
+		max_size 1MB
 	}
 
 	header {
@@ -15,7 +15,7 @@
 		X-Frame-Options DENY
 		Referrer-Policy no-referrer
 		Permissions-Policy "camera=(), microphone=(), geolocation=()"
-		Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+		Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 	}
 
 	reverse_proxy model-api:8000 {

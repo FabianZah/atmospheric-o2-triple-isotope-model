@@ -19,6 +19,35 @@ const state = {
 };
 const $ = (id) => document.getElementById(id);
 
+function preferredTheme() {
+  try {
+    const stored = window.localStorage.getItem("oxytib-theme");
+    if (stored === "light" || stored === "dark") return stored;
+  } catch (_error) {
+    // Browser storage may be unavailable in privacy-restricted sessions.
+  }
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function applyTheme(theme, persist = true) {
+  const dark = theme === "dark";
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+  const toggle = $("theme-toggle");
+  if (toggle) {
+    toggle.checked = dark;
+    toggle.setAttribute("aria-label", dark ? "Use light appearance" : "Use dark appearance");
+  }
+  const label = $("theme-label");
+  if (label) label.textContent = dark ? "Light" : "Dark";
+  if (persist) {
+    try {
+      window.localStorage.setItem("oxytib-theme", dark ? "dark" : "light");
+    } catch (_error) {
+      // The active theme still applies for this page.
+    }
+  }
+}
+
 function applicationUrl(path) {
   const normalized = path.startsWith("/") ? path : `/${path}`;
   return `${APPLICATION_BASE_PATH}${normalized}`;
@@ -216,6 +245,30 @@ function setBusy(button, busy, busyText) {
   button.textContent = busy ? busyText : button.dataset.label;
 }
 
+function beginTransientProgress(type) {
+  const panel = $("transient-progress");
+  const label = $("transient-progress-label");
+  const elapsed = $("transient-progress-elapsed");
+  const startedAt = performance.now();
+  label.textContent = type === "photosynthesis"
+    ? "Solving coupled photosynthesis, carbon, and O₂ response"
+    : "Solving atmospheric isotope response";
+  panel.classList.remove("hidden");
+  $("view-transient").setAttribute("aria-busy", "true");
+
+  const updateElapsed = () => {
+    const seconds = Math.max(0, Math.floor((performance.now() - startedAt) / 1000));
+    elapsed.textContent = `${seconds} ${seconds === 1 ? "second" : "seconds"} elapsed`;
+  };
+  updateElapsed();
+  const timer = window.setInterval(updateElapsed, 500);
+  return () => {
+    window.clearInterval(timer);
+    panel.classList.add("hidden");
+    $("view-transient").removeAttribute("aria-busy");
+  };
+}
+
 function updateCoordinateControls() {
   $("pco2").disabled = state.solveFor === "pCO2";
   $("gpp").disabled = state.solveFor === "GPP";
@@ -246,16 +299,29 @@ function renderConstrainedCoordinate(result, target, inputs, constraints, reques
   const coordinate = result.solve_for;
   const [low, high] = result.equal_tailed_credible_interval;
   const central = result.posterior_median;
+  const strongEdgeMode = result.solve_boundary_sensitive
+    && result.solve_mode_at_boundary
+    && result.solve_boundary_probability_mass >= 0.5;
   $("solver-empty").classList.add("hidden");
   $("solver-result").classList.remove("hidden");
-  $("result-coordinate").innerHTML = `${coordinateLabel(coordinate)} posterior median`;
-  $("result-value").textContent = formatCoordinate(coordinate, central);
-  $("result-interval").textContent = `${formatCoordinate(coordinate, low)}–${formatCoordinate(coordinate, high)} 95% credible interval`;
+  if (strongEdgeMode) {
+    const boundaryIndex = result.solve_boundary_direction === "lower" ? 0 : result.solve_axis.length - 1;
+    const boundary = formatCoordinate(coordinate, result.solve_axis[boundaryIndex]);
+    $("result-coordinate").innerHTML = `${coordinateLabel(coordinate)} constrained solution`;
+    $("result-value").textContent = "No interior solution";
+    $("result-interval").textContent = `Compatibility increases toward the ${boundary} domain boundary`;
+  } else {
+    $("result-coordinate").innerHTML = `${coordinateLabel(coordinate)} posterior median`;
+    $("result-value").textContent = formatCoordinate(coordinate, central);
+    $("result-interval").textContent = `${formatCoordinate(coordinate, low)}–${formatCoordinate(coordinate, high)} 95% credible interval`;
+  }
   const isotopeLines = isotopeConstraintText(target).split("<br>");
   const coordinateLines = Object.entries(constraints)
     .map(([name, constraint]) => constraintText(name, constraint));
   $("result-constraints").innerHTML = [...isotopeLines, ...coordinateLines].join("<br>");
-  $("solver-marginal-title").innerHTML = `${coordinateLabel(coordinate)} probability distribution`;
+  $("solver-marginal-title").innerHTML = strongEdgeMode
+    ? `${coordinateLabel(coordinate)} constrained compatibility`
+    : `${coordinateLabel(coordinate)} probability distribution`;
   drawMarginalPosterior(
     result.solve_axis,
     result.solve_marginal_density,
@@ -264,10 +330,15 @@ function renderConstrainedCoordinate(result, target, inputs, constraints, reques
     low,
     high,
     central,
+    strongEdgeMode,
   );
-  const boundaryNote = result.solve_boundary_sensitive
-    ? `Posterior probability reaches the accepted ${coordinate} boundary, so the interval is boundary-limited.`
-    : "";
+  let boundaryNote = "";
+  if (strongEdgeMode) {
+    const [domainLow, domainHigh] = result.final_solve_bounds;
+    boundaryNote = `The entered isotope and fixed-coordinate constraints do not identify an interior ${coordinate} solution within the accepted ${formatCoordinate(coordinate, domainLow)}–${formatCoordinate(coordinate, domainHigh)} domain.`;
+  } else if (result.solve_boundary_sensitive) {
+    boundaryNote = `Posterior probability reaches the accepted ${coordinate} boundary, so the interval is boundary-limited.`;
+  }
   $("solver-method-note").textContent = boundaryNote;
   $("solver-method-note").classList.toggle("hidden", !boundaryNote);
 
@@ -292,9 +363,8 @@ function renderConstrainedCoordinate(result, target, inputs, constraints, reques
     const marginalizedText = marginalized
       ? ` Uncertainty in ${marginalized} is integrated out using its entered constraint.`
       : "";
-    $("solver-probability-caption").innerHTML = `Dark outline: joint 95% highest-posterior-density region.${marginalizedText}`;
+    $("solver-probability-caption").innerHTML = marginalizedText.trim();
   }
-  $("download-result").disabled = false;
   $("download-result-xlsx").disabled = false;
   state.lastResult = {
     result, target, inputs, constraints, coordinate, request,
@@ -307,7 +377,6 @@ async function runSolver() {
   $("solver-error").textContent = "";
   $("solver-result").classList.add("hidden");
   $("solver-empty").classList.remove("hidden");
-  $("download-result").disabled = true;
   $("download-result-xlsx").disabled = true;
   state.lastResult = null;
   setBusy(button, true, "Calculating…");
@@ -350,55 +419,6 @@ async function runSolver() {
   }
 }
 
-function downloadResult() {
-  if (!state.lastResult) return;
-  const { result, target, inputs, constraints, coordinate, solution } = state.lastResult;
-  const solutionUnit = result.solve_units || (coordinate === "pCO2" ? "ppm" : coordinate === "GPP" ? "PgC yr-1" : "PAL");
-  const rows = [
-    ["field", "value", "unit"],
-    ["publication_model_id", state.metadata?.publication_model_id || "", ""],
-    ["isotope_source", target.source, ""],
-    ["target_air_Delta_prime_17O", target.target, "permil"],
-    ["Delta_prime_17O_analytical_sigma", target.sigma, "permil"],
-    ["target_air_delta18O_VSMOW", target.delta18 ?? "", "permil"],
-    ["delta18O_analytical_sigma", target.delta18Sigma ?? "", "permil"],
-    ["solved_coordinate", coordinate, ""],
-    ["central_solution", solution.central, solutionUnit],
-    ["interval_lower", solution.low, solutionUnit],
-    ["interval_upper", solution.high, solutionUnit],
-    ["interval_kind", solution.intervalKind, ""],
-    ["surface_data_id", result.surface_data_id, ""],
-  ];
-  if (target.spherule) {
-    rows.push(
-      ["spherule_Delta_prime_17O_0.528", target.spherule.delta17, "permil"],
-      ["spherule_Delta_prime_17O_analytical_sigma", target.spherule.delta17Sigma, "permil"],
-      ["spherule_delta18O_VSMOW", target.spherule.delta18, "permil"],
-      ["spherule_delta18O_analytical_sigma", target.spherule.delta18Sigma, "permil"],
-    );
-  }
-  if (constraints) {
-    for (const [coordinateName, constraint] of Object.entries(constraints)) {
-      const unit = coordinateName === "pCO2" ? "ppm" : coordinateName === "GPP" ? "PgC yr-1" : "PAL";
-      rows.push([`${coordinateName}_constraint_kind`, constraint.kind, ""]);
-      for (const key of ["center", "sigma", "lower", "upper"]) {
-        if (constraint[key] != null) rows.push([`${coordinateName}_constraint_${key}`, constraint[key], unit]);
-      }
-      const effective = result.effective_constraint_bounds?.[coordinateName];
-      if (effective) {
-        rows.push([`${coordinateName}_effective_lower`, effective[0], unit]);
-        rows.push([`${coordinateName}_effective_upper`, effective[1], unit]);
-      }
-    }
-  }
-  const csv = rows.map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(",")).join("\n");
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-  link.download = `o2_model_${coordinate}_solution.csv`;
-  link.click();
-  URL.revokeObjectURL(link.href);
-}
-
 async function downloadWorkbook() {
   if (!state.lastResult) return;
   const button = $("download-result-xlsx");
@@ -429,7 +449,7 @@ async function downloadWorkbook() {
     const blob = await response.blob();
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `o2_model_${coordinate}_solution.xlsx`;
+    link.download = `oxytib_${coordinate}_solution.xlsx`;
     link.click();
     URL.revokeObjectURL(link.href);
   } catch (error) {
@@ -483,6 +503,53 @@ function heatColor(value, stops = posteriorColorStops) {
   return `rgb(${rgb.join(",")})`;
 }
 
+function drawColorLegend(ctx, x, y, width, stops, title, lowLabel, highLabel, titleFontSize = 10) {
+  const gradient = ctx.createLinearGradient(x, 0, x + width, 0);
+  stops.forEach((color, index) => {
+    gradient.addColorStop(index / (stops.length - 1), `rgb(${color.join(",")})`);
+  });
+  ctx.fillStyle = "#17212b";
+  ctx.font = `600 ${titleFontSize}px system-ui`;
+  ctx.textAlign = "left";
+  ctx.fillText(title, x, y - 5);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(x, y, width, 9);
+  ctx.strokeStyle = "#52616a";
+  ctx.lineWidth = 0.8;
+  ctx.strokeRect(x, y, width, 9);
+  ctx.fillStyle = "#43515a";
+  ctx.font = "9px system-ui";
+  ctx.fillText(lowLabel, x, y + 21);
+  ctx.textAlign = "right";
+  ctx.fillText(highLabel, x + width, y + 21);
+}
+
+function drawMarginalLegend(ctx, width, edgeLimited = false) {
+  const y = 17;
+  const starts = [58, Math.max(215, width * 0.34), Math.max(390, width * 0.67)];
+  ctx.font = "10px system-ui";
+  ctx.textAlign = "left";
+  ctx.fillStyle = "rgba(33, 102, 172, 0.18)";
+  ctx.fillRect(starts[0], y - 7, 22, 10);
+  ctx.strokeStyle = "#2166ac";
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(starts[0], y - 2); ctx.lineTo(starts[0] + 22, y - 2); ctx.stroke();
+  ctx.fillStyle = "#43515a";
+  ctx.fillText(edgeLimited ? "Relative compatibility" : "Relative probability density", starts[0] + 28, y + 2);
+  ctx.fillStyle = "rgba(193, 139, 40, 0.24)";
+  ctx.fillRect(starts[1], y - 7, 22, 10);
+  ctx.strokeStyle = "rgba(193, 139, 40, 0.7)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(starts[1], y - 7, 22, 10);
+  ctx.fillStyle = "#43515a";
+  ctx.fillText(edgeLimited ? "Domain-truncated 95% interval" : "Central 95% credible interval", starts[1] + 28, y + 2);
+  ctx.strokeStyle = "#17212b";
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(starts[2] + 10, y - 9); ctx.lineTo(starts[2] + 10, y + 5); ctx.stroke();
+  ctx.fillStyle = "#43515a";
+  ctx.fillText(edgeLimited ? "Domain-truncated median" : "Posterior median", starts[2] + 20, y + 2);
+}
+
 function axisDisplayValues(coordinate, values) {
   return coordinate === "GPP" ? values.map((value) => 100 * value / MODERN_GPP) : values;
 }
@@ -493,17 +560,29 @@ function axisLabel(coordinate, logarithmic = false) {
   return "pO₂ (PAL)";
 }
 
-function axisTickValues(coordinate, values) {
+function axisTickValues(coordinate, values, pixelWidth = Infinity) {
   const minimum = values[0];
   const maximum = values[values.length - 1];
   if (coordinate === "pCO2") {
     const preferred = [50, 100, 150, 200, 250, 300, 350, 400, 500, 750, 1000, 2000, 3000, 5000, 10000, 20000, 30000, 60000]
       .filter((value) => value >= minimum && value <= maximum);
-    if (preferred.length >= 3) return preferred;
-    return [...new Set([0, 0.25, 0.5, 0.75, 1].map((fraction) => {
+    const candidates = preferred.length >= 3 ? preferred : [...new Set([0, 0.25, 0.5, 0.75, 1].map((fraction) => {
       const value = 10 ** (Math.log10(minimum) + fraction * (Math.log10(maximum) - Math.log10(minimum)));
       return Math.round(value);
     }))];
+    if (!Number.isFinite(pixelWidth)) return candidates;
+    const transformedMinimum = Math.log10(minimum);
+    const transformedSpan = Math.log10(maximum) - transformedMinimum;
+    const selected = [];
+    let lastPixel = -Infinity;
+    for (const value of candidates) {
+      const pixel = (Math.log10(value) - transformedMinimum) / transformedSpan * pixelWidth;
+      if (pixel - lastPixel >= 34) {
+        selected.push(value);
+        lastPixel = pixel;
+      }
+    }
+    return selected;
   }
   const scale = niceAxisScale(minimum, maximum, 5);
   return scale.ticks.filter((value) => value >= minimum && value <= maximum);
@@ -531,9 +610,9 @@ function posteriorQuantile(axis, probabilityMass, probability) {
   return axis[axis.length - 1];
 }
 
-function drawMarginalPosterior(axis, density, probabilityMass, coordinate, low, high, median) {
+function drawMarginalPosterior(axis, density, probabilityMass, coordinate, low, high, median, edgeLimited = false) {
   const { ctx, width, height } = canvasContext("solver-marginal-canvas", 3.0);
-  const margin = { left: 58, right: 20, top: 24, bottom: 52 };
+  const margin = { left: 58, right: 20, top: 42, bottom: 52 };
   const plotW = width - margin.left - margin.right;
   const plotH = height - margin.top - margin.bottom;
   const xs = axisDisplayValues(coordinate, axis);
@@ -561,8 +640,8 @@ function drawMarginalPosterior(axis, density, probabilityMass, coordinate, low, 
   const supportMin = transform(supportLow);
   const supportMax = transform(supportHigh);
   const supportSpan = Math.max(supportMax - supportMin, (domainMax - domainMin) * 0.01);
-  const xmin = Math.max(domainMin, supportMin - 0.12 * supportSpan);
-  const xmax = Math.min(domainMax, supportMax + 0.12 * supportSpan);
+  const xmin = edgeLimited ? domainMin : Math.max(domainMin, supportMin - 0.12 * supportSpan);
+  const xmax = edgeLimited ? domainMax : Math.min(domainMax, supportMax + 0.12 * supportSpan);
   const visibleDensity = displayDensity.filter((value, index) => {
     const transformed = transform(xs[index]);
     return transformed >= xmin && transformed <= xmax;
@@ -573,6 +652,7 @@ function drawMarginalPosterior(axis, density, probabilityMass, coordinate, low, 
 
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, width, height);
+  drawMarginalLegend(ctx, width, edgeLimited);
   ctx.save();
   ctx.beginPath();
   ctx.rect(margin.left, margin.top, plotW, plotH);
@@ -610,14 +690,14 @@ function drawMarginalPosterior(axis, density, probabilityMass, coordinate, low, 
   ctx.textAlign = "center";
   const visibleMinimum = logarithmic ? 10 ** xmin : xmin;
   const visibleMaximum = logarithmic ? 10 ** xmax : xmax;
-  axisTickValues(coordinate, [visibleMinimum, visibleMaximum]).forEach((tick) => {
+  axisTickValues(coordinate, [visibleMinimum, visibleMaximum], plotW).forEach((tick) => {
     ctx.fillText(axisTickText(coordinate, tick), xPixel(tick), margin.top + plotH + 18);
   });
   ctx.fillText(axisLabel(coordinate, logarithmic), margin.left + plotW / 2, height - 12);
   ctx.save();
   ctx.translate(16, margin.top + plotH / 2);
   ctx.rotate(-Math.PI / 2);
-  ctx.fillText("Relative probability density", 0, 0);
+  ctx.fillText(edgeLimited ? "Relative compatibility" : "Relative probability density", 0, 0);
   ctx.restore();
   enablePlotExport("solver-marginal-canvas");
 }
@@ -643,6 +723,24 @@ function drawProbabilityField(canvasId, xCoordinate, yCoordinate, xAxis, yAxis, 
 
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, width, height);
+  drawColorLegend(
+    ctx,
+    margin.left,
+    21,
+    Math.min(220, plotW * 0.38),
+    posteriorColorStops,
+    "Relative probability density",
+    "Low",
+    "High",
+  );
+  const regionX = margin.left + Math.min(220, plotW * 0.38) + 42;
+  ctx.strokeStyle = "#17212b";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(regionX, 22, 22, 10);
+  ctx.fillStyle = "#43515a";
+  ctx.font = "10px system-ui";
+  ctx.textAlign = "left";
+  ctx.fillText("95% credible region", regionX + 30, 31);
   for (let ix = 0; ix < nx - 1; ix += 1) {
     for (let iy = 0; iy < ny - 1; iy += 1) {
       const index = ix * ny + iy;
@@ -676,7 +774,7 @@ function drawProbabilityField(canvasId, xCoordinate, yCoordinate, xAxis, yAxis, 
   ctx.fillStyle = "#43515a";
   ctx.font = "11px system-ui";
   ctx.textAlign = "center";
-  const xTicks = axisTickValues(xCoordinate, xs);
+  const xTicks = axisTickValues(xCoordinate, xs, plotW);
   xTicks.forEach((tick) => {
     const x = xPixel(tick);
     ctx.strokeStyle = "rgba(255,255,255,0.45)";
@@ -686,7 +784,7 @@ function drawProbabilityField(canvasId, xCoordinate, yCoordinate, xAxis, yAxis, 
   });
   ctx.fillText(axisLabel(xCoordinate, xLogarithmic), margin.left + plotW / 2, height - 14);
   ctx.textAlign = "right";
-  for (const tick of axisTickValues(yCoordinate, ys)) {
+  for (const tick of axisTickValues(yCoordinate, ys, plotH)) {
     const y = yPixel(tick);
     ctx.strokeStyle = "rgba(255,255,255,0.45)";
     ctx.beginPath(); ctx.moveTo(margin.left, y); ctx.lineTo(margin.left + plotW, y); ctx.stroke();
@@ -792,6 +890,26 @@ function drawIsotopeField(result) {
 
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, width, height);
+  const legendWidth = Math.min(260, plotW * 0.46);
+  drawColorLegend(
+    ctx,
+    margin.left,
+    21,
+    legendWidth,
+    isotopeColorStops,
+    "Atmospheric O₂ Δ′¹⁷O₀.₅₂₈ (‰)",
+    format(result.minimum_cap_delta17_permil, result.contour_label_decimals),
+    format(result.maximum_cap_delta17_permil, result.contour_label_decimals),
+    12,
+  );
+  ctx.fillStyle = "#43515a";
+  ctx.font = "600 10px system-ui";
+  ctx.textAlign = "left";
+  ctx.fillText(
+    `Fixed pO₂ = ${format(result.fixed_p_o2_pal, 2)} PAL`,
+    margin.left + legendWidth + 34,
+    28,
+  );
   for (let ix = 0; ix < nx - 1; ix += 1) {
     for (let iy = 0; iy < ny - 1; iy += 1) {
       const index = ix * ny + iy;
@@ -812,7 +930,7 @@ function drawIsotopeField(result) {
   canvas.dataset.contourValues = levels.join(",");
   canvas.setAttribute(
     "aria-label",
-    `Atmospheric oxygen Δ′17O isotope field with ${levels.length} labeled contours balanced across the plotted field`,
+    `Atmospheric oxygen Δ′17O0.528 isotope field at ${format(result.fixed_p_o2_pal, 2)} PAL with ${levels.length} labeled contours balanced across the plotted field`,
   );
   levels.forEach((level, index) => {
     const fraction = levels.length === 1 ? 0.5 : 0.18 + 0.64 * index / (levels.length - 1);
@@ -858,15 +976,6 @@ function drawIsotopeField(result) {
   enablePlotExport("isotope-canvas");
 }
 
-function renderIsotopeSummary(result) {
-  const rangeDecimals = Math.min(3, Math.max(1, result.contour_label_decimals));
-  $("isotope-summary").innerHTML = `
-    <h3>Deterministic model isotope field</h3>
-    <div class="summary-metric"><span>Fixed pO<sub>2</sub></span><strong>${format(result.fixed_p_o2_pal, 2)} PAL</strong></div>
-    <div class="summary-metric"><span>Δ′<sup>17</sup>O<sub>0.528</sub> range</span><strong>${format(result.minimum_cap_delta17_permil, rangeDecimals)} to ${format(result.maximum_cap_delta17_permil, rangeDecimals)}‰</strong></div>
-    <div class="legend-scale isotope-scale"></div><div class="legend-labels"><span>${format(result.minimum_cap_delta17_permil, rangeDecimals)}‰</span><span>Model Δ′<sup>17</sup>O<sub>0.528</sub></span><span>${format(result.maximum_cap_delta17_permil, rangeDecimals)}‰</span></div>`;
-}
-
 async function runIsotopeField() {
   const button = $("run-surface");
   $("surface-error").textContent = "";
@@ -889,7 +998,6 @@ async function runIsotopeField() {
       }),
     });
     drawIsotopeField(payload.result);
-    renderIsotopeSummary(payload.result);
   } catch (error) {
     $("surface-error").textContent = publicErrorMessage(error);
   } finally {
@@ -982,33 +1090,66 @@ function transientFinalLabel() {
   const caption = $("transient-final-caption");
   const input = $("transient-final");
   const durationInput = $("transient-duration");
+  const trajectory = type === "pCO2_trajectory";
+  $("transient-final-label").classList.toggle("hidden", trajectory);
+  $("trajectory-controls").classList.toggle("hidden", !trajectory);
   const settings = {
     pCO2: ["Final pCO<sub>2</sub>", "ppm", "1000", "1", "12000"],
+    pCO2_trajectory: ["", "", "", "", "12000"],
     pO2: ["Final pO<sub>2</sub>", "PAL", "0.50", "0.01", "12000"],
     GPP: ["Final GPP", "% modern", "50.0", "0.1", "18000"],
     photosynthesis: ["Final photosynthesis", "% initial", "50.0", "0.1", "22000"],
   }[type];
-  caption.innerHTML = `${settings[0]} <small>${settings[1]}</small>`;
-  input.value = settings[2];
-  input.step = settings[3];
+  if (!trajectory) {
+    caption.innerHTML = `${settings[0]} <small>${settings[1]}</small>`;
+    input.value = settings[2];
+    input.step = settings[3];
+  }
   durationInput.value = settings[4];
+}
+
+function applyTrajectoryPreset() {
+  if ($("trajectory-preset").value !== "historical") return;
+  $("trajectory-start").value = "285.5";
+  $("trajectory-end").value = "422.8";
+  $("trajectory-duration").value = "174";
+  $("trajectory-interpolation").value = "smoothstep";
 }
 
 async function runTransient() {
   const button = $("run-transient");
   const exportButton = $("download-transient-xlsx");
+  const type = $("transient-type").value;
   $("transient-error").textContent = "";
   exportButton.disabled = true;
   state.lastTransient = null;
   setBusy(button, true, "Solving…");
+  const endProgress = beginTransientProgress(type);
   try {
     const initial = currentForwardState();
     const duration = finite(number("transient-duration"), "Duration");
-    const finalValue = finite(number("transient-final"), "Final value");
-    const type = $("transient-type").value;
+    const finalValue = type === "pCO2_trajectory"
+      ? finite(number("trajectory-end"), "Final pCO2")
+      : finite(number("transient-final"), "Final value");
     let path;
     let request;
-    if (type === "photosynthesis") {
+    if (type === "pCO2_trajectory") {
+      initial.p_co2_ppm = finite(number("trajectory-start"), "Initial pCO2");
+      const transitionDuration = finite(number("trajectory-duration"), "Transition duration");
+      if (transitionDuration <= 0 || transitionDuration > 100000) {
+        throw new Error("Transition duration must be between 0 and 100,000 years.");
+      }
+      path = "/api/v1/transients/pco2-trajectory";
+      request = {
+        initial,
+        final_pco2_ppm: finalValue,
+        transition_duration_years: transitionDuration,
+        interpolation: $("trajectory-interpolation").value,
+        duration_years: duration,
+        sample_count: 241,
+        equilibrium_search_max_years: Math.max(100000, duration, transitionDuration),
+      };
+    } else if (type === "photosynthesis") {
       path = "/api/v1/transients/photosynthesis-step";
       request = {
         initial,
@@ -1045,7 +1186,13 @@ async function runTransient() {
     let forcingInitial;
     let forcingFinal;
     let forcingDigits;
-    if (type === "pCO2") {
+    if (type === "pCO2_trajectory") {
+      forcingTitle = "Prescribed pCO₂ trajectory";
+      forcingUnit = "pCO₂ (ppm)";
+      forcingInitial = initial.p_co2_ppm;
+      forcingFinal = finalValue;
+      forcingDigits = 0;
+    } else if (type === "pCO2") {
       forcingTitle = "Imposed pCO₂ step";
       forcingUnit = "pCO₂ (ppm)";
       forcingInitial = initial.p_co2_ppm;
@@ -1070,10 +1217,25 @@ async function runTransient() {
       forcingFinal = finalValue;
       forcingDigits = 1;
     }
+    const trajectoryPlotEnd = type === "pCO2_trajectory"
+      ? Math.min(duration, request.transition_duration_years * 1.5)
+      : duration;
+    const trajectoryIndices = type === "pCO2_trajectory"
+      ? times.map((time, index) => ({ time, index })).filter((item) => item.time <= trajectoryPlotEnd)
+      : [];
+    const trajectoryPreDuration = type === "pCO2_trajectory"
+      ? Math.min(request.transition_duration_years * 0.25, 50)
+      : preStepDuration;
+    const forcingTimes = type === "pCO2_trajectory"
+      ? [-trajectoryPreDuration, ...trajectoryIndices.map((item) => item.time)]
+      : [-preStepDuration, 0, 0, duration];
+    const forcingValues = type === "pCO2_trajectory"
+      ? [result.pco2_ppm[0], ...trajectoryIndices.map((item) => result.pco2_ppm[item.index])]
+      : [forcingInitial, forcingInitial, forcingFinal, forcingFinal];
     drawLine(
       "transient-forcing",
-      [-preStepDuration, 0, 0, duration],
-      [forcingInitial, forcingInitial, forcingFinal, forcingFinal],
+      forcingTimes,
+      forcingValues,
       forcingTitle,
       forcingUnit,
       "#c18b28",
@@ -1100,10 +1262,19 @@ async function runTransient() {
     enablePlotExport("transient-d17");
     enablePlotExport("transient-d18");
     const equilibrium = result.operational_equilibrium?.time_years ?? result.equilibrium_time_years;
+    let transitionD17Card = "";
+    let transitionD18Card = "";
+    if (type === "pCO2_trajectory") {
+      const transitionState = result.transition_end_state;
+      transitionD17Card = `<div><span>At transition end Δ′<sup>17</sup>O</span><strong>${formatFixed(transitionState.cap_delta17_prime_permil, 3)}‰</strong></div>`;
+      transitionD18Card = `<div><span>At transition end δ′<sup>18</sup>O</span><strong>${formatFixed(transitionState.delta18_prime_permil, 3)}‰</strong></div>`;
+    }
     $("transient-summary").innerHTML = `
       <div><span>Initial Δ′<sup>17</sup>O</span><strong>${formatFixed(d17[0], 3)}‰</strong></div>
+      ${transitionD17Card}
       <div><span>Displayed final Δ′<sup>17</sup>O</span><strong>${formatFixed(d17[d17.length - 1], 3)}‰</strong></div>
       <div><span>Initial δ′<sup>18</sup>O</span><strong>${formatFixed(d18[0], 3)}‰</strong></div>
+      ${transitionD18Card}
       <div><span>Displayed final δ′<sup>18</sup>O</span><strong>${formatFixed(d18[d18.length - 1], 3)}‰</strong></div>
       <div><span>Operational equilibrium time</span><strong>${equilibrium == null ? "Beyond search horizon" : `${format(equilibrium, 0)} years`}</strong></div>`;
     state.lastTransient = { type, request };
@@ -1111,6 +1282,7 @@ async function runTransient() {
   } catch (error) {
     $("transient-error").textContent = publicErrorMessage(error);
   } finally {
+    endProgress();
     setBusy(button, false);
   }
 }
@@ -1126,7 +1298,9 @@ async function downloadTransientWorkbook() {
       experiment_type: type,
       ...(type === "photosynthesis"
         ? { photosynthesis_step: request }
-        : { state_step: request }),
+        : type === "pCO2_trajectory"
+          ? { pco2_trajectory: request }
+          : { state_step: request }),
     };
     const response = await fetch(applicationUrl("/api/v1/export/transient.xlsx"), {
       method: "POST",
@@ -1140,7 +1314,7 @@ async function downloadTransientWorkbook() {
     const blob = await response.blob();
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `o2_model_${type.toLowerCase()}_time_response.xlsx`;
+    link.download = `oxytib_${type.toLowerCase()}_time_response.xlsx`;
     link.click();
     URL.revokeObjectURL(link.href);
   } catch (error) {
@@ -1189,12 +1363,14 @@ function resetInputs() {
   $("solver-error").textContent = "";
   $("solver-result").classList.add("hidden");
   $("solver-empty").classList.remove("hidden");
-  $("download-result").disabled = true;
   $("download-result-xlsx").disabled = true;
   state.lastResult = null;
 }
 
 function bindInterface() {
+  $("theme-toggle").addEventListener("change", (event) => {
+    applyTheme(event.target.checked ? "dark" : "light");
+  });
   document.querySelectorAll(".tab").forEach((button) => button.addEventListener("click", () => {
     document.querySelectorAll(".tab").forEach((item) => item.classList.toggle("active", item === button));
     document.querySelectorAll(".view").forEach((view) => view.classList.remove("active"));
@@ -1222,7 +1398,10 @@ function bindInterface() {
   $("run-transient").addEventListener("click", runTransient);
   $("download-transient-xlsx").addEventListener("click", downloadTransientWorkbook);
   $("transient-type").addEventListener("change", transientFinalLabel);
-  $("download-result").addEventListener("click", downloadResult);
+  $("trajectory-preset").addEventListener("change", applyTrajectoryPreset);
+  ["trajectory-start", "trajectory-end", "trajectory-duration", "trajectory-interpolation"].forEach((id) => {
+    $(id).addEventListener("change", () => { $("trajectory-preset").value = "custom"; });
+  });
   $("download-result-xlsx").addEventListener("click", downloadWorkbook);
   document.querySelectorAll(".plot-export").forEach((button) => {
     button.addEventListener("click", () => downloadPlot(button));
@@ -1231,6 +1410,7 @@ function bindInterface() {
 }
 
 async function initialize() {
+  applyTheme(preferredTheme(), false);
   bindInterface();
   setConstraintMode("pCO2", "fixed");
   setConstraintMode("GPP", "fixed");
@@ -1241,7 +1421,7 @@ async function initialize() {
     state.metadata = await api("/api/v1/model");
     $("model-state").classList.add("ready");
     $("model-state").innerHTML = "<span></span> Model ready";
-    $("footer-model").textContent = `${state.metadata.publication_model_id} · API v${state.metadata.api_version}`;
+    $("footer-model").textContent = `OXYTIB ${state.metadata.citation.version}`;
   } catch (error) {
     $("model-state").classList.add("error");
     $("model-state").innerHTML = "<span></span> Model unavailable";

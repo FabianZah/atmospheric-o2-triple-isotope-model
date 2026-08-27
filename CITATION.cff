@@ -1,12 +1,12 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite this record and the scientific sources relevant to your application."
-title: "Atmospheric O2 triple-isotope model"
+title: "OXYTIB: Atmospheric oxygen triple-isotope budget and inference model"
 abstract: >-
-  A transparent, reproducible atmospheric O2 triple-oxygen-isotope model that
-  couples altitude-resolved photochemistry to a conservative global O2 and
-  biological-turnover budget. The software supports forward calculations,
-  constrained one-coordinate inversions, solution surfaces, transient
-  experiments, and separated uncertainty layers.
+  A transparent, reproducible atmospheric oxygen triple-isotope budget and
+  inference model that couples altitude-resolved photochemistry to a
+  conservative global O2 and biological-turnover budget. OXYTIB supports
+  forward calculations, constrained one-coordinate inversions, solution
+  surfaces, transient experiments, and separated uncertainty layers.
 type: software
 version: "0.1.0"
 license: MIT  # code; data/docs are CC-BY-4.0 (see LICENSING.md)
@@ -16,8 +16,9 @@ authors:
     email: "fabs2906@gmail.com"
     # orcid: "https://orcid.org/0000-0000-0000-0000"
 keywords:
+  - "OXYTIB"
   - "triple oxygen isotopes"
-  - "Delta-17O"
+  - "Δ′¹⁷O"
   - "atmospheric O2"
   - "paleo-pCO2"
   - "paleo-pO2"
@@ -27,7 +28,7 @@ keywords:
 repository-code: "https://github.com/FabianZah/atmospheric-o2-triple-isotope-model"
 references:
   - type: article
-    title: "On the Delta'17O budget of atmospheric O2"
+    title: "On the Δ′¹⁷O budget of atmospheric O2"
     authors:
       - family-names: "Young"
         given-names: "Edward D."

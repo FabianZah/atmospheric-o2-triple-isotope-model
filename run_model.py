@@ -33,7 +33,7 @@ def _run(arguments: list[str]) -> int:
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Run the atmospheric O2 triple-isotope publication model."
+        description="Run the OXYTIB publication model."
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -43,11 +43,23 @@ def _build_parser() -> argparse.ArgumentParser:
     api.add_argument("--host", default="127.0.0.1")
     api.add_argument("--port", type=int, default=8000)
 
+    calculation = subparsers.add_parser(
+        "calculate", help="Run forward, inverse, or time-response calculations."
+    )
+    calculation.add_argument(
+        "arguments",
+        nargs=argparse.REMAINDER,
+        help="Arguments passed to the calculation CLI; use 'calculate --help'.",
+    )
+
     subparsers.add_parser(
         "smoke", help="Run the fast publication-package smoke test."
     )
     subparsers.add_parser(
         "acceptance", help="Run the integrated scientific acceptance audit."
+    )
+    subparsers.add_parser(
+        "validate", help="Run both publication-package and scientific acceptance checks."
     )
     return parser
 
@@ -69,12 +81,22 @@ def main() -> int:
         return _run(
             [sys.executable, str(ROOT / "validation" / "smoke_publication_package.py")]
         )
-    return _run(
-        [
-            sys.executable,
-            str(ROOT / "validation" / "audit_publication_model_acceptance.py"),
-        ]
-    )
+    if args.command == "calculate":
+        return _run(
+            [sys.executable, str(ROOT / "code" / "public_cli.py"), *args.arguments]
+        )
+    acceptance = [
+        sys.executable,
+        str(ROOT / "validation" / "audit_publication_model_acceptance.py"),
+    ]
+    if args.command == "acceptance":
+        return _run(acceptance)
+    smoke = [
+        sys.executable,
+        str(ROOT / "validation" / "smoke_publication_package.py"),
+    ]
+    smoke_status = _run(smoke)
+    return smoke_status if smoke_status else _run(acceptance)
 
 
 if __name__ == "__main__":

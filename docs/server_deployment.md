@@ -1,81 +1,84 @@
-# Production Server Deployment
+# Server deployment
 
-The public application consists of one scientific FastAPI service and its
-bundled same-origin browser frontend. The production package adds Caddy for
-automatic HTTPS and exposes no application-container port directly to the
-internet.
+OXYTIB is a stateless FastAPI service with a bundled same-origin browser
+interface. The canonical shared-server deployment uses the existing Traefik
+instance and publishes OXYTIB below `/oxytib/`. A standalone Caddy stack is
+included for servers dedicated to OXYTIB.
 
-## Architecture
-
-```text
-browser -> HTTPS :443 -> Caddy -> private Docker network -> model-api :8000
-```
+## Security boundary
 
 The application container:
 
-- runs as non-root user `modelapi`;
-- has a read-only filesystem and a small temporary filesystem;
+- runs as the non-root `modelapi` user;
+- has a read-only filesystem and a small `noexec` temporary filesystem;
 - drops Linux capabilities and forbids privilege escalation;
 - has CPU, memory, and process limits;
-- exposes only its health-checked port to the private Docker network;
-- stores no user inputs, inferred values, or exported workbooks.
+- stores no submitted constraints, calculated results, or workbooks;
+- rejects request bodies above 1 MiB;
+- admits at most two simultaneous model calculations by default;
+- validates API fields and bounds model grid sizes before calculation.
 
-Caddy terminates TLS, adds security headers, limits request bodies, performs
-upstream health checks, and writes bounded JSON logs through Docker.
+The Traefik route adds HTTPS, browser security headers, 30 requests per minute
+per client with a burst of 10, and at most four in-flight requests. These are
+conservative defaults for a small scientific service and can be changed in the
+untracked deployment environment file.
 
-## Prerequisites
+Rate limiting protects model capacity; it does not absorb a network-saturating
+distributed denial-of-service attack. Host firewall rules, provider-level
+traffic protection, timely security updates, restricted SSH access, and
+monitoring remain server-administration responsibilities. A CDN or provider
+DDoS service can be placed in front of Traefik if traffic later warrants it.
 
-Use a current Linux server with:
+## Traefik deployment
 
-- a public IPv4 or IPv6 address;
-- a domain or subdomain whose DNS record points to the server;
+Prerequisites:
+
 - Docker Engine and the Docker Compose plugin;
-- inbound TCP ports 80 and 443 and UDP port 443 open;
-- SSH restricted according to the server provider's recommendations.
+- the external Docker network `traefik-global-proxy`;
+- an existing Traefik `websecure` entry point and `letsencrypt` resolver;
+- a checked-out, reviewed OXYTIB release tag.
 
-The deployment itself does not require Conda, Photochem, ERA5, or any source
-papers.
-
-The production image uses a pinned Python 3.12.14 base tag and the exact Linux
-runtime in `code/requirements-api-lock.txt`. The resulting image digest should
-be recorded with the software release and Zenodo metadata after the final
-server build.
-
-## Configure
-
-Check out the exact release tag rather than a moving development branch:
+Create the untracked configuration:
 
 ```bash
-git clone https://github.com/FabianZah/atmospheric-o2-triple-isotope-model.git
-cd atmospheric-o2-triple-isotope-model
-git checkout v0.1.0
+cp deploy/.env.traefik.example deploy/.env.traefik
 ```
 
-Create the untracked production environment file:
+Set `OXYTIB_HOST` and retain an empty `OXYTIB_ROOT_PATH` because the declared
+Traefik middleware strips `/oxytib` before forwarding requests. The browser
+interface and API documentation derive the public prefix from their loaded
+URLs. Keep `OXYTIB_TRAEFIK_ENABLE=false` during staging. Build and verify the
+loopback service first:
 
 ```bash
-cp deploy/.env.production.example deploy/.env.production
-nano deploy/.env.production
+docker compose \
+  --env-file deploy/.env.traefik \
+  -f deploy/compose.traefik.yaml \
+  up --build -d
+
+curl --fail http://127.0.0.1:18000/api/v1/health
+python validation/verify_public_deployment.py \
+  --base-url http://127.0.0.1:18000
 ```
 
-Set at least:
+After reviewing the container health and logs, set
+`OXYTIB_TRAEFIK_ENABLE=true` and recreate only the OXYTIB service. The public
+checks are then:
 
-```text
-O2_MODEL_DOMAIN=model.example.org
-ACME_EMAIL=researcher@example.org
+```bash
+curl --fail https://example.org/oxytib/api/v1/health
+python validation/verify_public_deployment.py \
+  --base-url https://example.org/oxytib
 ```
 
-Leave `O2_MODEL_CORS_ORIGINS` empty for the bundled browser application. Only
-set it when a separately hosted frontend needs API access, using exact HTTPS
-origins separated by commas.
+The historical `/atmo-mod/` route is a permanent redirect to `/oxytib/` and
+does not run a second application instance.
 
-The default application limits are 2 CPU cores, 2 GB memory, and 256 processes.
-They can be changed in `deploy/.env.production` without editing the versioned
-Compose file.
+## Standalone Caddy deployment
 
-## Start
-
-From the repository root:
+For a dedicated host without Traefik, copy
+`deploy/.env.production.example` to the ignored
+`deploy/.env.production`, configure the domain and ACME email, and run:
 
 ```bash
 docker compose \
@@ -84,127 +87,42 @@ docker compose \
   up --build -d
 ```
 
-Inspect startup and health:
+Caddy terminates TLS, applies the same browser security policy, limits request
+bodies, and proxies to the private application network. The application-level
+compute limit remains active. Standard Caddy does not provide the Traefik rate
+limiter, so a provider firewall or upstream rate limiter is recommended before
+advertising a high-volume public service.
+
+## Operations
+
+Inspect status and bounded logs with the Compose file used for deployment:
 
 ```bash
-docker compose \
-  --env-file deploy/.env.production \
-  -f deploy/compose.production.yaml \
-  ps
-
-docker compose \
-  --env-file deploy/.env.production \
-  -f deploy/compose.production.yaml \
-  logs --tail=100 model-api caddy
+docker compose --env-file deploy/.env.traefik \
+  -f deploy/compose.traefik.yaml ps
+docker compose --env-file deploy/.env.traefik \
+  -f deploy/compose.traefik.yaml logs --tail=100 model-api
 ```
 
-Caddy obtains and renews the HTTPS certificate automatically after DNS and
-ports are correct.
+Deploy reviewed tags, not moving branches. Record the currently deployed tag
+and image digest before every update. After rebuilding, run the remote verifier
+and one browser calculation.
 
-## Verify
+Rollback consists of checking out the preceding release tag, rebuilding the
+OXYTIB service, and rerunning the verifier. OXYTIB has no database migrations
+or persistent scientific state.
 
-The verifier checks the health endpoint, publication-model identity,
-operational domain, and the modern 294 ppm known answer:
+Keep private backups of the untracked deployment environment file and the
+server's Traefik configuration. The source release itself is preserved by its
+Git tag and archived DOI.
 
-```bash
-python validation/verify_public_deployment.py \
-  --base-url https://model.example.org
-```
+## Privacy and monitoring
 
-Also inspect:
+Docker rotates application logs. Traefik or Caddy access logs may contain
+timestamps, paths, response status, and client addresses; they must not record
+JSON request bodies. Choose retention according to institutional policy.
 
-- `https://model.example.org/` for the browser interface;
-- `https://model.example.org/api/v1/health` for service health;
-- `https://model.example.org/docs` for the generated API schema.
-
-The same verifier runs against the built Linux container in continuous
-integration.
-
-## Logs And Privacy
-
-```bash
-docker compose \
-  --env-file deploy/.env.production \
-  -f deploy/compose.production.yaml \
-  logs --follow --tail=100
-```
-
-Docker rotates both service logs at 10 MB and retains five files. Caddy access
-logs contain request metadata such as timestamp, path, status, and client
-address; they do not contain JSON request bodies. Select a retention policy
-consistent with institutional privacy requirements.
-
-## Update
-
-Record the currently deployed tag first:
-
-```bash
-git describe --tags --always
-```
-
-Then check out a reviewed release and rebuild:
-
-```bash
-git fetch --tags
-git checkout v0.1.1
-docker compose \
-  --env-file deploy/.env.production \
-  -f deploy/compose.production.yaml \
-  up --build -d
-python validation/verify_public_deployment.py \
-  --base-url https://model.example.org
-```
-
-Do not deploy directly from an unreviewed working branch.
-
-## Roll Back
-
-Check out the previous tag and rebuild the application image:
-
-```bash
-git checkout v0.1.0
-docker compose \
-  --env-file deploy/.env.production \
-  -f deploy/compose.production.yaml \
-  up --build -d
-python validation/verify_public_deployment.py \
-  --base-url https://model.example.org
-```
-
-The service has no database migration or persistent scientific state, so
-rollback is limited to code, model data, and container dependencies.
-
-## Backup
-
-Keep private backups of:
-
-- `deploy/.env.production`;
-- the exact Git release tag and Zenodo archive DOI;
-- optional Caddy volumes `o2-budget-model_caddy_data` and
-  `o2-budget-model_caddy_config`.
-
-The Caddy volumes contain certificate and proxy state, not scientific results.
-They can be recreated from DNS and the environment configuration if necessary.
-
-## Capacity And Scope
-
-The default stack intentionally runs one application process. This bounds
-memory use and is appropriate for low-volume scientific access. API grid sizes
-are also bounded by the request schema. The reverse proxy allows up to five
-minutes for a response so declared transient calculations can finish.
-
-Before advertising the service for high-volume anonymous use, measure request
-latency on the real server and add an upstream rate limiter or bounded job
-queue. That is an operational scaling change; it must not alter model inputs,
-equations, or returned provenance.
-
-## Local Development Compose
-
-The root `compose.yaml` remains a loopback-only development convenience:
-
-```bash
-docker compose up --build -d
-```
-
-It does not provide public HTTPS. Use `deploy/compose.production.yaml` for the
-internet-facing server.
+Monitor at least container restarts, health-check failures, HTTP 429/503 rates,
+CPU, memory, disk use, and proxy TLS renewal. Repeated 429 responses indicate
+rate limiting; 503 responses from OXYTIB indicate that the bounded compute
+capacity was occupied.

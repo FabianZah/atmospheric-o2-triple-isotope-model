@@ -1,8 +1,8 @@
 # Publication Model Acceptance
 
-**Verdict:** `accepted_for_steady_forward_inverse_and_declared_step_response`
+**Verdict:** `accepted_for_steady_forward_inverse_and_declared_time_responses`
 
-This is an acceptance audit of the one updated publication model. It is not a branch score or a fit to one reference model.
+This audit evaluates the single OXYTIB publication model against its declared evidence and scope.
 
 | Section | Gate | Status | Result |
 |---|---|---|---|
@@ -24,27 +24,27 @@ This is an acceptance audit of the one updated publication model. It is not a br
 | structural | Extreme high-pCO2/low-GPP amplitude | qualified | model families agree in direction but not amplitude |
 | structural | Marine O2 accessibility | excluded | Liu RMSE change -0.124 per mil |
 | structural | pCO2-dependent climate profile | excluded | large high-pCO2 sensitivity; modern RCE gate failed |
-| scope | Fully simultaneous carbon-oxygen transients | scope_limit | operator-split step responses only |
+| scope | Fully simultaneous carbon-oxygen transients | scope_limit | operator-split prescribed forcing experiments |
 | scope | Whole-domain probabilistic model discrepancy | scope_limit | no defensible global Gaussian sigma |
 
 ## Accepted claims
 
 - steady forward calculation within the declared pO2-pCO2-GPP domain
 - conditional and joint inversion with independent constraints and explicit priors
-- validated pCO2, GPP, and pO2 perturbation step responses
+- validated pCO2, GPP, and pO2 perturbation steps and prescribed gradual pCO2 trajectories
 - separate propagation and reporting of declared uncertainty layers
 
-## Claims outside scope
+## Scope boundaries
 
-- unique simultaneous recovery of pCO2, GPP, and pO2 from one isotope value
-- exact reconstruction of unpublished Young source code
-- fully simultaneous long-term carbon-oxygen-cycle prediction
-- a calibrated whole-domain Gaussian structural-error distribution
-- unqualified precision in the extreme high-pCO2 and low-GPP corner
+- inversion combines one isotope observation with independent coordinate constraints
+- historical Young calculations provide validation provenance
+- carbon forcing is prescribed in the declared atmospheric-O2 transients
+- structural evidence is reported by domain and with explicit priors
+- precision is qualified in the extreme high-pCO2 and low-GPP corner
 
 ## Decision
 
-There are no release-blocking failures. The deterministic core is accepted for steady forward and inverse applications and for the declared step-response experiments. High-pCO2 model-family spread, the rejected climate and marine-access candidates, and incomplete fully coupled transients remain explicit scope limits rather than hidden corrections.
+There are no release-blocking failures. The deterministic core is accepted for steady forward and inverse applications and for the declared time-response experiments. High-pCO2 model-family spread, the rejected climate and marine-access candidates, and incomplete fully coupled transients remain explicit scope limits rather than hidden corrections.
 
 Central-model change policy: Replace a central equation or parameter only when independently constrained evidence improves multiple validation families while preserving conservation, modern observations, and surface behavior.
 

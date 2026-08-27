@@ -19,6 +19,9 @@ TITLE_FILL = PatternFill("solid", fgColor="123238")
 HEADER_FILL = PatternFill("solid", fgColor="006F71")
 TITLE_FONT = Font(color="FFFFFF", bold=True, size=14)
 HEADER_FONT = Font(color="FFFFFF", bold=True)
+SOFTWARE_NAME = "OXYTIB"
+SOFTWARE_VERSION = "0.1.0"
+REPOSITORY_URL = "https://github.com/FabianZah/atmospheric-o2-triple-isotope-model"
 
 
 def _unit(coordinate: str) -> str:
@@ -66,8 +69,9 @@ def _append_summary_rows(
     unit = _unit(coordinate)
     rows: list[tuple[str, Any, str]] = [
         ("generated_utc", datetime.now(timezone.utc).isoformat(), ""),
-        ("publication_model_id", envelope["publication_model_id"], ""),
-        ("api_version", envelope["api_version"], ""),
+        ("software", SOFTWARE_NAME, ""),
+        ("software_version", SOFTWARE_VERSION, ""),
+        ("repository", REPOSITORY_URL, ""),
         ("calculation", envelope["calculation"], ""),
         ("isotope_source", context["isotope_source"], ""),
         (
@@ -96,18 +100,13 @@ def _append_summary_rows(
         ("credible_interval_upper", high, unit),
         ("credible_interval_mass", inputs["credible_mass"], "probability"),
         ("boundary_sensitive", result["solve_boundary_sensitive"], ""),
-        ("surface_data_id", result["surface_data_id"], ""),
-        ("upstream_model_data_id", result["upstream_model_data_id"], ""),
+        ("boundary_direction", result.get("solve_boundary_direction"), ""),
         (
-            "central_model_data_id",
-            envelope["provenance"]["central_model_data_id"],
-            "",
+            "boundary_probability_mass",
+            result.get("solve_boundary_probability_mass"),
+            "probability",
         ),
-        (
-            "uncertainty_contract_id",
-            envelope["provenance"]["uncertainty_contract_id"],
-            "",
-        ),
+        ("posterior_mode_at_boundary", result.get("solve_mode_at_boundary"), ""),
         ("probability_scope", result["probability_scope"], ""),
     ]
     spherule = context.get("spherule")
@@ -158,9 +157,9 @@ def build_coordinate_inference_workbook(
 
     result = envelope["result"]
     workbook = Workbook()
-    workbook.properties.creator = "Atmospheric O2 triple-isotope model"
+    workbook.properties.creator = "OXYTIB"
     workbook.properties.title = "Constrained atmospheric O2 isotope inference"
-    workbook.properties.subject = envelope["publication_model_id"]
+    workbook.properties.subject = f"{SOFTWARE_NAME} {SOFTWARE_VERSION}"
 
     summary = workbook.active
     summary.title = "Summary"
@@ -259,9 +258,9 @@ def build_transient_workbook(
     request = result["request"]
     equilibrium = result.get("operational_equilibrium", {})
     workbook = Workbook()
-    workbook.properties.creator = "Atmospheric O2 triple-isotope model"
+    workbook.properties.creator = "OXYTIB"
     workbook.properties.title = "Atmospheric O2 isotope time-response experiment"
-    workbook.properties.subject = envelope["publication_model_id"]
+    workbook.properties.subject = f"{SOFTWARE_NAME} {SOFTWARE_VERSION}"
 
     summary = workbook.active
     summary.title = "Summary"
@@ -272,8 +271,9 @@ def build_transient_workbook(
     )
     summary_rows = [
         ("generated_utc", datetime.now(timezone.utc).isoformat(), ""),
-        ("publication_model_id", envelope["publication_model_id"], ""),
-        ("api_version", envelope["api_version"], ""),
+        ("software", SOFTWARE_NAME, ""),
+        ("software_version", SOFTWARE_VERSION, ""),
+        ("repository", REPOSITORY_URL, ""),
         ("calculation", envelope["calculation"], ""),
         ("experiment_type", experiment_type, ""),
         ("display_duration", request["duration_years"], "years"),
@@ -293,10 +293,25 @@ def build_transient_workbook(
             equilibrium.get("tolerance_permil"),
             "permil",
         ),
-        ("model_data_id", result.get("model_data_id"), ""),
-        ("transfer_convention", result.get("transfer_convention"), ""),
-        ("carbon_driver_preset", result.get("carbon_driver_preset"), ""),
     ]
+    if experiment_type == "pCO2_trajectory":
+        transition = result["transition_end_state"]
+        summary_rows.extend(
+            (
+                ("transition_end_time", transition["time_years"], "years"),
+                ("transition_end_pCO2", transition["pco2_ppm"], "ppm"),
+                (
+                    "transition_end_O2_Delta_prime_17O_0.528",
+                    transition["cap_delta17_prime_permil"],
+                    "permil",
+                ),
+                (
+                    "transition_end_O2_delta_prime_18O",
+                    transition["delta18_prime_permil"],
+                    "permil",
+                ),
+            )
+        )
     for row in summary_rows:
         summary.append(row)
     _finish_table(summary, (42, 72, 24))
@@ -328,11 +343,17 @@ def build_transient_workbook(
     _prepare_sheet(timeseries, title="Model time series", headers=headers)
     states = result["states"]
     is_photosynthesis = experiment_type == "photosynthesis"
+    is_trajectory = experiment_type == "pCO2_trajectory"
     if is_photosynthesis:
         pco2_values = result["pco2_ppm"]
         carbon_po2_values = result["carbon_driver_po2_pal"]
         gpp_value = request["initial"]["gpp_pgC_per_year"]
         photosynthesis_fraction = request["photosynthesis_fraction"]
+    elif is_trajectory:
+        pco2_values = result["pco2_ppm"]
+        carbon_po2_values = [None] * len(states)
+        gpp_value = request["initial"]["gpp_pgC_per_year"]
+        photosynthesis_fraction = None
     else:
         pco2_values = [request["final"]["p_co2_ppm"]] * len(states)
         carbon_po2_values = [None] * len(states)
@@ -372,7 +393,10 @@ def build_transient_workbook(
         headers=("Field", "Value"),
     )
     provenance_values = {
-        **envelope.get("provenance", {}),
+        "software": SOFTWARE_NAME,
+        "software_version": SOFTWARE_VERSION,
+        "repository": REPOSITORY_URL,
+        "calculation": envelope["calculation"],
         "solver": result.get("solver", {}),
         "operational_equilibrium": equilibrium,
     }

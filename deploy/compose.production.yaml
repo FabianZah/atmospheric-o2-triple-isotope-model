@@ -1,14 +1,17 @@
-name: o2-budget-model
+name: oxytib
 
 services:
   model-api:
     build:
       context: ..
       dockerfile: Dockerfile
-    image: "o2-budget-model:${O2_MODEL_VERSION:-0.1.0}"
+    image: "oxytib:${OXYTIB_VERSION:-0.1.0}"
     restart: unless-stopped
     environment:
-      O2_MODEL_CORS_ORIGINS: "${O2_MODEL_CORS_ORIGINS:-}"
+      OXYTIB_CORS_ORIGINS: "${OXYTIB_CORS_ORIGINS:-}"
+      OXYTIB_MAX_REQUEST_BYTES: "${OXYTIB_MAX_REQUEST_BYTES:-1048576}"
+      OXYTIB_MAX_COMPUTE_REQUESTS: "${OXYTIB_MAX_COMPUTE_REQUESTS:-2}"
+      OXYTIB_COMPUTE_QUEUE_TIMEOUT_SECONDS: "${OXYTIB_COMPUTE_QUEUE_TIMEOUT_SECONDS:-1.0}"
     expose:
       - "8000"
     read_only: true
@@ -18,9 +21,9 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
-    pids_limit: "${O2_MODEL_PIDS:-256}"
-    mem_limit: "${O2_MODEL_MEMORY:-2g}"
-    cpus: "${O2_MODEL_CPUS:-2.0}"
+    pids_limit: "${OXYTIB_PIDS:-256}"
+    mem_limit: "${OXYTIB_MEMORY:-2g}"
+    cpus: "${OXYTIB_CPUS:-2.0}"
     stop_grace_period: 30s
     networks:
       - backend
@@ -37,7 +40,7 @@ services:
       model-api:
         condition: service_healthy
     environment:
-      O2_MODEL_DOMAIN: "${O2_MODEL_DOMAIN:?set O2_MODEL_DOMAIN}"
+      OXYTIB_DOMAIN: "${OXYTIB_DOMAIN:?set OXYTIB_DOMAIN}"
       ACME_EMAIL: "${ACME_EMAIL:?set ACME_EMAIL}"
     ports:
       - "80:80"

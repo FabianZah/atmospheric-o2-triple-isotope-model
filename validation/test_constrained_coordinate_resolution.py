@@ -108,8 +108,74 @@ def test_true_domain_edge_remains_boundary_sensitive_and_is_not_refined() -> Non
 
     assert result.status == "solve_boundary_sensitive"
     assert result.solve_boundary_sensitive is True
+    assert result.solve_boundary_direction == "upper"
+    assert result.solve_boundary_probability_mass > 0.05
+    assert result.solve_mode_at_boundary is True
     assert result.numerical_refinement_applied is False
     assert result.initial_solve_bounds == result.final_solve_bounds == (
         50.0,
         60_000.0,
     )
+
+
+def test_incompatible_fixed_state_reports_strong_upper_po2_edge_mode() -> None:
+    result = constrained_coordinate_posterior(
+        ConstrainedCoordinateInput(
+            solve_for="pO2",
+            target_air_cap_delta17_permil=-0.432,
+            measurement_sigma_permil=0.015,
+            target_air_delta18_conventional_permil=23.9,
+            delta18_measurement_sigma_permil=0.3,
+            constraints={
+                "pCO2": CoordinateConstraint("fixed", center=800.0),
+                "GPP": CoordinateConstraint("fixed", center=174.0),
+            },
+            po2_grid_size=41,
+        )
+    )
+
+    assert result.solve_boundary_sensitive is True
+    assert result.solve_boundary_direction == "upper"
+    assert result.solve_boundary_probability_mass > 0.99
+    assert result.solve_mode_at_boundary is True
+    assert result.posterior_median > 1.95
+
+
+@pytest.mark.parametrize(
+    "solve_for,target,expected_direction",
+    (
+        ("pCO2", 0.0, "lower"),
+        ("pCO2", -14.0, "upper"),
+        ("GPP", -2.7, "lower"),
+        ("GPP", -0.1, "upper"),
+        ("pO2", -0.7, "lower"),
+        ("pO2", -0.2, "upper"),
+    ),
+)
+def test_outside_target_reports_strong_edge_mode_for_every_coordinate(
+    solve_for: str, target: float, expected_direction: str
+) -> None:
+    values = {"pCO2": 294.0, "GPP": 290.0, "pO2": 1.0}
+    constraints = {
+        coordinate: CoordinateConstraint("fixed", center=value)
+        for coordinate, value in values.items()
+        if coordinate != solve_for
+    }
+    result = constrained_coordinate_posterior(
+        ConstrainedCoordinateInput(
+            solve_for=solve_for,
+            target_air_cap_delta17_permil=target,
+            measurement_sigma_permil=0.015,
+            constraints=constraints,
+            pco2_grid_size=181,
+            gpp_grid_size=81,
+            po2_grid_size=41,
+        )
+    )
+
+    assert result.status == "solve_boundary_sensitive"
+    assert result.solve_boundary_sensitive is True
+    assert result.solve_boundary_direction == expected_direction
+    assert result.solve_boundary_probability_mass >= 0.5
+    assert result.solve_mode_at_boundary is True
+    assert result.numerical_refinement_applied is False

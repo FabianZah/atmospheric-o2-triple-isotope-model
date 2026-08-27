@@ -25,10 +25,16 @@ def test_production_compose_is_private_bounded_and_read_only() -> None:
     assert api["read_only"] is True
     assert api["cap_drop"] == ["ALL"]
     assert api["security_opt"] == ["no-new-privileges:true"]
-    assert api["pids_limit"] == "${O2_MODEL_PIDS:-256}"
-    assert api["mem_limit"] == "${O2_MODEL_MEMORY:-2g}"
-    assert api["cpus"] == "${O2_MODEL_CPUS:-2.0}"
+    assert api["pids_limit"] == "${OXYTIB_PIDS:-256}"
+    assert api["mem_limit"] == "${OXYTIB_MEMORY:-2g}"
+    assert api["cpus"] == "${OXYTIB_CPUS:-2.0}"
     assert api["networks"] == ["backend"]
+    assert api["environment"]["OXYTIB_MAX_REQUEST_BYTES"] == (
+        "${OXYTIB_MAX_REQUEST_BYTES:-1048576}"
+    )
+    assert api["environment"]["OXYTIB_MAX_COMPUTE_REQUESTS"] == (
+        "${OXYTIB_MAX_COMPUTE_REQUESTS:-2}"
+    )
     assert compose["networks"]["backend"]["internal"] is True
 
     proxy = compose["services"]["caddy"]
@@ -41,15 +47,27 @@ def test_production_compose_is_private_bounded_and_read_only() -> None:
     assert proxy["mem_limit"] == "256m"
     assert proxy["cpus"] == "0.5"
     assert proxy["networks"] == ["frontend", "backend"]
+    caddyfile = (ROOT / "deploy" / "caddy" / "Caddyfile").read_text(
+        encoding="utf-8"
+    )
+    assert "max_size 1MB" in caddyfile
+    assert "Content-Security-Policy" in caddyfile
 
 
 def test_environment_template_and_ignore_policy_are_safe() -> None:
     template = (ROOT / "deploy" / ".env.production.example").read_text(
         encoding="utf-8"
     )
-    assert "O2_MODEL_DOMAIN=model.example.org" in template
-    assert "O2_MODEL_CORS_ORIGINS=" in template
+    assert "OXYTIB_DOMAIN=model.example.org" in template
+    assert "OXYTIB_CORS_ORIGINS=" in template
     assert "CADDY_IMAGE=caddy:2.11.4-alpine" in template
+    assert "OXYTIB_MAX_REQUEST_BYTES=1048576" in template
+    assert "OXYTIB_MAX_COMPUTE_REQUESTS=2" in template
+    traefik_template = (ROOT / "deploy" / ".env.traefik.example").read_text(
+        encoding="utf-8"
+    )
+    assert "OXYTIB_ROOT_PATH=" in traefik_template
+    assert "OXYTIB_ROOT_PATH=/oxytib" not in traefik_template
     assert "PASSWORD=" not in template
     assert "TOKEN=" not in template
     ignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
@@ -63,37 +81,72 @@ def test_traefik_compose_is_staged_bounded_and_prefix_aware() -> None:
         (ROOT / "deploy" / "compose.traefik.yaml").read_text(encoding="utf-8")
     )
     api = compose["services"]["model-api"]
-    assert api["ports"] == ["127.0.0.1:${ATMO_MOD_LOCAL_PORT:-18000}:8000"]
+    assert api["ports"] == ["127.0.0.1:${OXYTIB_LOCAL_PORT:-18000}:8000"]
     assert api["read_only"] is True
     assert api["cap_drop"] == ["ALL"]
     assert api["security_opt"] == ["no-new-privileges:true"]
-    assert api["pids_limit"] == "${ATMO_MOD_PIDS:-128}"
-    assert api["mem_limit"] == "${ATMO_MOD_MEMORY:-768m}"
-    assert api["cpus"] == "${ATMO_MOD_CPUS:-0.75}"
+    assert api["pids_limit"] == "${OXYTIB_PIDS:-128}"
+    assert api["mem_limit"] == "${OXYTIB_MEMORY:-768m}"
+    assert api["cpus"] == "${OXYTIB_CPUS:-0.75}"
     assert api["networks"] == ["traefik-global-proxy"]
+    assert api["environment"]["OXYTIB_MAX_REQUEST_BYTES"] == (
+        "${OXYTIB_MAX_REQUEST_BYTES:-1048576}"
+    )
+    assert api["environment"]["OXYTIB_MAX_COMPUTE_REQUESTS"] == (
+        "${OXYTIB_MAX_COMPUTE_REQUESTS:-2}"
+    )
+    assert api["environment"]["OXYTIB_ROOT_PATH"] == "${OXYTIB_ROOT_PATH:-}"
     assert compose["networks"]["traefik-global-proxy"] == {
         "external": True,
         "name": "traefik-global-proxy",
     }
 
     labels = dict(label.split("=", 1) for label in api["labels"])
-    assert labels["traefik.enable"] == "${ATMO_MOD_TRAEFIK_ENABLE:-false}"
-    assert "Path(`/atmo-mod`)" in labels["traefik.http.routers.atmo-mod.rule"]
-    assert "PathPrefix(`/atmo-mod/`)" in labels["traefik.http.routers.atmo-mod.rule"]
-    assert labels["traefik.http.routers.atmo-mod.middlewares"] == (
-        "atmo-mod-slash,atmo-mod-strip"
+    assert labels["traefik.enable"] == "${OXYTIB_TRAEFIK_ENABLE:-false}"
+    assert "Path(`/oxytib`)" in labels["traefik.http.routers.oxytib.rule"]
+    assert "PathPrefix(`/oxytib/`)" in labels["traefik.http.routers.oxytib.rule"]
+    assert labels["traefik.http.routers.oxytib.middlewares"] == (
+        "oxytib-slash,oxytib-rate,oxytib-inflight,oxytib-security,oxytib-strip"
     )
-    assert labels["traefik.http.middlewares.atmo-mod-strip.stripprefix.prefixes"] == (
-        "/atmo-mod"
+    assert labels["traefik.http.middlewares.oxytib-strip.stripprefix.prefixes"] == (
+        "/oxytib"
     )
-    assert labels["traefik.http.services.atmo-mod.loadbalancer.server.port"] == "8000"
+    assert labels["traefik.http.services.oxytib.loadbalancer.server.port"] == "8000"
+    assert labels["traefik.http.middlewares.oxytib-rate.ratelimit.average"] == (
+        "${OXYTIB_RATE_AVERAGE:-30}"
+    )
+    assert labels["traefik.http.middlewares.oxytib-rate.ratelimit.period"] == (
+        "${OXYTIB_RATE_PERIOD:-1m}"
+    )
+    assert labels["traefik.http.middlewares.oxytib-rate.ratelimit.burst"] == (
+        "${OXYTIB_RATE_BURST:-10}"
+    )
+    assert labels["traefik.http.middlewares.oxytib-inflight.inflightreq.amount"] == (
+        "${OXYTIB_INFLIGHT_REQUESTS:-4}"
+    )
+    assert labels[
+        "traefik.http.middlewares.oxytib-security.headers.contenttypenosniff"
+    ] == "true"
+    assert "frame-ancestors 'none'" in labels[
+        "traefik.http.middlewares.oxytib-security.headers.contentsecuritypolicy"
+    ]
+    assert "Path(`/atmo-mod`)" in labels[
+        "traefik.http.routers.oxytib-legacy.rule"
+    ]
+    assert labels[
+        "traefik.http.routers.oxytib-legacy.middlewares"
+    ] == "oxytib-legacy-redirect"
 
     template = (ROOT / "deploy" / ".env.traefik.example").read_text(
         encoding="utf-8"
     )
-    assert "ATMO_MOD_TRAEFIK_ENABLE=false" in template
-    assert "ATMO_MOD_HOST=model.example.org" in template
-    assert "ATMO_MOD_MEMORY=768m" in template
+    assert "OXYTIB_TRAEFIK_ENABLE=false" in template
+    assert "OXYTIB_HOST=model.example.org" in template
+    assert "OXYTIB_MEMORY=768m" in template
+    assert "OXYTIB_MAX_REQUEST_BYTES=1048576" in template
+    assert "OXYTIB_MAX_COMPUTE_REQUESTS=2" in template
+    assert "OXYTIB_RATE_AVERAGE=30" in template
+    assert "OXYTIB_INFLIGHT_REQUESTS=4" in template
     assert "PASSWORD=" not in template
     assert "TOKEN=" not in template
 

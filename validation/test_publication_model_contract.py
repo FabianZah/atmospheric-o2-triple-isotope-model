@@ -22,14 +22,13 @@ def test_publication_contract_has_one_consistent_model() -> None:
 
         assert contract["schema_version"] == 1
         assert contract["status"] == "active_publication_model"
-        assert contract["single_model_policy"]["manuscript_model_count"] == 1
-        assert contract["single_model_policy"]["public_ui_model_count"] == 1
-        assert not contract["single_model_policy"][
-            "structural_endmembers_are_alternative_public_models"
-        ]
-        assert not contract["single_model_policy"][
-            "diagnostic_output_offsets_or_damping_are_permitted"
-        ]
+        policy = contract["single_model_policy"]
+        assert policy["release_model_count"] == 1
+        assert policy["public_interface_model_count"] == 1
+        assert policy["historical_reconstructions_role"] == "validation evidence"
+        assert policy["structural_endmembers_role"] == (
+            "structural sensitivity evidence"
+        )
 
         deterministic = contract["deterministic_model"]
         assert deterministic["model_data_id"] == "updated_r7_response_surface_v1"
@@ -40,12 +39,17 @@ def test_publication_contract_has_one_consistent_model() -> None:
         assert accelerator["extrapolation_permitted"] is False
         assert accelerator["output_offset_applied"] is False
         assert accelerator["smoothing_applied"] is False
+        assert deterministic["transient_solvers"] == {
+            "atmospheric_state_step": "code/updated_molecular_transient.py",
+            "photosynthesis_step": "code/updated_photosynthesis_transient.py",
+            "gradual_pCO2_trajectory": "code/updated_pco2_trajectory_transient.py",
+        }
 
         assert contract["operational_domain"]["pCO2_ppm"]["minimum"] == 50.0
         assert contract["operational_domain"]["pCO2_ppm"]["maximum"] == 60000.0
-        assert contract["modern_reference_state"][
-            "raw_model_is_modified_to_match_observation"
-        ] is False
+        assert contract["modern_reference_state"]["raw_model_reporting"] == (
+            "unadjusted mechanistic state"
+        )
         assert contract["reporting_policy"][
             "observation_referenced_output_is_same_model"
         ]
@@ -54,7 +58,7 @@ def test_publication_contract_has_one_consistent_model() -> None:
         assert uncertainty["layers_remain_separate"]
         assert not uncertainty["combined_public_confidence_interval_available"]
         assert not uncertainty["whole_domain_structural_Gaussian_sigma_available"]
-        assert "not a central-model correction" in uncertainty["clima_role"]
+        assert "structural sensitivity" in uncertainty["clima_role"]
 
         assert len(contract["validation"]["evidence"]) == 7
         assert contract["validation"]["evidence_bundle_id"] == (
@@ -70,6 +74,11 @@ def test_publication_contract_has_one_consistent_model() -> None:
             len(item["sha256"]) == 64
             for item in contract["source_files"].values()
         )
+        assert {
+            "state_step_transient_implementation",
+            "photosynthesis_step_transient_implementation",
+            "pco2_trajectory_transient_implementation",
+        } <= set(contract["source_files"])
         assert all(
             item["path"].startswith("model_data/validation_evidence/")
             for name, item in contract["source_files"].items()

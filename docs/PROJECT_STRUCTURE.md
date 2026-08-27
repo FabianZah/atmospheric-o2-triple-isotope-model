@@ -18,9 +18,8 @@ outputs/                     generated local artifacts
 
 This is a conservative reproducibility decision. Moving the scientific modules
 into a conventional installable package would alter a large import graph just
-before publication without changing the model. Normal users do not need to
-know the internal module paths because `run_model.py` provides the stable API,
-smoke, and acceptance commands.
+before publication without changing the model. `run_model.py` provides stable
+calculation, API, and validation commands for normal use.
 
 ## Stable public components
 
@@ -33,8 +32,11 @@ The public model identity is defined by
 - `code/updated_output_surface_posterior.py`
 - `code/updated_output_surface_joint_posterior.py`
 - `code/updated_molecular_transient.py`
+- `code/updated_photosynthesis_transient.py`
+- `code/updated_pco2_trajectory_transient.py`
 - `code/updated_uncertainty_layers.py`
 - `code/public_model_service.py`
+- `code/public_cli.py`
 - `code/web_api.py`
 - `web/index.html`, `web/styles.css`, and `web/app.js`
 
@@ -44,12 +46,12 @@ integrated release decision.
 
 ## Publication boundary
 
-The repository retains the model dependency closure required by the release
-tests and the historical Young-response anchor. Exploratory download scripts,
-one-off workflow definitions, discarded branches, private source documents,
-and generated development outputs are not part of the publication repository.
-Compact validation records and the two digitized Young reference datasets are
-included because they are direct inputs to the release contract.
+The repository retains the 57-module operational dependency closure and the
+additional validation modules required by the release tests and
+published-model response anchors. Compact validation records and digitized
+reference datasets are included where they are direct inputs to the release
+contract. Exploratory download scripts, private source documents, and generated
+local outputs remain outside the publication repository.
 
 A later software-only release may move modules into an installable package.
 That refactor should occur after the scientific release tag and must preserve

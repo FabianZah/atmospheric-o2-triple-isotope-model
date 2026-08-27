@@ -46,6 +46,10 @@ from updated_photosynthesis_transient import (
     UpdatedPhotosynthesisTransientInput,
     run_updated_photosynthesis_transient,
 )
+from updated_pco2_trajectory_transient import (
+    UpdatedPCO2TrajectoryInput,
+    run_updated_pco2_trajectory,
+)
 
 
 ROOT = next(
@@ -93,13 +97,17 @@ def model_metadata() -> dict[str, Any]:
         "uncertainty": contract["uncertainty"],
         "source_contract": "model_data/publication_model_contract_v1.json",
         "citation": {
-            "title": "Atmospheric O2 triple-isotope model",
+            "title": (
+                "OXYTIB: Atmospheric oxygen triple-isotope budget and "
+                "inference model"
+            ),
             "version": "0.1.0",
             "citation_file": "CITATION.cff",
             "citation_files": ("CITATION.cff", "CITATION.bib", "CITATION.ris"),
             "recommended_text": (
-                "Zahnow, F. (2026). Atmospheric O2 Triple-Isotope Model "
-                "(Version 0.1.0) [Computer software]. GitHub."
+                "Zahnow, F. (2026). OXYTIB: Atmospheric Oxygen "
+                "Triple-Isotope Budget and Inference Model (Version 0.1.0) "
+                "[Computer software]. GitHub."
             ),
             "repository": (
                 "https://github.com/FabianZah/"
@@ -247,8 +255,8 @@ def isotope_field(
         "surface_data_id": surface.surface_data_id,
         "upstream_model_data_id": surface.upstream_model_data_id,
         "field_scope": (
-            "deterministic central updated-model Delta-prime-17O field; no "
-            "measurement likelihood, prior, or structural uncertainty included"
+            "deterministic central OXYTIB Delta-prime-17O field; measurement "
+            "likelihoods and uncertainty are handled by inference endpoints"
         ),
     }
     return result_envelope(result, calculation="deterministic_isotope_field")
@@ -303,4 +311,13 @@ def photosynthesis_step_transient(
     return result_envelope(
         run_updated_photosynthesis_transient(request).as_dict(),
         calculation="photosynthesis_step_transient",
+    )
+
+
+def pco2_trajectory_transient(
+    request: UpdatedPCO2TrajectoryInput,
+) -> dict[str, Any]:
+    return result_envelope(
+        run_updated_pco2_trajectory(request).as_dict(),
+        calculation="pco2_trajectory_transient",
     )

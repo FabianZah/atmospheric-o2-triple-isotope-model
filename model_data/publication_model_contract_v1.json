@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
-  "publication_model_id": "atmospheric_o2_triple_isotope_model_v1",
+  "publication_model_id": "oxytib_publication_model_v1",
   "status": "active_publication_model",
   "single_model_policy": {
-    "manuscript_model_count": 1,
-    "public_ui_model_count": 1,
-    "historical_reconstructions_are_validation_evidence": true,
-    "structural_endmembers_are_alternative_public_models": false,
-    "parameter_updates_must_change_declared_physical_inputs_or_equations": true,
-    "diagnostic_output_offsets_or_damping_are_permitted": false
+    "release_model_count": 1,
+    "public_interface_model_count": 1,
+    "historical_reconstructions_role": "validation evidence",
+    "structural_endmembers_role": "structural sensitivity evidence",
+    "parameter_update_policy": "changes require declared physical inputs or equations",
+    "output_adjustment_policy": "raw mechanistic outputs are preserved"
   },
   "deterministic_model": {
     "model_data_id": "updated_r7_response_surface_v1",
@@ -24,7 +24,11 @@
     "inverse_solver": "code/updated_output_surface_inverse.py",
     "conditional_posterior": "code/updated_output_surface_posterior.py",
     "joint_posterior": "code/updated_output_surface_joint_posterior.py",
-    "transient_solver": "code/updated_molecular_transient.py"
+    "transient_solvers": {
+      "atmospheric_state_step": "code/updated_molecular_transient.py",
+      "photosynthesis_step": "code/updated_photosynthesis_transient.py",
+      "gradual_pCO2_trajectory": "code/updated_pco2_trajectory_transient.py"
+    }
   },
   "operational_domain": {
     "pO2_PAL": {
@@ -66,7 +70,7 @@
       "conventional_delta_18O_permil": 23.9,
       "conventional_delta_18O_one_sigma_permil": 0.3
     },
-    "raw_model_is_modified_to_match_observation": false
+    "raw_model_reporting": "unadjusted mechanistic state"
   },
   "reporting_policy": {
     "primary_forward_output": "raw mechanistic model state",
@@ -92,7 +96,7 @@
     "layers_remain_separate": true,
     "combined_public_confidence_interval_available": false,
     "whole_domain_structural_Gaussian_sigma_available": false,
-    "clima_role": "non-probabilistic structural sensitivity end member; not a central-model correction"
+    "clima_role": "non-probabilistic structural sensitivity end member used to quantify climate-architecture response"
   },
   "validation": {
     "evidence_matrix_id": "atmospheric_o2_triple_isotope_evidence_matrix_v1",
@@ -160,11 +164,11 @@
     "integrated_acceptance_generator": "validation/audit_publication_model_acceptance.py",
     "integrated_acceptance_report": "docs/publication_model_acceptance.md"
   },
-  "manuscript_scope": {
-    "methods": "one deterministic model and its declared inputs",
+  "publication_scope": {
+    "model": "one deterministic model and its declared inputs",
     "validation": "comparisons with observations and published models",
     "uncertainty": "separate measurement, parameter, numerical, and structural layers",
-    "development_presets_or_branches_in_main_analysis": false
+    "historical_reconstruction_role": "validation provenance"
   },
   "source_files": {
     "central_forward_implementation": {
@@ -173,7 +177,7 @@
     },
     "accelerator_implementation": {
       "path": "code/updated_output_surface.py",
-      "sha256": "7d1a567351d7761dcb4c0cc0d545d056891e12eb898d4e678ad682259dc180d1"
+      "sha256": "915d9609e07a60733a58c25de596327efacaf9d0c07ebad94d2997104b65c617"
     },
     "inverse_implementation": {
       "path": "code/updated_output_surface_inverse.py",
@@ -181,15 +185,23 @@
     },
     "conditional_posterior_implementation": {
       "path": "code/updated_output_surface_posterior.py",
-      "sha256": "ce8cc277ad1536febdc19e23510e40bad5058f73754d594d95af433a6ff41657"
+      "sha256": "f94ed7f68cfca7659552b8021982104c1a87a0d2f0d96ce26acf6551678465bd"
     },
     "joint_posterior_implementation": {
       "path": "code/updated_output_surface_joint_posterior.py",
-      "sha256": "40839e9ad057e24a388ac8a910752ade0da75036628c3fe4e7e008e13c94efb8"
+      "sha256": "83861cc386252bb8e1c05101c8feb9bf0463bc904577d902fa62e9dbb5ff9923"
     },
-    "transient_implementation": {
+    "state_step_transient_implementation": {
       "path": "code/updated_molecular_transient.py",
       "sha256": "6620180165bbbdf16ce3d7b537946fee8288ae567272107149b96ecb11b40528"
+    },
+    "photosynthesis_step_transient_implementation": {
+      "path": "code/updated_photosynthesis_transient.py",
+      "sha256": "d44f025536ee37611fa583fd5ede73897c9dde8406155d504e77dd6d2e3ef017"
+    },
+    "pco2_trajectory_transient_implementation": {
+      "path": "code/updated_pco2_trajectory_transient.py",
+      "sha256": "6973edfb1865d019529b71ec50a813278a99e2bb55b33c4ed9ca50ba842e7cdb"
     },
     "uncertainty_implementation": {
       "path": "code/updated_uncertainty_layers.py",
@@ -257,7 +269,7 @@
     },
     "integrated_acceptance_implementation": {
       "path": "validation/audit_publication_model_acceptance.py",
-      "sha256": "3cc34239ee108a4a6daa9d0a882df04e14d54eb327ff3df21a24d0dcfd863ae4"
+      "sha256": "ae85a5af66de936ebea391f3445414c00cd81c68fc7dc05be7b00a23b04946b2"
     }
   }
 }
