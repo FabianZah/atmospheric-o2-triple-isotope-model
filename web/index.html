@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OXYTIB</title>
-  <link rel="stylesheet" href="assets/styles.css?v=1.20.5">
-  <script defer src="assets/app.js?v=1.20.5"></script>
+  <link rel="stylesheet" href="assets/styles.css?v=1.20.6">
+  <script defer src="assets/app.js?v=1.20.6"></script>
 </head>
 <body>
   <header class="topbar">
@@ -159,6 +159,13 @@
 
           <button class="primary-command" id="run-solver" type="button">Calculate constrained solution</button>
           <p class="error-message" id="solver-error" role="alert"></p>
+          <div class="calculation-progress solver-progress hidden" id="solver-progress" role="status" aria-live="polite">
+            <div class="calculation-progress-copy">
+              <strong id="solver-progress-label">Calculating constrained solution</strong>
+              <span id="solver-progress-elapsed">0 seconds elapsed</span>
+            </div>
+            <div class="calculation-progress-track" aria-hidden="true"><span></span></div>
+          </div>
         </aside>
 
         <div class="result-area">
@@ -265,12 +272,12 @@
         </label>
       </div>
       <p class="error-message" id="transient-error" role="alert"></p>
-      <div class="transient-progress hidden" id="transient-progress" role="status" aria-live="polite">
-        <div class="transient-progress-copy">
+      <div class="calculation-progress transient-progress hidden" id="transient-progress" role="status" aria-live="polite">
+        <div class="calculation-progress-copy">
           <strong id="transient-progress-label">Solving atmospheric isotope response</strong>
           <span id="transient-progress-elapsed">0 seconds elapsed</span>
         </div>
-        <div class="transient-progress-track" aria-hidden="true"><span></span></div>
+        <div class="calculation-progress-track" aria-hidden="true"><span></span></div>
       </div>
       <div class="transient-summary" id="transient-summary"></div>
       <div class="transient-plots">
@@ -321,6 +328,7 @@
           <details><summary>What does a boundary-limited solution mean?</summary><p>Appreciable posterior probability reaches an edge of the accepted model domain. The reported interval is therefore limited by that boundary and should not be interpreted as evidence that the true value lies at the boundary.</p></details>
           <details><summary>Does the main solver represent steady state?</summary><p>Yes. The isotope field and constrained solver use steady-state model outputs. Time-dependent adjustment after a change in pCO<sub>2</sub>, GPP, pO<sub>2</sub>, or photosynthesis is calculated separately in the Time response view.</p></details>
           <details><summary>How should the time-response experiments be interpreted?</summary><p>Each experiment applies an imposed change at year zero; negative displayed times show the initial state. Operational equilibrium is reached when both isotope coordinates enter and remain within 0.001‰ of the long-run state. The equilibrium search is independent of the displayed duration and extends to 100,000 years.</p></details>
+          <details><summary>How long do calculations take?</summary><p>Most fixed-constraint calculations finish within seconds. Propagating uncertain constraints requires evaluation across a numerical grid and can take longer. Time-response experiments solve adaptive differential equations; the photosynthesis step is usually the slowest because it integrates the coupled carbon, O<sub>2</sub>, and isotope response over the equilibrium-search horizon. Runtime also depends on the selected constraints, experiment duration, and server load.</p></details>
           <details><summary>Can the model be applied to ancient atmospheres?</summary><p>Yes, when the requested state lies inside the accepted model domain and independent evidence constrains the other atmospheric coordinates. Geological interpretations should also consider structural model uncertainty and the applicability of the model assumptions to the investigated interval.</p></details>
           <details><summary>How are cosmic spherules converted?</summary><p>I-type cosmic spherule measurements are converted to atmospheric O<sub>2</sub> using Zahnow et al. (2025), Eq. 3, calibrated by Fischer et al. (2021).</p></details>
           <details><summary>How should cosmic-spherule uncertainties be entered?</summary><p>Enter the analytical 1σ uncertainties of both spherule Δ′<sup>17</sup>O and δ<sup>18</sup>O. They are propagated through the atmospheric conversion. Calibration-parameter sensitivity is assessed separately and is not added to the displayed analytical 1σ interval.</p></details>

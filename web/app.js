@@ -245,16 +245,14 @@ function setBusy(button, busy, busyText) {
   button.textContent = busy ? busyText : button.dataset.label;
 }
 
-function beginTransientProgress(type) {
-  const panel = $("transient-progress");
-  const label = $("transient-progress-label");
-  const elapsed = $("transient-progress-elapsed");
+function beginCalculationProgress({ panelId, labelId, elapsedId, busyRegionId, message }) {
+  const panel = $(panelId);
+  const label = $(labelId);
+  const elapsed = $(elapsedId);
   const startedAt = performance.now();
-  label.textContent = type === "photosynthesis"
-    ? "Solving coupled photosynthesis, carbon, and O₂ response"
-    : "Solving atmospheric isotope response";
+  label.textContent = message;
   panel.classList.remove("hidden");
-  $("view-transient").setAttribute("aria-busy", "true");
+  $(busyRegionId).setAttribute("aria-busy", "true");
 
   const updateElapsed = () => {
     const seconds = Math.max(0, Math.floor((performance.now() - startedAt) / 1000));
@@ -265,8 +263,30 @@ function beginTransientProgress(type) {
   return () => {
     window.clearInterval(timer);
     panel.classList.add("hidden");
-    $("view-transient").removeAttribute("aria-busy");
+    $(busyRegionId).removeAttribute("aria-busy");
   };
+}
+
+function beginTransientProgress(type) {
+  return beginCalculationProgress({
+    panelId: "transient-progress",
+    labelId: "transient-progress-label",
+    elapsedId: "transient-progress-elapsed",
+    busyRegionId: "view-transient",
+    message: type === "photosynthesis"
+      ? "Solving coupled photosynthesis, carbon, and O₂ response"
+      : "Solving atmospheric isotope response",
+  });
+}
+
+function beginSolverProgress() {
+  return beginCalculationProgress({
+    panelId: "solver-progress",
+    labelId: "solver-progress-label",
+    elapsedId: "solver-progress-elapsed",
+    busyRegionId: "view-solver",
+    message: "Calculating constrained solution",
+  });
 }
 
 function updateCoordinateControls() {
@@ -380,6 +400,7 @@ async function runSolver() {
   $("download-result-xlsx").disabled = true;
   state.lastResult = null;
   setBusy(button, true, "Calculating…");
+  const endProgress = beginSolverProgress();
   try {
     const target = await isotopeTarget();
     const inputs = currentForwardState();
@@ -415,6 +436,7 @@ async function runSolver() {
   } catch (error) {
     $("solver-error").textContent = publicErrorMessage(error);
   } finally {
+    endProgress();
     setBusy(button, false);
   }
 }

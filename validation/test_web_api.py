@@ -33,8 +33,8 @@ def test_frontend_assets_and_api_work_when_mounted_below_prefix() -> None:
     swagger_initializer = prefixed_client.get("/oxytib/assets/swagger-init.js")
 
     assert root.status_code == 200
-    assert 'href="assets/styles.css?v=1.20.5"' in root.text
-    assert 'src="assets/app.js?v=1.20.5"' in root.text
+    assert 'href="assets/styles.css?v=1.20.6"' in root.text
+    assert 'src="assets/app.js?v=1.20.6"' in root.text
     assert script.status_code == 200
     assert styles.status_code == 200
     assert health.status_code == 200
@@ -97,8 +97,10 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert 'id="download-transient-xlsx"' in root.text
     assert 'id="transient-progress"' in root.text
     assert 'id="transient-progress-elapsed"' in root.text
-    assert 'href="assets/styles.css?v=1.20.5"' in root.text
-    assert 'src="assets/app.js?v=1.20.5"' in root.text
+    assert 'id="solver-progress"' in root.text
+    assert 'id="solver-progress-elapsed"' in root.text
+    assert 'href="assets/styles.css?v=1.20.6"' in root.text
+    assert 'src="assets/app.js?v=1.20.6"' in root.text
     assert '>Download XLSX</button>' in root.text
     assert 'class="brand-lockup"' in root.text
     assert '<span>OXY</span><strong>TIB</strong>' in root.text
@@ -122,6 +124,7 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert "What does a boundary-limited solution mean?" in root.text
     assert "Does the main solver represent steady state?" in root.text
     assert "How should the time-response experiments be interpreted?" in root.text
+    assert "How long do calculations take?" in root.text
     assert "Can the model be applied to ancient atmospheres?" in root.text
     assert "How should cosmic-spherule uncertainties be entered?" in root.text
     assert "remain within 0.001‰ of the long-run state" in root.text
@@ -174,7 +177,9 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert "/api/v1/field/isotope" in script.text
     assert "const APPLICATION_BASE_PATH" in script.text
     assert "function applicationUrl" in script.text
+    assert "function beginCalculationProgress" in script.text
     assert "function beginTransientProgress" in script.text
+    assert "function beginSolverProgress" in script.text
     assert "performance.now() - startedAt" in script.text
     assert "fetch(applicationUrl(path)" in script.text
     assert 'fetch(applicationUrl("/api/v1/export/coordinate.xlsx")' in script.text
