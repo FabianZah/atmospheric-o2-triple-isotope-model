@@ -275,16 +275,29 @@ function renderConstrainedCoordinate(result, target, inputs, constraints, reques
   const coordinate = result.solve_for;
   const [low, high] = result.equal_tailed_credible_interval;
   const central = result.posterior_median;
+  const strongEdgeMode = result.solve_boundary_sensitive
+    && result.solve_mode_at_boundary
+    && result.solve_boundary_probability_mass >= 0.5;
   $("solver-empty").classList.add("hidden");
   $("solver-result").classList.remove("hidden");
-  $("result-coordinate").innerHTML = `${coordinateLabel(coordinate)} posterior median`;
-  $("result-value").textContent = formatCoordinate(coordinate, central);
-  $("result-interval").textContent = `${formatCoordinate(coordinate, low)}–${formatCoordinate(coordinate, high)} 95% credible interval`;
+  if (strongEdgeMode) {
+    const boundaryIndex = result.solve_boundary_direction === "lower" ? 0 : result.solve_axis.length - 1;
+    const boundary = formatCoordinate(coordinate, result.solve_axis[boundaryIndex]);
+    $("result-coordinate").innerHTML = `${coordinateLabel(coordinate)} constrained solution`;
+    $("result-value").textContent = "No interior solution";
+    $("result-interval").textContent = `Compatibility increases toward the ${boundary} domain boundary`;
+  } else {
+    $("result-coordinate").innerHTML = `${coordinateLabel(coordinate)} posterior median`;
+    $("result-value").textContent = formatCoordinate(coordinate, central);
+    $("result-interval").textContent = `${formatCoordinate(coordinate, low)}–${formatCoordinate(coordinate, high)} 95% credible interval`;
+  }
   const isotopeLines = isotopeConstraintText(target).split("<br>");
   const coordinateLines = Object.entries(constraints)
     .map(([name, constraint]) => constraintText(name, constraint));
   $("result-constraints").innerHTML = [...isotopeLines, ...coordinateLines].join("<br>");
-  $("solver-marginal-title").innerHTML = `${coordinateLabel(coordinate)} probability distribution`;
+  $("solver-marginal-title").innerHTML = strongEdgeMode
+    ? `${coordinateLabel(coordinate)} constrained compatibility`
+    : `${coordinateLabel(coordinate)} probability distribution`;
   drawMarginalPosterior(
     result.solve_axis,
     result.solve_marginal_density,
@@ -293,10 +306,15 @@ function renderConstrainedCoordinate(result, target, inputs, constraints, reques
     low,
     high,
     central,
+    strongEdgeMode,
   );
-  const boundaryNote = result.solve_boundary_sensitive
-    ? `Posterior probability reaches the accepted ${coordinate} boundary, so the interval is boundary-limited.`
-    : "";
+  let boundaryNote = "";
+  if (strongEdgeMode) {
+    const [domainLow, domainHigh] = result.final_solve_bounds;
+    boundaryNote = `The entered isotope and fixed-coordinate constraints do not identify an interior ${coordinate} solution within the accepted ${formatCoordinate(coordinate, domainLow)}–${formatCoordinate(coordinate, domainHigh)} domain.`;
+  } else if (result.solve_boundary_sensitive) {
+    boundaryNote = `Posterior probability reaches the accepted ${coordinate} boundary, so the interval is boundary-limited.`;
+  }
   $("solver-method-note").textContent = boundaryNote;
   $("solver-method-note").classList.toggle("hidden", !boundaryNote);
 
@@ -482,7 +500,7 @@ function drawColorLegend(ctx, x, y, width, stops, title, lowLabel, highLabel, ti
   ctx.fillText(highLabel, x + width, y + 21);
 }
 
-function drawMarginalLegend(ctx, width) {
+function drawMarginalLegend(ctx, width, edgeLimited = false) {
   const y = 17;
   const starts = [58, Math.max(215, width * 0.34), Math.max(390, width * 0.67)];
   ctx.font = "10px system-ui";
@@ -493,19 +511,19 @@ function drawMarginalLegend(ctx, width) {
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(starts[0], y - 2); ctx.lineTo(starts[0] + 22, y - 2); ctx.stroke();
   ctx.fillStyle = "#43515a";
-  ctx.fillText("Relative probability density", starts[0] + 28, y + 2);
+  ctx.fillText(edgeLimited ? "Relative compatibility" : "Relative probability density", starts[0] + 28, y + 2);
   ctx.fillStyle = "rgba(193, 139, 40, 0.24)";
   ctx.fillRect(starts[1], y - 7, 22, 10);
   ctx.strokeStyle = "rgba(193, 139, 40, 0.7)";
   ctx.lineWidth = 1;
   ctx.strokeRect(starts[1], y - 7, 22, 10);
   ctx.fillStyle = "#43515a";
-  ctx.fillText("Central 95% credible interval", starts[1] + 28, y + 2);
+  ctx.fillText(edgeLimited ? "Domain-truncated 95% interval" : "Central 95% credible interval", starts[1] + 28, y + 2);
   ctx.strokeStyle = "#17212b";
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(starts[2] + 10, y - 9); ctx.lineTo(starts[2] + 10, y + 5); ctx.stroke();
   ctx.fillStyle = "#43515a";
-  ctx.fillText("Posterior median", starts[2] + 20, y + 2);
+  ctx.fillText(edgeLimited ? "Domain-truncated median" : "Posterior median", starts[2] + 20, y + 2);
 }
 
 function axisDisplayValues(coordinate, values) {
@@ -568,7 +586,7 @@ function posteriorQuantile(axis, probabilityMass, probability) {
   return axis[axis.length - 1];
 }
 
-function drawMarginalPosterior(axis, density, probabilityMass, coordinate, low, high, median) {
+function drawMarginalPosterior(axis, density, probabilityMass, coordinate, low, high, median, edgeLimited = false) {
   const { ctx, width, height } = canvasContext("solver-marginal-canvas", 3.0);
   const margin = { left: 58, right: 20, top: 42, bottom: 52 };
   const plotW = width - margin.left - margin.right;
@@ -598,8 +616,8 @@ function drawMarginalPosterior(axis, density, probabilityMass, coordinate, low, 
   const supportMin = transform(supportLow);
   const supportMax = transform(supportHigh);
   const supportSpan = Math.max(supportMax - supportMin, (domainMax - domainMin) * 0.01);
-  const xmin = Math.max(domainMin, supportMin - 0.12 * supportSpan);
-  const xmax = Math.min(domainMax, supportMax + 0.12 * supportSpan);
+  const xmin = edgeLimited ? domainMin : Math.max(domainMin, supportMin - 0.12 * supportSpan);
+  const xmax = edgeLimited ? domainMax : Math.min(domainMax, supportMax + 0.12 * supportSpan);
   const visibleDensity = displayDensity.filter((value, index) => {
     const transformed = transform(xs[index]);
     return transformed >= xmin && transformed <= xmax;
@@ -610,7 +628,7 @@ function drawMarginalPosterior(axis, density, probabilityMass, coordinate, low, 
 
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, width, height);
-  drawMarginalLegend(ctx, width);
+  drawMarginalLegend(ctx, width, edgeLimited);
   ctx.save();
   ctx.beginPath();
   ctx.rect(margin.left, margin.top, plotW, plotH);
@@ -655,7 +673,7 @@ function drawMarginalPosterior(axis, density, probabilityMass, coordinate, low, 
   ctx.save();
   ctx.translate(16, margin.top + plotH / 2);
   ctx.rotate(-Math.PI / 2);
-  ctx.fillText("Relative probability density", 0, 0);
+  ctx.fillText(edgeLimited ? "Relative compatibility" : "Relative probability density", 0, 0);
   ctx.restore();
   enablePlotExport("solver-marginal-canvas");
 }

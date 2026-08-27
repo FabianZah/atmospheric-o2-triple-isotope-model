@@ -73,8 +73,8 @@ button { cursor: pointer; }
 sub, sup { line-height: 0; }
 
 .topbar {
-  min-height: 78px;
-  padding: 14px clamp(18px, 4vw, 54px);
+  min-height: 88px;
+  padding: 13px clamp(18px, 4vw, 54px);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -84,8 +84,13 @@ sub, sup { line-height: 0; }
   border-bottom: 2px solid var(--gold);
 }
 
-.topbar h1 { margin: 0; padding-left: 11px; border-left: 4px solid var(--oxide); font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 21px; font-weight: 700; letter-spacing: 0; }
-.topbar p { margin: 4px 0 0 15px; color: var(--header-muted); font-size: 12px; }
+.brand-lockup { min-width: 0; display: flex; align-items: center; gap: 22px; }
+.topbar h1 { position: relative; margin: 0; padding: 0 0 5px; color: var(--header-ink); font-size: 31px; font-weight: 450; line-height: 1; letter-spacing: 0; white-space: nowrap; }
+.topbar h1::after { position: absolute; right: 0; bottom: 0; left: 0; height: 2px; background: var(--gold); content: ""; }
+.topbar h1 strong { color: var(--gold); font-weight: 760; }
+.brand-copy { min-width: 0; padding-left: 21px; border-left: 1px solid rgba(203, 213, 207, 0.32); }
+.topbar .scientific-signature { margin: 0; color: var(--header-ink); font-size: 12px; font-weight: 650; }
+.topbar .brand-description { margin: 5px 0 0; color: var(--header-muted); font-size: 12px; }
 .topbar-actions { display: flex; align-items: center; gap: 18px; }
 .model-state { display: flex; align-items: center; gap: 8px; color: var(--header-muted); font-size: 12px; white-space: nowrap; }
 .model-state span { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); }
@@ -337,4 +342,11 @@ footer a { color: var(--teal-dark); }
   .result-area { padding: 18px; }
   .band-heading { align-items: flex-start; flex-direction: column; }
   .primary-command.compact { width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .brand-lockup { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .topbar h1 { font-size: 29px; }
+  .brand-copy { padding-left: 0; border-left: 0; }
+  .topbar .brand-description { max-width: 330px; line-height: 1.45; }
 }

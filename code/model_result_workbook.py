@@ -100,6 +100,13 @@ def _append_summary_rows(
         ("credible_interval_upper", high, unit),
         ("credible_interval_mass", inputs["credible_mass"], "probability"),
         ("boundary_sensitive", result["solve_boundary_sensitive"], ""),
+        ("boundary_direction", result.get("solve_boundary_direction"), ""),
+        (
+            "boundary_probability_mass",
+            result.get("solve_boundary_probability_mass"),
+            "probability",
+        ),
+        ("posterior_mode_at_boundary", result.get("solve_mode_at_boundary"), ""),
         ("probability_scope", result["probability_scope"], ""),
     ]
     spherule = context.get("spherule")

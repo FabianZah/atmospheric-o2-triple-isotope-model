@@ -83,6 +83,9 @@ class ConstrainedCoordinateResult:
     constraint_equal_tailed_credible_intervals: dict[str, tuple[float, float]]
     effective_constraint_bounds: dict[str, tuple[float, float]]
     solve_boundary_sensitive: bool
+    solve_boundary_direction: Literal["lower", "upper"] | None
+    solve_boundary_probability_mass: float
+    solve_mode_at_boundary: bool
     numerical_refinement_applied: bool
     initial_solve_axis_size: int
     final_solve_axis_size: int
@@ -429,6 +432,22 @@ def constrained_coordinate_posterior(
             "support without changing the declared prior or likelihood."
         )
     final_solve_axis = np.asarray(joint.axes[request.solve_for], dtype=float)
+    final_solve_mass = np.asarray(
+        joint.marginal_probability_mass[request.solve_for], dtype=float
+    )
+    final_solve_density = np.asarray(
+        joint.marginal_density[request.solve_for], dtype=float
+    )
+    lower_edge_mass = float(np.sum(final_solve_mass[:2]))
+    upper_edge_mass = float(np.sum(final_solve_mass[-2:]))
+    boundary_direction: Literal["lower", "upper"] | None = None
+    boundary_probability_mass = max(lower_edge_mass, upper_edge_mass)
+    if boundary_sensitive:
+        boundary_direction = (
+            "lower" if lower_edge_mass >= upper_edge_mass else "upper"
+        )
+    mode_index = int(np.argmax(final_solve_density))
+    mode_at_boundary = mode_index in {0, len(final_solve_density) - 1}
     return ConstrainedCoordinateResult(
         inputs=request,
         status=(
@@ -470,6 +489,9 @@ def constrained_coordinate_posterior(
             item: values[1] for item, values in resolved.items()
         },
         solve_boundary_sensitive=boundary_sensitive,
+        solve_boundary_direction=boundary_direction,
+        solve_boundary_probability_mass=boundary_probability_mass,
+        solve_mode_at_boundary=mode_at_boundary,
         numerical_refinement_applied=refinement_applied,
         initial_solve_axis_size=initial_solve_axis_size,
         final_solve_axis_size=len(final_solve_axis),

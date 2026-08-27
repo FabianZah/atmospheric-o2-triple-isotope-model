@@ -33,8 +33,8 @@ def test_frontend_assets_and_api_work_when_mounted_below_prefix() -> None:
     swagger_initializer = prefixed_client.get("/oxytib/assets/swagger-init.js")
 
     assert root.status_code == 200
-    assert 'href="assets/styles.css?v=1.20.2"' in root.text
-    assert 'src="assets/app.js?v=1.20.2"' in root.text
+    assert 'href="assets/styles.css?v=1.20.4"' in root.text
+    assert 'src="assets/app.js?v=1.20.4"' in root.text
     assert script.status_code == 200
     assert styles.status_code == 200
     assert health.status_code == 200
@@ -86,7 +86,7 @@ def test_oversized_request_body_is_rejected_before_model_execution() -> None:
 def test_root_serves_independent_frontend_and_static_assets() -> None:
     root = client.get("/")
     assert root.status_code == 200
-    assert "<h1>OXYTIB</h1>" in root.text
+    assert '<h1 aria-label="OXYTIB">' in root.text
     assert "streamlit" not in root.text.lower()
     assert 'type="number"' not in root.text
     assert 'id="transient-forcing"' in root.text
@@ -95,9 +95,15 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert 'id="download-result-xlsx"' in root.text
     assert 'id="download-result"' not in root.text
     assert 'id="download-transient-xlsx"' in root.text
-    assert 'href="assets/styles.css?v=1.20.2"' in root.text
-    assert 'src="assets/app.js?v=1.20.2"' in root.text
+    assert 'href="assets/styles.css?v=1.20.4"' in root.text
+    assert 'src="assets/app.js?v=1.20.4"' in root.text
     assert '>Download XLSX</button>' in root.text
+    assert 'class="brand-lockup"' in root.text
+    assert '<span>OXY</span><strong>TIB</strong>' in root.text
+    assert (
+        "O<sub>2</sub> · Δ′<sup>17</sup>O · pCO<sub>2</sub> · "
+        "pO<sub>2</sub> · GPP"
+    ) in root.text
     assert 'id="theme-toggle"' in root.text
     assert 'href="/assets/' not in root.text
     assert 'src="/assets/' not in root.text
@@ -179,11 +185,16 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert "balanced across the plotted field" in script.text
     assert "level === -24 || level === -26" not in script.text
     assert "Color encodes the model-predicted atmospheric" not in script.text
-    assert "drawMarginalLegend(ctx, width)" in script.text
+    assert "drawMarginalLegend(ctx, width, edgeLimited)" in script.text
     assert '"95% credible region"' in script.text
     assert '"Atmospheric O₂ Δ′¹⁷O₀.₅₂₈ (‰)"' in script.text
     assert "Fixed pO₂ =" in script.text
     assert "Peak grid compatibility" not in script.text
+    assert '"No interior solution"' in script.text
+    assert "do not identify an interior" in script.text
+    assert "solve_boundary_probability_mass >= 0.5" in script.text
+    assert '"Relative compatibility"' in script.text
+    assert '"Domain-truncated 95% interval"' in script.text
     assert "function drawMarginalPosterior" in script.text
     assert 'prior: state.solveFor === "pO2" ? "uniform" : "log_uniform"' not in script.text
     assert "pco2_grid_size: 241" in script.text
@@ -599,6 +610,12 @@ def test_coordinate_inference_public_constraint_matrix(
     assert result["final_solve_axis_size"] == result["initial_solve_axis_size"]
     assert result["final_solve_bounds"][0] >= result["initial_solve_bounds"][0]
     assert result["final_solve_bounds"][1] <= result["initial_solve_bounds"][1]
+    assert 0.0 <= result["solve_boundary_probability_mass"] <= 1.0
+    assert isinstance(result["solve_mode_at_boundary"], bool)
+    if result["solve_boundary_sensitive"]:
+        assert result["solve_boundary_direction"] in {"lower", "upper"}
+    else:
+        assert result["solve_boundary_direction"] is None
     has_uncertain_constraint = any(kind != "fixed" for kind in kinds.values())
     assert (result["field_probability_mass"] is not None) is has_uncertain_constraint
     if has_uncertain_constraint:
