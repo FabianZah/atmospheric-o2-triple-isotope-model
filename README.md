@@ -97,6 +97,11 @@ forward-to-inverse closure, API and browser assets, and the integrated
 scientific acceptance decision. Exact direct dependency versions from the
 accepted environment are recorded in `code/requirements-tested.txt`.
 
+The release-candidate protocol for independent domain review is provided in
+[`docs/expert_review_guide.md`](docs/expert_review_guide.md). Review findings
+can be recorded with the accompanying
+[`feedback template`](docs/expert_review_feedback_template.md).
+
 ## Evidence
 
 Validation combines modern atmospheric O₂ observations, ice-core behavior,

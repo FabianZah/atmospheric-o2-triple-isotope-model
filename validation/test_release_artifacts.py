@@ -22,6 +22,9 @@ PUBLIC_MARKDOWN = (
     ROOT / "docs" / "PROJECT_STRUCTURE.md",
     ROOT / "docs" / "server_deployment.md",
     ROOT / "docs" / "spherule_inversion_workflow.md",
+    ROOT / "docs" / "expert_review_guide.md",
+    ROOT / "docs" / "expert_review_feedback_template.md",
+    ROOT / "docs" / "release_candidate_checklist.md",
 )
 MARKDOWN_LINK = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 
@@ -69,3 +72,27 @@ def test_compose_disables_cross_origin_access_by_default() -> None:
     compose = yaml.safe_load((ROOT / "compose.yaml").read_text(encoding="utf-8"))
     environment = compose["services"]["model-api"]["environment"]
     assert environment["OXYTIB_CORS_ORIGINS"] == "${OXYTIB_CORS_ORIGINS:-}"
+
+
+def test_expert_review_package_covers_release_workflows() -> None:
+    guide = (ROOT / "docs" / "expert_review_guide.md").read_text(encoding="utf-8")
+    feedback = (ROOT / "docs" / "expert_review_feedback_template.md").read_text(
+        encoding="utf-8"
+    )
+    checklist = (ROOT / "docs" / "release_candidate_checklist.md").read_text(
+        encoding="utf-8"
+    )
+    for expected in (
+        "Known-answer forward calculation",
+        "Forward-inverse closure",
+        "Constrained inference",
+        "Proxy conversion",
+        "Isotope field",
+        "Time responses",
+        "Reproducibility and exports",
+    ):
+        assert expected in guide
+    for severity in ("release blocker", "major", "minor", "suggestion"):
+        assert severity in feedback
+    for gate in ("Automated scientific and software gates", "Expert review gates", "Archival metadata gates", "Deployment gates"):
+        assert gate in checklist

@@ -9,6 +9,11 @@ The authoritative machine-readable model identity is
 - `publication_model_definition.md`: model architecture, reporting, and scope.
 - `publication_model_acceptance.md`: integrated scientific evidence and release
   decision.
+- `expert_review_guide.md`: release-candidate checks for domain experts.
+- `expert_review_feedback_template.md`: structured scientific and software
+  review report.
+- `release_candidate_checklist.md`: gates from expert review through DOI and
+  production deployment.
 - `spherule_inversion_workflow.md`: I-type cosmic-spherule conversion,
   uncertainty propagation, and constrained inference.
 - `constrained_coordinate_inference.md`: fixed, normal, and range constraints.

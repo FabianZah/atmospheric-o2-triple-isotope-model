@@ -30,6 +30,8 @@ All notable changes to the released software are documented here.
   confidence interval.
 - Include compact observational and multi-model validation evidence, the
   historical Young et al. (2014) response anchor, and release regression tests.
+- Add a version-specific expert-review protocol, structured feedback template,
+  and gated checklist for scientific review, archival metadata, and deployment.
 - Include hardened Docker, Caddy, and shared-Traefik deployment templates with
   bounded request size, compute concurrency, traffic rate, and container
   resources.
