@@ -55,13 +55,6 @@ services:
       - "traefik.http.services.oxytib.loadbalancer.healthcheck.path=/api/v1/health"
       - "traefik.http.services.oxytib.loadbalancer.healthcheck.interval=30s"
       - "traefik.http.services.oxytib.loadbalancer.healthcheck.timeout=5s"
-      - "traefik.http.routers.oxytib-legacy.rule=Host(`${OXYTIB_HOST:-model.example.org}`) && (Path(`/atmo-mod`) || PathPrefix(`/atmo-mod/`))"
-      - "traefik.http.routers.oxytib-legacy.entrypoints=websecure"
-      - "traefik.http.routers.oxytib-legacy.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.oxytib-legacy.middlewares=oxytib-legacy-redirect"
-      - "traefik.http.middlewares.oxytib-legacy-redirect.redirectregex.regex=^https?://([^/]+)/atmo-mod(.*)"
-      - "traefik.http.middlewares.oxytib-legacy-redirect.redirectregex.replacement=https://$${1}/oxytib$${2}"
-      - "traefik.http.middlewares.oxytib-legacy-redirect.redirectregex.permanent=true"
     logging:
       driver: json-file
       options:

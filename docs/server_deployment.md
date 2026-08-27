@@ -71,9 +71,6 @@ python validation/verify_public_deployment.py \
   --base-url https://example.org/oxytib
 ```
 
-The historical `/atmo-mod/` route is a permanent redirect to `/oxytib/` and
-does not run a second application instance.
-
 ## Standalone Caddy deployment
 
 For a dedicated host without Traefik, copy

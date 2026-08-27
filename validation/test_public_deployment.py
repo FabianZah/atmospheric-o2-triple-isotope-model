@@ -130,12 +130,7 @@ def test_traefik_compose_is_staged_bounded_and_prefix_aware() -> None:
     assert "frame-ancestors 'none'" in labels[
         "traefik.http.middlewares.oxytib-security.headers.contentsecuritypolicy"
     ]
-    assert "Path(`/atmo-mod`)" in labels[
-        "traefik.http.routers.oxytib-legacy.rule"
-    ]
-    assert labels[
-        "traefik.http.routers.oxytib-legacy.middlewares"
-    ] == "oxytib-legacy-redirect"
+    assert all("legacy" not in key for key in labels)
 
     template = (ROOT / "deploy" / ".env.traefik.example").read_text(
         encoding="utf-8"
@@ -149,6 +144,23 @@ def test_traefik_compose_is_staged_bounded_and_prefix_aware() -> None:
     assert "OXYTIB_INFLIGHT_REQUESTS=4" in template
     assert "PASSWORD=" not in template
     assert "TOKEN=" not in template
+
+
+def test_tracked_public_text_has_no_legacy_product_name() -> None:
+    legacy_name = "atmo" + "-mod"
+    text_suffixes = {
+        ".bib", ".cff", ".css", ".html", ".js", ".json", ".md", ".py",
+        ".ris", ".toml", ".txt", ".yaml", ".yml",
+    }
+    matches = []
+    for path in ROOT.rglob("*"):
+        if not path.is_file() or path.suffix.lower() not in text_suffixes:
+            continue
+        if any(part in {".git", ".pytest_cache", "__pycache__"} for part in path.parts):
+            continue
+        if legacy_name in path.read_text(encoding="utf-8", errors="ignore").lower():
+            matches.append(str(path.relative_to(ROOT)))
+    assert matches == []
 
 
 def test_production_image_uses_pinned_python_and_api_dependencies() -> None:
