@@ -44,9 +44,10 @@ Create the untracked configuration:
 cp deploy/.env.traefik.example deploy/.env.traefik
 ```
 
-Set `OXYTIB_HOST`, retain `OXYTIB_ROOT_PATH=/oxytib` so the interactive API
-documentation resolves its OpenAPI schema below the public path prefix, and
-keep `OXYTIB_TRAEFIK_ENABLE=false` during staging. Build and verify the
+Set `OXYTIB_HOST` and retain an empty `OXYTIB_ROOT_PATH` because the declared
+Traefik middleware strips `/oxytib` before forwarding requests. The browser
+interface and API documentation derive the public prefix from their loaded
+URLs. Keep `OXYTIB_TRAEFIK_ENABLE=false` during staging. Build and verify the
 loopback service first:
 
 ```bash
