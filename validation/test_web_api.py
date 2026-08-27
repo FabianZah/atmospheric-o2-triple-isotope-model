@@ -33,8 +33,8 @@ def test_frontend_assets_and_api_work_when_mounted_below_prefix() -> None:
     swagger_initializer = prefixed_client.get("/oxytib/assets/swagger-init.js")
 
     assert root.status_code == 200
-    assert 'href="assets/styles.css?v=1.20.6"' in root.text
-    assert 'src="assets/app.js?v=1.20.6"' in root.text
+    assert 'href="assets/styles.css?v=1.20.7"' in root.text
+    assert 'src="assets/app.js?v=1.20.7"' in root.text
     assert script.status_code == 200
     assert styles.status_code == 200
     assert health.status_code == 200
@@ -99,8 +99,10 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert 'id="transient-progress-elapsed"' in root.text
     assert 'id="solver-progress"' in root.text
     assert 'id="solver-progress-elapsed"' in root.text
-    assert 'href="assets/styles.css?v=1.20.6"' in root.text
-    assert 'src="assets/app.js?v=1.20.6"' in root.text
+    assert 'href="assets/styles.css?v=1.20.7"' in root.text
+    assert 'src="assets/app.js?v=1.20.7"' in root.text
+    assert 'id="reset-surface"' in root.text
+    assert 'id="reset-transient"' in root.text
     assert '>Download XLSX</button>' in root.text
     assert 'class="brand-lockup"' in root.text
     assert '<span>OXY</span><strong>TIB</strong>' in root.text
@@ -180,6 +182,11 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert "function beginCalculationProgress" in script.text
     assert "function beginTransientProgress" in script.text
     assert "function beginSolverProgress" in script.text
+    assert "function resetSurfaceInputs" in script.text
+    assert "function resetTransientInputs" in script.text
+    assert "function updateTransientControls" in script.text
+    assert 'window.addEventListener("pageshow"' in script.text
+    assert "accounts for the entered uncertainty" in script.text
     assert "performance.now() - startedAt" in script.text
     assert "fetch(applicationUrl(path)" in script.text
     assert 'fetch(applicationUrl("/api/v1/export/coordinate.xlsx")' in script.text

@@ -381,7 +381,7 @@ function renderConstrainedCoordinate(result, target, inputs, constraints, reques
       && name !== result.field_y_coordinate
     ));
     const marginalizedText = marginalized
-      ? ` Uncertainty in ${marginalized} is integrated out using its entered constraint.`
+      ? `The displayed solution accounts for the entered uncertainty in ${coordinateLabel(marginalized)} by combining results across its allowed values.`
       : "";
     $("solver-probability-caption").innerHTML = marginalizedText.trim();
   }
@@ -484,6 +484,13 @@ async function downloadWorkbook() {
 function enablePlotExport(canvasId) {
   const button = document.querySelector(`.plot-export[data-canvas="${canvasId}"]`);
   if (button) button.disabled = false;
+}
+
+function clearPlot(canvasId) {
+  const canvas = $(canvasId);
+  canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+  const button = document.querySelector(`.plot-export[data-canvas="${canvasId}"]`);
+  if (button) button.disabled = true;
 }
 
 function downloadPlot(button) {
@@ -1107,7 +1114,7 @@ function drawLine(id, times, values, title, unit, color, axisDigits = 3, fixedAx
   ctx.save(); ctx.translate(16, margin.top + plotH / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(unit, 0, 0); ctx.restore();
 }
 
-function transientFinalLabel() {
+function updateTransientControls(applyDefaults = true) {
   const type = $("transient-type").value;
   const caption = $("transient-final-caption");
   const input = $("transient-final");
@@ -1124,10 +1131,10 @@ function transientFinalLabel() {
   }[type];
   if (!trajectory) {
     caption.innerHTML = `${settings[0]} <small>${settings[1]}</small>`;
-    input.value = settings[2];
     input.step = settings[3];
+    if (applyDefaults) input.value = settings[2];
   }
-  durationInput.value = settings[4];
+  if (applyDefaults) durationInput.value = settings[4];
 }
 
 function applyTrajectoryPreset() {
@@ -1389,6 +1396,29 @@ function resetInputs() {
   state.lastResult = null;
 }
 
+function resetSurfaceInputs() {
+  $("surface-xmin").value = "50";
+  $("surface-xmax").value = "60000";
+  $("surface-ymin").value = "6.3";
+  $("surface-ymax").value = "150";
+  $("surface-po2").value = "1.00";
+  $("surface-error").textContent = "";
+  clearPlot("isotope-canvas");
+}
+
+function resetTransientInputs() {
+  $("transient-type").value = "pCO2";
+  $("trajectory-preset").value = "historical";
+  updateTransientControls(true);
+  applyTrajectoryPreset();
+  $("transient-error").textContent = "";
+  $("transient-summary").innerHTML = "";
+  $("transient-pco2-panel").classList.add("hidden");
+  ["transient-forcing", "transient-pco2", "transient-d17", "transient-d18"].forEach(clearPlot);
+  $("download-transient-xlsx").disabled = true;
+  state.lastTransient = null;
+}
+
 function bindInterface() {
   $("theme-toggle").addEventListener("change", (event) => {
     applyTheme(event.target.checked ? "dark" : "light");
@@ -1419,7 +1449,7 @@ function bindInterface() {
   $("run-surface").addEventListener("click", runSurface);
   $("run-transient").addEventListener("click", runTransient);
   $("download-transient-xlsx").addEventListener("click", downloadTransientWorkbook);
-  $("transient-type").addEventListener("change", transientFinalLabel);
+  $("transient-type").addEventListener("change", () => updateTransientControls(true));
   $("trajectory-preset").addEventListener("change", applyTrajectoryPreset);
   ["trajectory-start", "trajectory-end", "trajectory-duration", "trajectory-interpolation"].forEach((id) => {
     $(id).addEventListener("change", () => { $("trajectory-preset").value = "custom"; });
@@ -1429,6 +1459,9 @@ function bindInterface() {
     button.addEventListener("click", () => downloadPlot(button));
   });
   $("reset-inputs").addEventListener("click", resetInputs);
+  $("reset-surface").addEventListener("click", resetSurfaceInputs);
+  $("reset-transient").addEventListener("click", resetTransientInputs);
+  window.addEventListener("pageshow", () => updateTransientControls(false));
 }
 
 async function initialize() {
@@ -1439,6 +1472,7 @@ async function initialize() {
   setConstraintMode("pO2", "fixed");
   updateCoordinateControls();
   updateSurfaceMode();
+  updateTransientControls(false);
   try {
     state.metadata = await api("/api/v1/model");
     $("model-state").classList.add("ready");
