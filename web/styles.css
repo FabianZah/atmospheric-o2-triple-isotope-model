@@ -281,6 +281,17 @@ h3 { font-size: 14px; letter-spacing: 0; }
 canvas { display: block; width: 100%; height: auto; aspect-ratio: 1.75; }
 .transient-controls { grid-template-columns: 1.3fr 1fr 1fr; }
 .trajectory-controls { grid-template-columns: repeat(5, minmax(130px, 1fr)); }
+.transient-progress { max-width: 1500px; margin: 0 auto 18px; padding: 13px 16px; border: 1px solid var(--line); border-left: 4px solid var(--teal); background: var(--paper); }
+.transient-progress-copy { margin-bottom: 9px; display: flex; align-items: baseline; justify-content: space-between; gap: 18px; }
+.transient-progress-copy strong { color: var(--field-label); font-size: 12px; }
+.transient-progress-copy span { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.transient-progress-track { height: 5px; position: relative; overflow: hidden; background: var(--disabled); }
+.transient-progress-track span { width: 32%; position: absolute; inset-block: 0; left: -32%; background: var(--teal); animation: transient-progress 1.5s ease-in-out infinite; }
+@keyframes transient-progress {
+  0% { transform: translateX(0); }
+  55% { transform: translateX(260%); }
+  100% { transform: translateX(410%); }
+}
 .transient-plots { max-width: 1500px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .transient-summary { max-width: 1500px; min-height: 0; margin: 0 auto 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 1px; }
 .transient-summary div { min-width: 0; padding: 12px 16px; background: var(--paper); border: 1px solid var(--line); }
@@ -342,6 +353,11 @@ footer a { color: var(--teal-dark); }
   .result-area { padding: 18px; }
   .band-heading { align-items: flex-start; flex-direction: column; }
   .primary-command.compact { width: 100%; }
+  .transient-progress-copy { align-items: flex-start; flex-direction: column; gap: 4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transient-progress-track span { width: 100%; left: 0; animation: none; opacity: 0.72; }
 }
 
 @media (max-width: 480px) {

@@ -33,8 +33,8 @@ def test_frontend_assets_and_api_work_when_mounted_below_prefix() -> None:
     swagger_initializer = prefixed_client.get("/oxytib/assets/swagger-init.js")
 
     assert root.status_code == 200
-    assert 'href="assets/styles.css?v=1.20.4"' in root.text
-    assert 'src="assets/app.js?v=1.20.4"' in root.text
+    assert 'href="assets/styles.css?v=1.20.5"' in root.text
+    assert 'src="assets/app.js?v=1.20.5"' in root.text
     assert script.status_code == 200
     assert styles.status_code == 200
     assert health.status_code == 200
@@ -95,8 +95,10 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert 'id="download-result-xlsx"' in root.text
     assert 'id="download-result"' not in root.text
     assert 'id="download-transient-xlsx"' in root.text
-    assert 'href="assets/styles.css?v=1.20.4"' in root.text
-    assert 'src="assets/app.js?v=1.20.4"' in root.text
+    assert 'id="transient-progress"' in root.text
+    assert 'id="transient-progress-elapsed"' in root.text
+    assert 'href="assets/styles.css?v=1.20.5"' in root.text
+    assert 'src="assets/app.js?v=1.20.5"' in root.text
     assert '>Download XLSX</button>' in root.text
     assert 'class="brand-lockup"' in root.text
     assert '<span>OXY</span><strong>TIB</strong>' in root.text
@@ -172,6 +174,8 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert "/api/v1/field/isotope" in script.text
     assert "const APPLICATION_BASE_PATH" in script.text
     assert "function applicationUrl" in script.text
+    assert "function beginTransientProgress" in script.text
+    assert "performance.now() - startedAt" in script.text
     assert "fetch(applicationUrl(path)" in script.text
     assert 'fetch(applicationUrl("/api/v1/export/coordinate.xlsx")' in script.text
     assert "Deterministic model isotope field" not in script.text

@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OXYTIB</title>
-  <link rel="stylesheet" href="assets/styles.css?v=1.20.4">
-  <script defer src="assets/app.js?v=1.20.4"></script>
+  <link rel="stylesheet" href="assets/styles.css?v=1.20.5">
+  <script defer src="assets/app.js?v=1.20.5"></script>
 </head>
 <body>
   <header class="topbar">
@@ -265,6 +265,13 @@
         </label>
       </div>
       <p class="error-message" id="transient-error" role="alert"></p>
+      <div class="transient-progress hidden" id="transient-progress" role="status" aria-live="polite">
+        <div class="transient-progress-copy">
+          <strong id="transient-progress-label">Solving atmospheric isotope response</strong>
+          <span id="transient-progress-elapsed">0 seconds elapsed</span>
+        </div>
+        <div class="transient-progress-track" aria-hidden="true"><span></span></div>
+      </div>
       <div class="transient-summary" id="transient-summary"></div>
       <div class="transient-plots">
         <div class="plot-panel" id="transient-forcing-panel">

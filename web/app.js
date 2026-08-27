@@ -245,6 +245,30 @@ function setBusy(button, busy, busyText) {
   button.textContent = busy ? busyText : button.dataset.label;
 }
 
+function beginTransientProgress(type) {
+  const panel = $("transient-progress");
+  const label = $("transient-progress-label");
+  const elapsed = $("transient-progress-elapsed");
+  const startedAt = performance.now();
+  label.textContent = type === "photosynthesis"
+    ? "Solving coupled photosynthesis, carbon, and O₂ response"
+    : "Solving atmospheric isotope response";
+  panel.classList.remove("hidden");
+  $("view-transient").setAttribute("aria-busy", "true");
+
+  const updateElapsed = () => {
+    const seconds = Math.max(0, Math.floor((performance.now() - startedAt) / 1000));
+    elapsed.textContent = `${seconds} ${seconds === 1 ? "second" : "seconds"} elapsed`;
+  };
+  updateElapsed();
+  const timer = window.setInterval(updateElapsed, 500);
+  return () => {
+    window.clearInterval(timer);
+    panel.classList.add("hidden");
+    $("view-transient").removeAttribute("aria-busy");
+  };
+}
+
 function updateCoordinateControls() {
   $("pco2").disabled = state.solveFor === "pCO2";
   $("gpp").disabled = state.solveFor === "GPP";
@@ -1095,14 +1119,15 @@ function applyTrajectoryPreset() {
 async function runTransient() {
   const button = $("run-transient");
   const exportButton = $("download-transient-xlsx");
+  const type = $("transient-type").value;
   $("transient-error").textContent = "";
   exportButton.disabled = true;
   state.lastTransient = null;
   setBusy(button, true, "Solving…");
+  const endProgress = beginTransientProgress(type);
   try {
     const initial = currentForwardState();
     const duration = finite(number("transient-duration"), "Duration");
-    const type = $("transient-type").value;
     const finalValue = type === "pCO2_trajectory"
       ? finite(number("trajectory-end"), "Final pCO2")
       : finite(number("transient-final"), "Final value");
@@ -1257,6 +1282,7 @@ async function runTransient() {
   } catch (error) {
     $("transient-error").textContent = publicErrorMessage(error);
   } finally {
+    endProgress();
     setBusy(button, false);
   }
 }
