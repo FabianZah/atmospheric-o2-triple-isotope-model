@@ -47,3 +47,24 @@ The public interface can repeat the typed request through
 `POST /api/v1/export/coordinate.xlsx` to produce a workbook containing model
 identity, input constraints, the solved marginal posterior, and the joint
 probability field when one is calculated.
+
+## Reuse for XLSX exports
+
+The coordinate endpoint stores completed server results in a process-local,
+bounded cache. An XLSX request with the same validated inference inputs and
+model metadata reuses those exact numbers. Export context (for example the
+original spherule measurements) is applied when building the workbook, and
+the export timestamp is generated afresh.
+
+Storage is limited to four entries, 32 MiB of compressed JSON in total, and
+30 minutes from insertion. Encoding is streamed; a single result is capped
+at 128 MiB of uncompressed JSON. Returned objects are decoded independently
+so one export cannot mutate another's result. Cache content stays in memory.
+
+Changed inputs or model metadata, expiry, eviction, oversized results, and
+server restarts cause normal recomputation through the existing solver and
+resource guards. Explicit calculation requests always run the inference.
+Failed or incomplete calculations are never inserted. Each server worker
+has its own cache; multi-worker routing can therefore produce a cache miss.
+The export API accepts input constraints and context, not client-supplied
+numerical results.

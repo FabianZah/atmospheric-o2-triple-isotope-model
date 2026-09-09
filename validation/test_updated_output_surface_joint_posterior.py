@@ -16,6 +16,23 @@ def _target(point: UpdatedOutputSurfaceInput) -> float:
     return load_updated_output_surface().evaluate(point).central_cap_delta17_prime_permil
 
 
+def test_nonuniform_quadrature_retains_physical_measure_and_bounds():
+    from updated_output_surface_joint_posterior import _trapezoid_weights
+    axis = np.r_[50., np.linspace(200,400,39),60000.]
+    request = UpdatedJointPosteriorInput(target_air_cap_delta17_permil=-.432,
+        measurement_sigma_permil=.015,free_coordinates=("pCO2",),pco2_prior="uniform")
+    result = joint_updated_posterior(request,quadrature_axes={"pCO2":axis})
+    np.testing.assert_array_equal(result.axes["pCO2"],axis)
+    np.testing.assert_allclose(np.array(result.posterior_density)*_trapezoid_weights(axis),
+                               result.posterior_probability_mass)
+    assert sum(result.posterior_probability_mass) == pytest.approx(1.)
+    for invalid in (axis[::-1], axis[1:], np.r_[axis[:4],np.nan,axis[5:]]):
+        with pytest.raises(ValueError,match="preserve the declared bounds"):
+            joint_updated_posterior(request,quadrature_axes={"pCO2":invalid})
+    with pytest.raises(ValueError,match="free coordinates"):
+        joint_updated_posterior(request,quadrature_axes={"GPP":axis})
+
+
 def test_vectorized_central_grid_matches_scalar_evaluations() -> None:
     surface = load_updated_output_surface()
     pco2 = np.asarray([[200.0, 294.0], [1000.0, 10000.0]])

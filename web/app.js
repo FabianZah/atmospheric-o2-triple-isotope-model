@@ -201,7 +201,82 @@ function setConstraintMode(coordinate, mode) {
   updateCoordinateControls();
 }
 
+function requiredSulfateNumber(id, label) {
+  if (!$(id).value.trim()) throw new Error(`${label} is required.`);
+  return finite(number(id), label);
+}
+
+function sulfateConstraint(prefix, label, factor) {
+  const kind = $(`${prefix}-mode`).value;
+  const value = (suffix, title) => requiredSulfateNumber(`${prefix}${suffix}`, `${label} ${title}`) * factor;
+  if (kind === "range") {
+    const lower = value("-lower", "lower bound");
+    const upper = value("-upper", "upper bound");
+    if (lower >= upper) throw new Error(`${label} requires lower < upper.`);
+    return { kind, lower, upper };
+  }
+  const center = value("", "value");
+  if (kind === "fixed") return { kind, center };
+  const sigma = value("-sigma", "1σ");
+  if (sigma <= 0) throw new Error(`${label} 1σ must be positive.`);
+  return { kind, center, sigma };
+}
+
+const sulfateTreatments = {
+  none: "No fractionation assumed",
+  peng_2026_irreversible: "Irreversible O₂ incorporation (Peng et al., 2026; 25 °C)",
+  peng_2026_equilibrium: "Equilibrated O₂ incorporation (Peng et al., 2026; 25 °C)",
+  specified: "Custom isotope shifts",
+};
+
+function updateSulfateControls() {
+  for (const prefix of ["sulfate-f", "sulfate-b"]) {
+    const mode = $(`${prefix}-mode`).value;
+    $(`${prefix}-center-fields`).classList.toggle("hidden", mode === "range");
+    $(`${prefix}-normal-fields`).classList.toggle("hidden", mode !== "normal");
+    $(`${prefix}-range-fields`).classList.toggle("hidden", mode !== "range");
+  }
+  const treatment = $("sulfate-fractionation").value;
+  const peng = treatment.startsWith("peng_");
+  $("sulfate-incorporation-inputs").classList.toggle("hidden", peng);
+  $("sulfate-pathway-fraction").classList.toggle("hidden", !peng);
+  $("sulfate-advanced").classList.toggle("hidden", treatment !== "specified");
+  $("sulfate-treatment-note").textContent = peng ? "Sulfite oxidation · Peng et al., 2026" : "";
+  $("sulfate-treatment-note").classList.toggle("hidden", !peng);
+}
+
+function sulfateObservation() {
+  const assumption = $("sulfate-fractionation").value;
+  if (!Object.hasOwn(sulfateTreatments, assumption)) throw new Error("Select an incorporation treatment.");
+  let transfer = {};
+  if (assumption === "specified") {
+    const log18 = requiredSulfateNumber("sulfate-log18", "δ′¹⁸O transfer shift");
+    const shift17 = requiredSulfateNumber("sulfate-shift17", "Δ′¹⁷O transfer shift");
+    transfer = {
+      alpha18_air_to_sulfate: finite(Math.exp(log18 / 1000), "α18"),
+      alpha17_air_to_sulfate: finite(Math.exp((shift17 + .528 * log18) / 1000), "α17"),
+      theta_air_to_sulfate: null,
+    };
+  }
+  return {
+    measured_cap_delta17_permil: requiredSulfateNumber("sulfate-d17", "Sulfate Δ′¹⁷O"),
+    measured_delta18_permil: requiredSulfateNumber("sulfate-d18", "Sulfate δ¹⁸O"),
+    cap_delta17_sigma_permil: requiredSulfateNumber("sulfate-d17-sigma", "Sulfate Δ′¹⁷O 1σ"),
+    delta18_sigma_permil: requiredSulfateNumber("sulfate-d18-sigma", "Sulfate δ¹⁸O 1σ"),
+    isotope_error_correlation: 0,
+    incorporation: assumption.startsWith("peng_") ? { kind: "fixed", center: .25 }
+      : sulfateConstraint("sulfate-f", "Air-derived oxygen fraction", 0.01),
+    background: sulfateConstraint("sulfate-b", "Non-air oxygen Δ′¹⁷O", 1),
+    fractionation_treatment: assumption,
+    ...transfer,
+  };
+}
+
 async function isotopeTarget() {
+  if (state.source === "sulfate") {
+    const sulfate = sulfateObservation();
+    return { source: "Sulfate", sulfate, sigma: sulfate.cap_delta17_sigma_permil };
+  }
   if (state.source === "air") {
     return {
       target: finite(number("air-d17"), "Air Δ′17O"),
@@ -304,6 +379,23 @@ function updateCoordinateControls() {
 }
 
 function isotopeConstraintText(target) {
+  if (target.sulfate) {
+    const s = target.sulfate;
+    const describe = (c, factor, digits, unit) => {
+      const v = (x) => `${format(x * factor, digits)}${unit}`;
+      if (c.kind === "range") return `${v(c.lower)}–${v(c.upper)}, exact range`;
+      if (c.kind === "normal") return `${v(c.center)} ± ${v(c.sigma)} (1σ)`;
+      return `${v(c.center)}, fixed`;
+    };
+    return `Sulfate Δ′<sup>17</sup>O<sub>0.528</sub> = ${format(s.measured_cap_delta17_permil, 3)} ± ${format(s.cap_delta17_sigma_permil, 3)}‰`
+      + `<br>Sulfate δ<sup>18</sup>O<sub>VSMOW</sub> = ${format(s.measured_delta18_permil, 3)} ± ${format(s.delta18_sigma_permil, 3)}‰`
+      + `<br>Air-derived oxygen = ${describe(s.incorporation, 100, 2, "%")}`
+      + `<br>Non-air oxygen Δ′<sup>17</sup>O<sub>0.528</sub> = ${describe(s.background, 1, 3, "‰")}`
+      + `<br>O₂ transfer: ${sulfateTreatments[s.fractionation_treatment]}`
+      + (s.fractionation_treatment === "specified"
+        ? `<br>δ′<sup>18</sup>O shift = ${format(1000 * Math.log(s.alpha18_air_to_sulfate), 3)}‰; Δ′<sup>17</sup>O shift = ${format(1000 * (Math.log(s.alpha17_air_to_sulfate) - .528 * Math.log(s.alpha18_air_to_sulfate)), 3)}‰`
+        : "");
+  }
   if (target.spherule) {
     const source = target.spherule;
     return `Spherule Δ′<sup>17</sup>O<sub>0.528</sub> = ${format(source.delta17, 3)} ± ${format(source.delta17Sigma, 3)}‰`
@@ -339,19 +431,27 @@ function renderConstrainedCoordinate(result, target, inputs, constraints, reques
   const coordinateLines = Object.entries(constraints)
     .map(([name, constraint]) => constraintText(name, constraint));
   $("result-constraints").innerHTML = [...isotopeLines, ...coordinateLines].join("<br>");
-  $("solver-marginal-title").innerHTML = strongEdgeMode
-    ? `${coordinateLabel(coordinate)} constrained compatibility`
-    : `${coordinateLabel(coordinate)} probability distribution`;
-  drawMarginalPosterior(
-    result.solve_axis,
-    result.solve_marginal_density,
-    result.solve_marginal_probability_mass,
-    coordinate,
-    low,
-    high,
-    central,
-    strongEdgeMode,
-  );
+  const hasField = Array.isArray(result.field_density)
+    && Array.isArray(result.field_probability_mass)
+    && Array.isArray(result.field_x_axis);
+  $("solver-marginal").classList.toggle("hidden", hasField);
+  if (hasField) {
+    clearPlot("solver-marginal-canvas");
+  } else {
+    $("solver-marginal-title").innerHTML = strongEdgeMode
+      ? `${coordinateLabel(coordinate)} constrained compatibility`
+      : `${coordinateLabel(coordinate)} probability distribution`;
+    drawMarginalPosterior(
+      result.solve_axis,
+      result.solve_marginal_density,
+      result.solve_marginal_probability_mass,
+      coordinate,
+      low,
+      high,
+      central,
+      strongEdgeMode,
+    );
+  }
   let boundaryNote = "";
   if (strongEdgeMode) {
     const [domainLow, domainHigh] = result.final_solve_bounds;
@@ -362,7 +462,6 @@ function renderConstrainedCoordinate(result, target, inputs, constraints, reques
   $("solver-method-note").textContent = boundaryNote;
   $("solver-method-note").classList.toggle("hidden", !boundaryNote);
 
-  const hasField = Array.isArray(result.field_density) && Array.isArray(result.field_x_axis);
   $("solver-probability").classList.toggle("hidden", !hasField);
   if (hasField) {
     $("solver-probability-title").innerHTML = `${coordinateLabel(result.field_x_coordinate)}–${coordinateLabel(result.field_y_coordinate)} probability field`;
@@ -373,7 +472,9 @@ function renderConstrainedCoordinate(result, target, inputs, constraints, reques
       result.field_x_axis,
       result.field_y_axis,
       result.field_density,
+      result.field_probability_mass,
       result.field_hpd_mask,
+      result.field_hpd_density_threshold,
     );
     const marginalized = Object.keys(constraints).find((name) => (
       constraints[name].kind !== "fixed"
@@ -414,8 +515,10 @@ async function runSolver() {
     }
     const request = {
       solve_for: state.solveFor,
-      target_air_cap_delta17_permil: target.target,
-      measurement_sigma_permil: target.sigma,
+      ...(target.sulfate ? { sulfate: target.sulfate } : {
+        target_air_cap_delta17_permil: target.target,
+        measurement_sigma_permil: target.sigma,
+      }),
       ...(Number.isFinite(target.delta18) ? {
         target_air_delta18_conventional_permil: target.delta18,
         delta18_measurement_sigma_permil: target.delta18Sigma,
@@ -524,12 +627,15 @@ const posteriorColorStops = [
 ];
 const isotopeColorStops = [[22, 35, 91], [33, 102, 172], [35, 169, 157], [242, 200, 75]];
 
-function heatColor(value, stops = posteriorColorStops) {
+function heatRgb(value, stops = posteriorColorStops) {
   const scaled = Math.max(0, Math.min(1, value)) * (stops.length - 1);
   const index = Math.min(stops.length - 2, Math.floor(scaled));
   const fraction = scaled - index;
-  const rgb = stops[index].map((channel, i) => Math.round(channel + fraction * (stops[index + 1][i] - channel)));
-  return `rgb(${rgb.join(",")})`;
+  return stops[index].map((channel, i) => Math.round(channel + fraction * (stops[index + 1][i] - channel)));
+}
+
+function heatColor(value, stops = posteriorColorStops) {
+  return `rgb(${heatRgb(value, stops).join(",")})`;
 }
 
 function drawColorLegend(ctx, x, y, width, stops, title, lowLabel, highLabel, titleFontSize = 10) {
@@ -553,7 +659,12 @@ function drawColorLegend(ctx, x, y, width, stops, title, lowLabel, highLabel, ti
   ctx.fillText(highLabel, x + width, y + 21);
 }
 
-function drawMarginalLegend(ctx, width, edgeLimited = false) {
+function marginalDensityLabel(coordinate, edgeLimited = false) {
+  if (edgeLimited) return "Compatibility";
+  return "Relative density";
+}
+
+function drawMarginalLegend(ctx, width, coordinate, edgeLimited = false) {
   const y = 17;
   const starts = [58, Math.max(215, width * 0.34), Math.max(390, width * 0.67)];
   ctx.font = "10px system-ui";
@@ -564,7 +675,7 @@ function drawMarginalLegend(ctx, width, edgeLimited = false) {
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(starts[0], y - 2); ctx.lineTo(starts[0] + 22, y - 2); ctx.stroke();
   ctx.fillStyle = "#43515a";
-  ctx.fillText(edgeLimited ? "Relative compatibility" : "Relative probability density", starts[0] + 28, y + 2);
+  ctx.fillText(marginalDensityLabel(coordinate, edgeLimited), starts[0] + 28, y + 2);
   ctx.fillStyle = "rgba(193, 139, 40, 0.24)";
   ctx.fillRect(starts[1], y - 7, 22, 10);
   ctx.strokeStyle = "rgba(193, 139, 40, 0.7)";
@@ -681,7 +792,7 @@ function drawMarginalPosterior(axis, density, probabilityMass, coordinate, low, 
 
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, width, height);
-  drawMarginalLegend(ctx, width, edgeLimited);
+  drawMarginalLegend(ctx, width, coordinate, edgeLimited);
   ctx.save();
   ctx.beginPath();
   ctx.rect(margin.left, margin.top, plotW, plotH);
@@ -726,12 +837,207 @@ function drawMarginalPosterior(axis, density, probabilityMass, coordinate, low, 
   ctx.save();
   ctx.translate(16, margin.top + plotH / 2);
   ctx.rotate(-Math.PI / 2);
-  ctx.fillText(edgeLimited ? "Relative compatibility" : "Relative probability density", 0, 0);
+  ctx.fillText(marginalDensityLabel(coordinate, edgeLimited), 0, 0);
   ctx.restore();
   enablePlotExport("solver-marginal-canvas");
 }
 
-function drawProbabilityField(canvasId, xCoordinate, yCoordinate, xAxis, yAxis, masses, mask) {
+function posteriorIndexBounds(probabilityMass, minimumIntervals = 6) {
+  const total = probabilityMass.reduce((sum, value) => sum + value, 0);
+  if (!(total > 0)) return [0, probabilityMass.length - 1];
+  const lowerTarget = 0.001 * total;
+  const upperTarget = 0.999 * total;
+  let cumulative = 0;
+  let lower = 0;
+  let upper = probabilityMass.length - 1;
+  for (let index = 0; index < probabilityMass.length; index += 1) {
+    cumulative += probabilityMass[index];
+    if (cumulative >= lowerTarget) { lower = index; break; }
+  }
+  cumulative = 0;
+  for (let index = 0; index < probabilityMass.length; index += 1) {
+    cumulative += probabilityMass[index];
+    if (cumulative >= upperTarget) { upper = index; break; }
+  }
+  lower = Math.max(0, lower - 2);
+  upper = Math.min(probabilityMass.length - 1, upper + 2);
+  while (upper - lower < minimumIntervals && (lower > 0 || upper < probabilityMass.length - 1)) {
+    if (lower > 0) lower -= 1;
+    if (upper < probabilityMass.length - 1 && upper - lower < minimumIntervals) upper += 1;
+  }
+  return [lower, upper];
+}
+
+function includeHpdSupport(bounds, mask, nx, ny, coordinateIndex) {
+  let minimum = coordinateIndex === 0 ? nx : ny;
+  let maximum = -1;
+  for (let ix = 0; ix < nx; ix += 1) {
+    for (let iy = 0; iy < ny; iy += 1) {
+      if (!mask[ix * ny + iy]) continue;
+      const index = coordinateIndex === 0 ? ix : iy;
+      minimum = Math.min(minimum, index);
+      maximum = Math.max(maximum, index);
+    }
+  }
+  if (maximum < 0) return bounds;
+  const axisLength = coordinateIndex === 0 ? nx : ny;
+  return [
+    Math.min(bounds[0], Math.max(0, minimum - 2)),
+    Math.max(bounds[1], Math.min(axisLength - 1, maximum + 2)),
+  ];
+}
+
+function drawThresholdContour(ctx, level, xs, ys, values, ny, xPixel, yPixel) {
+  const segment = (pointA, pointB) => {
+    if (!pointA || !pointB) return;
+    ctx.moveTo(pointA.x, pointA.y);
+    ctx.lineTo(pointB.x, pointB.y);
+  };
+  ctx.beginPath();
+  for (let ix = 0; ix < xs.length - 1; ix += 1) {
+    for (let iy = 0; iy < ys.length - 1; iy += 1) {
+      const p00 = { x: xPixel(xs[ix]), y: yPixel(ys[iy]) };
+      const p10 = { x: xPixel(xs[ix + 1]), y: yPixel(ys[iy]) };
+      const p11 = { x: xPixel(xs[ix + 1]), y: yPixel(ys[iy + 1]) };
+      const p01 = { x: xPixel(xs[ix]), y: yPixel(ys[iy + 1]) };
+      const v00 = values[ix * ny + iy];
+      const v10 = values[(ix + 1) * ny + iy];
+      const v11 = values[(ix + 1) * ny + iy + 1];
+      const v01 = values[ix * ny + iy + 1];
+      const intersections = [
+        contourIntersection(level, v00, v10, p00, p10),
+        contourIntersection(level, v10, v11, p10, p11),
+        contourIntersection(level, v11, v01, p11, p01),
+        contourIntersection(level, v01, v00, p01, p00),
+      ];
+      const present = intersections.filter(Boolean);
+      if (present.length === 2) {
+        segment(present[0], present[1]);
+      } else if (present.length === 4) {
+        const caseIndex =
+          (v00 >= level ? 1 : 0)
+          | (v10 >= level ? 2 : 0)
+          | (v11 >= level ? 4 : 0)
+          | (v01 >= level ? 8 : 0);
+        const centerInside = 0.25 * (v00 + v10 + v11 + v01) >= level;
+        if ((caseIndex === 5 && centerInside) || (caseIndex === 10 && !centerInside)) {
+          segment(intersections[0], intersections[1]);
+          segment(intersections[2], intersections[3]);
+        } else {
+          segment(intersections[0], intersections[3]);
+          segment(intersections[1], intersections[2]);
+        }
+      }
+    }
+  }
+  ctx.stroke();
+}
+
+function drawThresholdDomainBoundary(ctx, level, xs, ys, values, ny, xPixel, yPixel) {
+  const drawInsidePart = (valueA, valueB, pointA, pointB) => {
+    const insideA = valueA >= level;
+    const insideB = valueB >= level;
+    if (!insideA && !insideB) return;
+    let start = pointA;
+    let end = pointB;
+    if (insideA !== insideB) {
+      const crossing = contourIntersection(level, valueA, valueB, pointA, pointB);
+      if (insideA) end = crossing;
+      else start = crossing;
+    }
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+  };
+  ctx.beginPath();
+  for (let ix = 0; ix < xs.length - 1; ix += 1) {
+    drawInsidePart(
+      values[ix * ny],
+      values[(ix + 1) * ny],
+      { x: xPixel(xs[ix]), y: yPixel(ys[0]) },
+      { x: xPixel(xs[ix + 1]), y: yPixel(ys[0]) },
+    );
+    drawInsidePart(
+      values[ix * ny + ny - 1],
+      values[(ix + 1) * ny + ny - 1],
+      { x: xPixel(xs[ix]), y: yPixel(ys[ny - 1]) },
+      { x: xPixel(xs[ix + 1]), y: yPixel(ys[ny - 1]) },
+    );
+  }
+  for (let iy = 0; iy < ys.length - 1; iy += 1) {
+    drawInsidePart(
+      values[iy],
+      values[iy + 1],
+      { x: xPixel(xs[0]), y: yPixel(ys[iy]) },
+      { x: xPixel(xs[0]), y: yPixel(ys[iy + 1]) },
+    );
+    drawInsidePart(
+      values[(xs.length - 1) * ny + iy],
+      values[(xs.length - 1) * ny + iy + 1],
+      { x: xPixel(xs[xs.length - 1]), y: yPixel(ys[iy]) },
+      { x: xPixel(xs[xs.length - 1]), y: yPixel(ys[iy + 1]) },
+    );
+  }
+  ctx.stroke();
+}
+
+function interpolationPosition(axis, value) {
+  if (value <= axis[0]) return [0, 0];
+  if (value >= axis[axis.length - 1]) return [axis.length - 2, 1];
+  let lower = 0;
+  let upper = axis.length - 1;
+  while (upper - lower > 1) {
+    const middle = Math.floor((lower + upper) / 2);
+    if (axis[middle] <= value) lower = middle;
+    else upper = middle;
+  }
+  return [lower, (value - axis[lower]) / (axis[upper] - axis[lower])];
+}
+
+function drawInterpolatedDensity(
+  ctx, margin, plotW, plotH, xs, ys, density, ny, xTransform, xmin, xmax, ymin, ymax, maximum,
+) {
+  const rasterWidth = Math.max(2, Math.min(640, Math.round(plotW)));
+  const rasterHeight = Math.max(2, Math.min(360, Math.round(plotH)));
+  const xPositions = xs.map(xTransform);
+  const xInterpolation = Array.from({ length: rasterWidth }, (_, pixel) => (
+    interpolationPosition(xPositions, xmin + (pixel + 0.5) / rasterWidth * (xmax - xmin))
+  ));
+  const yInterpolation = Array.from({ length: rasterHeight }, (_, pixel) => (
+    interpolationPosition(ys, ymax - (pixel + 0.5) / rasterHeight * (ymax - ymin))
+  ));
+  const raster = document.createElement("canvas");
+  raster.width = rasterWidth;
+  raster.height = rasterHeight;
+  const rasterContext = raster.getContext("2d");
+  const image = rasterContext.createImageData(rasterWidth, rasterHeight);
+  for (let py = 0; py < rasterHeight; py += 1) {
+    const [iy, ty] = yInterpolation[py];
+    for (let px = 0; px < rasterWidth; px += 1) {
+      const [ix, tx] = xInterpolation[px];
+      const v00 = density[ix * ny + iy];
+      const v10 = density[(ix + 1) * ny + iy];
+      const v11 = density[(ix + 1) * ny + iy + 1];
+      const v01 = density[ix * ny + iy + 1];
+      const lower = v00 + tx * (v10 - v00);
+      const upper = v01 + tx * (v11 - v01);
+      const interpolated = lower + ty * (upper - lower);
+      const intensity = maximum > 0 ? Math.pow(Math.max(0, interpolated) / maximum, 0.32) : 0;
+      const rgb = heatRgb(intensity);
+      const offset = 4 * (py * rasterWidth + px);
+      image.data[offset] = rgb[0];
+      image.data[offset + 1] = rgb[1];
+      image.data[offset + 2] = rgb[2];
+      image.data[offset + 3] = 255;
+    }
+  }
+  rasterContext.putImageData(image, 0, 0);
+  ctx.save();
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(raster, margin.left, margin.top, plotW, plotH);
+  ctx.restore();
+}
+
+function drawProbabilityField(canvasId, xCoordinate, yCoordinate, xAxis, yAxis, density, probabilityMass, mask, hpdThreshold) {
   const { ctx, width, height } = canvasContext(canvasId);
   const margin = { left: 74, right: 24, top: 62, bottom: 58 };
   const plotW = width - margin.left - margin.right;
@@ -740,13 +1046,31 @@ function drawProbabilityField(canvasId, xCoordinate, yCoordinate, xAxis, yAxis, 
   const ys = axisDisplayValues(yCoordinate, yAxis);
   const nx = xs.length;
   const ny = ys.length;
-  const maximum = Math.max(...masses);
+  const maximum = density.reduce((highest, value) => Math.max(highest, value), 0);
+  const xMarginalMass = Array.from({ length: nx }, (_, ix) => {
+    let total = 0;
+    for (let iy = 0; iy < ny; iy += 1) total += probabilityMass[ix * ny + iy];
+    return total;
+  });
+  const yMarginalMass = Array.from({ length: ny }, (_, iy) => {
+    let total = 0;
+    for (let ix = 0; ix < nx; ix += 1) total += probabilityMass[ix * ny + iy];
+    return total;
+  });
+  const [xStart, xEnd] = includeHpdSupport(
+    posteriorIndexBounds(xMarginalMass), mask, nx, ny, 0,
+  );
+  const [yStart, yEnd] = includeHpdSupport(
+    posteriorIndexBounds(yMarginalMass), mask, nx, ny, 1,
+  );
+  const visibleXs = xs.slice(xStart, xEnd + 1);
+  const visibleYs = ys.slice(yStart, yEnd + 1);
   const xLogarithmic = xCoordinate === "pCO2";
   const xTransform = (value) => xLogarithmic ? Math.log10(value) : value;
-  const xmin = xTransform(xs[0]);
-  const xmax = xTransform(xs[nx - 1]);
-  const ymin = ys[0];
-  const ymax = ys[ny - 1];
+  const xmin = xTransform(visibleXs[0]);
+  const xmax = xTransform(visibleXs[visibleXs.length - 1]);
+  const ymin = visibleYs[0];
+  const ymax = visibleYs[visibleYs.length - 1];
   const xPixel = (value) => margin.left + (xTransform(value) - xmin) / (xmax - xmin) * plotW;
   const yPixel = (value) => margin.top + plotH - (value - ymin) / (ymax - ymin) * plotH;
 
@@ -770,32 +1094,23 @@ function drawProbabilityField(canvasId, xCoordinate, yCoordinate, xAxis, yAxis, 
   ctx.font = "10px system-ui";
   ctx.textAlign = "left";
   ctx.fillText("95% credible region", regionX + 30, 31);
-  for (let ix = 0; ix < nx - 1; ix += 1) {
-    for (let iy = 0; iy < ny - 1; iy += 1) {
-      const index = ix * ny + iy;
-      const intensity = maximum > 0 ? Math.pow(masses[index] / maximum, 0.32) : 0;
-      const x0 = xPixel(xs[ix]);
-      const x1 = xPixel(xs[ix + 1]);
-      const y0 = yPixel(ys[iy]);
-      const y1 = yPixel(ys[iy + 1]);
-      ctx.fillStyle = heatColor(intensity);
-      ctx.fillRect(x0, y1, Math.max(1, x1 - x0 + 0.4), Math.max(1, y0 - y1 + 0.4));
-      if (mask[index]) {
-        const right = ix === nx - 2 || !mask[(ix + 1) * ny + iy];
-        const left = ix === 0 || !mask[(ix - 1) * ny + iy];
-        const top = iy === ny - 2 || !mask[ix * ny + iy + 1];
-        const bottom = iy === 0 || !mask[ix * ny + iy - 1];
-        ctx.strokeStyle = "rgba(15, 20, 24, 0.9)";
-        ctx.lineWidth = 1.4;
-        ctx.beginPath();
-        if (right) { ctx.moveTo(x1, y0); ctx.lineTo(x1, y1); }
-        if (left) { ctx.moveTo(x0, y0); ctx.lineTo(x0, y1); }
-        if (top) { ctx.moveTo(x0, y1); ctx.lineTo(x1, y1); }
-        if (bottom) { ctx.moveTo(x0, y0); ctx.lineTo(x1, y0); }
-        ctx.stroke();
-      }
-    }
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(margin.left, margin.top, plotW, plotH);
+  ctx.clip();
+  drawInterpolatedDensity(
+    ctx, margin, plotW, plotH, xs, ys, density, ny,
+    xTransform, xmin, xmax, ymin, ymax, maximum,
+  );
+  if (mask.some(Boolean)) {
+    ctx.strokeStyle = "rgba(15, 20, 24, 0.92)";
+    ctx.lineWidth = 1.7;
+    const level = Number.isFinite(hpdThreshold) ? hpdThreshold
+      : density.reduce((lowest, value, i) => mask[i] ? Math.min(lowest, value) : lowest, Infinity);
+    drawThresholdContour(ctx, level, xs, ys, density, ny, xPixel, yPixel);
+    drawThresholdDomainBoundary(ctx, level, xs, ys, density, ny, xPixel, yPixel);
   }
+  ctx.restore();
 
   ctx.strokeStyle = "#26343d";
   ctx.lineWidth = 1;
@@ -803,7 +1118,7 @@ function drawProbabilityField(canvasId, xCoordinate, yCoordinate, xAxis, yAxis, 
   ctx.fillStyle = "#43515a";
   ctx.font = "11px system-ui";
   ctx.textAlign = "center";
-  const xTicks = axisTickValues(xCoordinate, xs, plotW);
+  const xTicks = axisTickValues(xCoordinate, visibleXs, plotW);
   xTicks.forEach((tick) => {
     const x = xPixel(tick);
     ctx.strokeStyle = "rgba(255,255,255,0.45)";
@@ -813,7 +1128,7 @@ function drawProbabilityField(canvasId, xCoordinate, yCoordinate, xAxis, yAxis, 
   });
   ctx.fillText(axisLabel(xCoordinate, xLogarithmic), margin.left + plotW / 2, height - 14);
   ctx.textAlign = "right";
-  for (const tick of axisTickValues(yCoordinate, ys, plotH)) {
+  for (const tick of axisTickValues(yCoordinate, visibleYs, plotH)) {
     const y = yPixel(tick);
     ctx.strokeStyle = "rgba(255,255,255,0.45)";
     ctx.beginPath(); ctx.moveTo(margin.left, y); ctx.lineTo(margin.left + plotW, y); ctx.stroke();
@@ -1364,6 +1679,15 @@ function resetInputs() {
   });
   $("air-inputs").classList.remove("hidden");
   $("spherule-inputs").classList.add("hidden");
+  $("sulfate-inputs").classList.add("hidden");
+  document.querySelectorAll("#sulfate-inputs input").forEach((input) => {
+    input.value = input.defaultValue;
+  });
+  $("sulfate-f-mode").value = "fixed";
+  $("sulfate-b-mode").value = "fixed";
+  $("sulfate-fractionation").value = "none";
+  $("sulfate-advanced").open = false;
+  updateSulfateControls();
   $("air-d17").value = "-0.432";
   $("air-sigma").value = "0.015";
   $("air-d18").value = "23.900";
@@ -1433,6 +1757,7 @@ function bindInterface() {
     document.querySelectorAll("#source-selector button").forEach((item) => item.classList.toggle("active", item === button));
     $("air-inputs").classList.toggle("hidden", state.source !== "air");
     $("spherule-inputs").classList.toggle("hidden", state.source !== "spherule");
+    $("sulfate-inputs").classList.toggle("hidden", state.source !== "sulfate");
     if (state.source === "spherule") isotopeTarget().catch(() => {});
   }));
   document.querySelectorAll("#solve-selector button").forEach((button) => button.addEventListener("click", () => {
@@ -1446,6 +1771,12 @@ function bindInterface() {
     }));
   }
   $("run-solver").addEventListener("click", runSolver);
+  ["sulfate-f-mode", "sulfate-b-mode", "sulfate-fractionation"].forEach((id) => {
+    $(id).addEventListener("change", updateSulfateControls);
+  });
+  $("sulfate-fractionation").addEventListener("change", () => {
+    $("sulfate-advanced").open = $("sulfate-fractionation").value === "specified";
+  });
   $("run-surface").addEventListener("click", runSurface);
   $("run-transient").addEventListener("click", runTransient);
   $("download-transient-xlsx").addEventListener("click", downloadTransientWorkbook);
@@ -1461,12 +1792,16 @@ function bindInterface() {
   $("reset-inputs").addEventListener("click", resetInputs);
   $("reset-surface").addEventListener("click", resetSurfaceInputs);
   $("reset-transient").addEventListener("click", resetTransientInputs);
-  window.addEventListener("pageshow", () => updateTransientControls(false));
+  window.addEventListener("pageshow", () => {
+    updateTransientControls(false);
+    updateSulfateControls();
+  });
 }
 
 async function initialize() {
   applyTheme(preferredTheme(), false);
   bindInterface();
+  updateSulfateControls();
   setConstraintMode("pCO2", "fixed");
   setConstraintMode("GPP", "fixed");
   setConstraintMode("pO2", "fixed");

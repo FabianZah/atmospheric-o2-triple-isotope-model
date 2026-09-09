@@ -10,6 +10,10 @@ import sys
 from typing import Any
 
 from model_result_workbook import build_transient_workbook
+from sulfate_to_air import SulfateProcessAssumptions, exact_air_from_sulfate
+from sulfate_to_air import IncorporationConstraint
+from sulfate_uncertainty import BackgroundConstraint, SulfateLikelihoodInput
+from updated_output_surface_joint_posterior import UpdatedJointPosteriorInput, joint_updated_posterior
 from public_model_service import (
     forward,
     inverse,
@@ -129,6 +133,21 @@ def build_parser() -> argparse.ArgumentParser:
     inverse_parser.add_argument("--upper", type=float)
     inverse_parser.add_argument("--output", type=Path)
 
+    sulfate_parser = commands.add_parser("sulfate", help="Conditional isotope-atom sulfate-to-air transfer.")
+    sulfate_parser.add_argument("--d17o", type=float, required=True, help="Calibrated sulfate log-0.528 anomaly, per mil.")
+    sulfate_parser.add_argument("--d18o", type=float, required=True, help="Conventional sulfate delta18O, per mil VSMOW.")
+    sulfate_parser.add_argument("--fraction", type=float, required=True, help="Fraction of total sulfate oxygen inherited from air (0-1).")
+    sulfate_parser.add_argument("--air-d18o", type=float, required=True, help="Conditional conventional air delta18O, per mil VSMOW.")
+    sulfate_parser.add_argument("--background-d17o", type=float, required=True, help="Effective non-air log-0.528 anomaly, per mil.")
+    sulfate_parser.add_argument("--alpha18", type=float, required=True, help="Transferred-air / atmospheric 18O fractionation factor.")
+    sulfate_parser.add_argument("--theta", type=float, required=True, help="Exponent in alpha17 = alpha18**theta.")
+    sulfate_parser.add_argument("--assumptions", required=True, help="Source/process and primary-preservation assumptions.")
+    sulfate_parser.add_argument("--output", type=Path)
+
+    sulfate_infer_parser = commands.add_parser("sulfate-infer", help="Infer atmospheric coordinates from a sulfate constraint JSON file.")
+    sulfate_infer_parser.add_argument("--request", type=Path, required=True)
+    sulfate_infer_parser.add_argument("--output", type=Path)
+
     transient_parser = commands.add_parser(
         "transient", help="Run a declared atmospheric time-response experiment."
     )
@@ -151,6 +170,37 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _run(args: argparse.Namespace) -> None:
+    if args.calculation == "sulfate-infer":
+        try:
+            payload = json.loads(args.request.read_text(encoding="utf-8"))
+            if not isinstance(payload,dict) or set(payload) != {"sulfate","atmosphere"}:
+                raise ValueError("sulfate-infer JSON requires exactly sulfate and atmosphere objects")
+            observation = dict(payload["sulfate"])
+            observation["incorporation"] = IncorporationConstraint(**observation["incorporation"])
+            observation["background"] = BackgroundConstraint(**observation["background"])
+            sulfate = SulfateLikelihoodInput(**observation)
+            atmosphere = {"pco2_prior":"uniform","gpp_prior":"uniform","po2_prior":"uniform",**payload["atmosphere"]}
+            if "sulfate" in atmosphere:
+                raise ValueError("provide the sulfate observation only in the top-level sulfate object")
+            if "free_coordinates" in atmosphere:
+                atmosphere["free_coordinates"] = tuple(atmosphere["free_coordinates"])
+            result = joint_updated_posterior(UpdatedJointPosteriorInput(**atmosphere,sulfate=sulfate))
+        except (OSError,TypeError,KeyError) as exc:
+            raise ValueError(f"invalid sulfate-infer request: {exc}") from exc
+        _write_json(result.as_dict(), args.output)
+        return
+    if args.calculation == "sulfate":
+        result = exact_air_from_sulfate(
+            sulfate_cap_delta17_permil=args.d17o, sulfate_delta18_permil=args.d18o,
+            fraction=args.fraction, air_delta18_permil=args.air_d18o,
+            process=SulfateProcessAssumptions(
+                background_cap_delta17_permil=args.background_d17o,
+                alpha18_air_to_sulfate=args.alpha18, theta_air_to_sulfate=args.theta,
+                assumption_note=args.assumptions,
+            ),
+        )
+        _write_json(result, args.output)
+        return
     if args.calculation == "forward":
         _write_json(forward(_forward_input(args)), args.output)
         return

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+from dataclasses import asdict
 from functools import lru_cache
 import os
 from pathlib import Path
@@ -15,6 +16,8 @@ from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 import uvicorn
+from posterior_coordinate_quadrature import PosteriorResolutionError
+from completed_result_cache import CompletedResultCache, completed_result_key
 
 from public_model_service import (
     API_VERSION,
@@ -32,6 +35,11 @@ from public_model_service import (
     state_step_transient,
 )
 from updated_molecular_forward_model import UpdatedForwardInput
+from sulfate_to_air import IncorporationConstraint, named_air_fractionation
+from sulfate_uncertainty import (
+    BackgroundConstraint, SulfateLikelihoodInput, SulfateIntegrationError, SulfateComputeLimitError,
+    sulfate_computation_budget,
+)
 from updated_constrained_pco2_posterior import (
     ConstrainedPCO2Input,
     ConstrainedCoordinateInput,
@@ -55,6 +63,7 @@ ROOT = next(
     path for path in Path(__file__).resolve().parents if (path / ".project-root").exists()
 )
 WEB_ROOT = ROOT / "web"
+_COORDINATE_EXPORT_CACHE = CompletedResultCache()
 
 MAX_REQUEST_BYTES = int(os.environ.get("OXYTIB_MAX_REQUEST_BYTES", 1_048_576))
 MAX_COMPUTE_REQUESTS = int(os.environ.get("OXYTIB_MAX_COMPUTE_REQUESTS", 2))
@@ -347,10 +356,63 @@ class ConstrainedPCO2Request(StrictRequest):
         )
 
 
+class SulfateConstraintRequest(StrictRequest):
+    kind: Literal["fixed", "normal", "range"]
+    center: float | None = None
+    sigma: float | None = None
+    lower: float | None = None
+    upper: float | None = None
+
+
+class SulfateObservationRequest(StrictRequest):
+    measured_cap_delta17_permil: float
+    measured_delta18_permil: float
+    cap_delta17_sigma_permil: float = Field(gt=0)
+    delta18_sigma_permil: float = Field(ge=0)
+    isotope_error_correlation: float = Field(gt=-1, lt=1)
+    incorporation: SulfateConstraintRequest
+    background: SulfateConstraintRequest
+    alpha18_air_to_sulfate: float | None = Field(default=None, gt=0)
+    theta_air_to_sulfate: float | None = Field(default=None, gt=0, lt=1)
+    alpha17_air_to_sulfate: float | None = Field(default=None, gt=0)
+    fractionation_treatment: Literal["specified", "none", "peng_2026_irreversible", "peng_2026_equilibrium"] = "specified"
+    assumption_note: str | None = Field(default=None, min_length=1, max_length=2000)
+    primary_signal_assumed: Literal[True] = Field(
+        default=True, description="Model assumption, not an assessment of sample preservation."
+    )
+
+    def solver_input(self) -> SulfateLikelihoodInput:
+        payload = self.model_dump(exclude={"incorporation", "background", "primary_signal_assumed"})
+        if self.alpha18_air_to_sulfate is None:
+            if self.fractionation_treatment == "specified":
+                raise ValueError("specified transfer requires alpha18 and either alpha17 or theta")
+            if self.alpha17_air_to_sulfate is not None or self.theta_air_to_sulfate is not None:
+                raise ValueError("provide the complete transfer pair or just the named treatment")
+            alpha17, alpha18 = named_air_fractionation(self.fractionation_treatment)
+            payload.update(alpha18_air_to_sulfate=alpha18, alpha17_air_to_sulfate=alpha17,
+                           theta_air_to_sulfate=None)
+        payload["assumption_note"] = "Conditional primary-sulfate transfer; preservation is assumed, not assessed."
+        if self.assumption_note is not None:
+            payload["assumption_note"] += " " + self.assumption_note.strip()
+        return SulfateLikelihoodInput(
+            **payload,
+            incorporation=IncorporationConstraint(**self.incorporation.model_dump()),
+            background=BackgroundConstraint(**self.background.model_dump()),
+        )
+
+    @model_validator(mode="after")
+    def explicit_process_constraints(self) -> "SulfateObservationRequest":
+        if self.assumption_note is not None and not self.assumption_note.strip():
+            raise ValueError("an optional sulfate assumption note must contain text")
+        self.solver_input()
+        return self
+
+
 class ConstrainedCoordinateRequest(StrictRequest):
     solve_for: Coordinate
-    target_air_cap_delta17_permil: float
-    measurement_sigma_permil: float = Field(gt=0.0)
+    target_air_cap_delta17_permil: float | None = None
+    measurement_sigma_permil: float | None = Field(default=None, gt=0.0)
+    sulfate: SulfateObservationRequest | None = None
     target_air_delta18_conventional_permil: float | None = None
     delta18_measurement_sigma_permil: float | None = Field(default=None, gt=0.0)
     pco2_constraint: CoordinateConstraintRequest | None = None
@@ -363,6 +425,13 @@ class ConstrainedCoordinateRequest(StrictRequest):
 
     @model_validator(mode="after")
     def complete_and_bounded(self) -> "ConstrainedCoordinateRequest":
+        air = (self.target_air_cap_delta17_permil, self.measurement_sigma_permil,
+               self.target_air_delta18_conventional_permil, self.delta18_measurement_sigma_permil)
+        if self.sulfate is not None:
+            if any(value is not None for value in air):
+                raise ValueError("sulfate and direct-air observation inputs are mutually exclusive")
+        elif self.target_air_cap_delta17_permil is None or self.measurement_sigma_permil is None:
+            raise ValueError("provide a sulfate observation or a direct-air target and measurement sigma")
         fields = {
             "pCO2": self.pco2_constraint,
             "GPP": self.gpp_constraint,
@@ -416,6 +485,7 @@ class ConstrainedCoordinateRequest(StrictRequest):
             pco2_grid_size=self.pco2_grid_size,
             gpp_grid_size=self.gpp_grid_size,
             po2_grid_size=self.po2_grid_size,
+            sulfate=self.sulfate.solver_input() if self.sulfate is not None else None,
         )
 
 
@@ -427,21 +497,27 @@ class SpheruleExportContextRequest(StrictRequest):
 
 
 class CoordinateWorkbookContextRequest(StrictRequest):
-    isotope_source: Literal["Direct air O2", "I-type cosmic spherule"]
+    isotope_source: Literal["Direct air O2", "I-type cosmic spherule", "Sulfate"]
     spherule: SpheruleExportContextRequest | None = None
 
     @model_validator(mode="after")
     def source_context_is_complete(self) -> "CoordinateWorkbookContextRequest":
         if self.isotope_source == "I-type cosmic spherule" and self.spherule is None:
             raise ValueError("spherule export context is required for a spherule source")
-        if self.isotope_source == "Direct air O2" and self.spherule is not None:
-            raise ValueError("spherule export context is not valid for direct air")
+        if self.isotope_source != "I-type cosmic spherule" and self.spherule is not None:
+            raise ValueError("spherule export context is not valid for this isotope source")
         return self
 
 
 class ConstrainedCoordinateWorkbookRequest(StrictRequest):
     inference: ConstrainedCoordinateRequest
     context: CoordinateWorkbookContextRequest
+
+    @model_validator(mode="after")
+    def matching_sulfate_source(self) -> "ConstrainedCoordinateWorkbookRequest":
+        if (self.context.isotope_source == "Sulfate") != (self.inference.sulfate is not None):
+            raise ValueError("sulfate export source must match its inference observation")
+        return self
 
 
 class IsotopeFieldRequest(StrictRequest):
@@ -619,6 +695,28 @@ async def invalid_model_input(_request: Request, exc: ValueError) -> JSONRespons
     return JSONResponse(status_code=422, content={"detail": str(exc)})
 
 
+@app.exception_handler(SulfateIntegrationError)
+async def unresolved_sulfate(_request: Request, exc: SulfateIntegrationError) -> JSONResponse:
+    return JSONResponse(status_code=422, content={"detail": str(exc)})
+
+
+@app.exception_handler(SulfateComputeLimitError)
+async def sulfate_calculation_limit(_request: Request, exc: SulfateComputeLimitError) -> JSONResponse:
+    return JSONResponse(status_code=503, content={
+        "detail": str(exc), "code": "sulfate_calculation_limit",
+    })
+
+
+@app.exception_handler(PosteriorResolutionError)
+async def unresolved_posterior(_request: Request, exc: PosteriorResolutionError) -> JSONResponse:
+    import logging
+    logging.getLogger(__name__).warning("Posterior resolution stopped: %s", exc)
+    return JSONResponse(status_code=503, content={
+        "detail": "The probability calculation could not reach the required numerical resolution within its calculation limit. No result was returned.",
+        "code": "posterior_resolution_limit",
+    })
+
+
 @app.get("/")
 def root() -> FileResponse:
     return FileResponse(WEB_ROOT / "index.html")
@@ -701,14 +799,27 @@ def constrained_pco2_inference(request: ConstrainedPCO2Request) -> dict:
 
 @app.post("/api/v1/inference/coordinate")
 def constrained_coordinate_inference(request: ConstrainedCoordinateRequest) -> dict:
-    return constrained_coordinate(request.solver_input())
+    inputs = request.solver_input()
+    key = completed_result_key(asdict(inputs), model_metadata())
+    if request.sulfate is not None:
+        with sulfate_computation_budget():
+            envelope = constrained_coordinate(inputs)
+    else:
+        envelope = constrained_coordinate(inputs)
+    _COORDINATE_EXPORT_CACHE.put(key, envelope)
+    return envelope
 
 
 @app.post("/api/v1/export/coordinate.xlsx")
 def constrained_coordinate_workbook(
     request: ConstrainedCoordinateWorkbookRequest,
 ) -> Response:
-    envelope = constrained_coordinate(request.inference.solver_input())
+    key = completed_result_key(
+        asdict(request.inference.solver_input()), model_metadata(),
+    )
+    envelope = _COORDINATE_EXPORT_CACHE.get(key)
+    if envelope is None:
+        envelope = constrained_coordinate_inference(request.inference)
     content = build_coordinate_inference_workbook(
         envelope,
         request.context.model_dump(exclude_none=True),

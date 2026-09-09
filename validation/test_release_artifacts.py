@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import re
+import shlex
 from urllib.parse import unquote
 
 import yaml
@@ -69,3 +70,28 @@ def test_compose_disables_cross_origin_access_by_default() -> None:
     compose = yaml.safe_load((ROOT / "compose.yaml").read_text(encoding="utf-8"))
     environment = compose["services"]["model-api"]["environment"]
     assert environment["OXYTIB_CORS_ORIGINS"] == "${OXYTIB_CORS_ORIGINS:-}"
+
+
+def test_ci_explicitly_runs_every_validation_test_module() -> None:
+    workflow = yaml.safe_load((ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"))
+    covered = set()
+    for step in workflow["jobs"]["test"]["steps"]:
+        command = step.get("run", "").replace("\\\n", " ")
+        for line in command.splitlines():
+            tokens = shlex.split(line, comments=True)
+            if tokens[:3] == ["python", "-m", "pytest"]:
+                covered.update(token for token in tokens[3:] if token.startswith("validation/test_") and token.endswith(".py"))
+    discovered = {path.relative_to(ROOT).as_posix() for path in (ROOT / "validation").rglob("test_*.py")}
+    assert discovered == covered, {
+        "tests_missing_from_ci": sorted(discovered - covered),
+        "ci_paths_missing_from_package": sorted(covered - discovered),
+    }
+
+
+def test_bundled_equation_renderer_has_its_license_and_local_assets() -> None:
+    index = (ROOT / "web" / "index.html").read_text(encoding="utf-8")
+    assert 'src="assets/mathjax-config.js?' in index
+    assert 'src="assets/vendor/mathjax/tex-svg.js?' in index
+    license_path = ROOT / "web" / "vendor" / "mathjax" / "LICENSE"
+    assert "Apache License" in license_path.read_text(encoding="utf-8")
+    assert "MathJax" in (ROOT / "LICENSING.md").read_text(encoding="utf-8")

@@ -31,6 +31,12 @@ The public model identity is defined by
 - `code/updated_output_surface_inverse.py`
 - `code/updated_output_surface_posterior.py`
 - `code/updated_output_surface_joint_posterior.py`
+- `code/updated_constrained_pco2_posterior.py`
+- `code/posterior_coordinate_quadrature.py`, `code/posterior_field_refinement.py`,
+  and `code/posterior_surface_slice.py`
+- `code/sulfate_to_air.py`, `code/sulfate_uncertainty.py`, and
+  `code/sulfate_likelihood_table.py`
+- `code/model_result_workbook.py` and `code/completed_result_cache.py`
 - `code/updated_molecular_transient.py`
 - `code/updated_photosynthesis_transient.py`
 - `code/updated_pco2_trajectory_transient.py`
@@ -39,6 +45,7 @@ The public model identity is defined by
 - `code/public_cli.py`
 - `code/web_api.py`
 - `web/index.html`, `web/styles.css`, and `web/app.js`
+- `web/mathjax-config.js` and the locally bundled renderer in `web/vendor/mathjax/`
 
 The contract includes SHA-256 identities for the central source and runtime
 data files. `validation/audit_publication_model_acceptance.py` is the
@@ -46,7 +53,7 @@ integrated release decision.
 
 ## Publication boundary
 
-The repository retains the 57-module operational dependency closure and the
+The repository retains the operational dependency closure and the
 additional validation modules required by the release tests and
 published-model response anchors. Compact validation records and digitized
 reference datasets are included where they are direct inputs to the release

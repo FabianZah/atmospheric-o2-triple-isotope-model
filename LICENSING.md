@@ -32,6 +32,9 @@ repository, drop it into `LICENSE-CC-BY-4.0.txt`.
 
 The following are **not** ours to relicense and must be handled separately:
 
+- **MathJax** - the local equation renderer in `web/vendor/mathjax/tex-svg.js`
+  is distributed under Apache-2.0. Its license is included at
+  [`web/vendor/mathjax/LICENSE`](web/vendor/mathjax/LICENSE).
 - **`outputs/young_digitization_sources/*.png`** — cropped scans of figures from
   Young et al. (2014), *Geochimica et Cosmochimica Acta* 135, 102-125
   (Elsevier, copyrighted). These are used only by the optional raster-overlay

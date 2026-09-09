@@ -38,12 +38,24 @@ REQUIRED_FILES = (
     ROOT / "code" / "updated_molecular_forward_model.py",
     ROOT / "code" / "updated_output_surface.py",
     ROOT / "code" / "updated_output_surface_inverse.py",
+    ROOT / "code" / "updated_constrained_pco2_posterior.py",
+    ROOT / "code" / "updated_output_surface_joint_posterior.py",
+    ROOT / "code" / "posterior_coordinate_quadrature.py",
+    ROOT / "code" / "posterior_field_refinement.py",
+    ROOT / "code" / "posterior_surface_slice.py",
+    ROOT / "code" / "sulfate_to_air.py",
+    ROOT / "code" / "sulfate_uncertainty.py",
+    ROOT / "code" / "sulfate_likelihood_table.py",
+    ROOT / "code" / "completed_result_cache.py",
     ROOT / "code" / "public_model_service.py",
     ROOT / "code" / "model_result_workbook.py",
     ROOT / "code" / "web_api.py",
     ROOT / "web" / "index.html",
     ROOT / "web" / "styles.css",
     ROOT / "web" / "app.js",
+    ROOT / "web" / "mathjax-config.js",
+    ROOT / "web" / "vendor" / "mathjax" / "tex-svg.js",
+    ROOT / "web" / "vendor" / "mathjax" / "LICENSE",
     ROOT / "CITATION.cff",
     ROOT / "CITATION.bib",
     ROOT / "CITATION.ris",
@@ -117,7 +129,6 @@ def build_smoke_report() -> dict[str, Any]:
     for citation_link in (
         'href="citation/model.bib"',
         'href="citation/model.ris"',
-        'href="citation/CITATION.cff"',
     ):
         if citation_link not in index:
             raise RuntimeError(f"browser interface is missing {citation_link}")

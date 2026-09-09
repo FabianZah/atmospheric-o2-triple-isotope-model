@@ -16,6 +16,10 @@ from typing import Any, Literal
 
 import numpy as np
 
+from sulfate_uncertainty import SulfateLikelihoodInput
+from sulfate_likelihood_table import scalable_sulfate_likelihood as exact_sulfate_likelihood
+from posterior_coordinate_quadrature import integrated_coordinate_log_likelihood
+
 from updated_output_surface import (
     DEFAULT_OUTPUT_SURFACE_PATH,
     UpdatedOutputSurfaceInput,
@@ -30,8 +34,8 @@ COORDINATES: tuple[Coordinate, ...] = ("pCO2", "GPP", "pO2")
 
 @dataclass(frozen=True)
 class UpdatedJointPosteriorInput:
-    target_air_cap_delta17_permil: float
-    measurement_sigma_permil: float
+    target_air_cap_delta17_permil: float | None = None
+    measurement_sigma_permil: float | None = None
     target_air_delta18_conventional_permil: float | None = None
     delta18_measurement_sigma_permil: float | None = None
     free_coordinates: tuple[Coordinate, ...] = ("pCO2", "GPP")
@@ -56,6 +60,8 @@ class UpdatedJointPosteriorInput:
     pco2_grid_size: int = 161
     gpp_grid_size: int = 121
     po2_grid_size: int = 81
+    sulfate: SulfateLikelihoodInput | None = None
+    integrate_coordinate: Coordinate | None = None
 
 
 @dataclass(frozen=True)
@@ -81,12 +87,15 @@ class UpdatedJointPosteriorResult:
     hpd_mask: tuple[bool, ...]
     hpd_probability_mass: float
     posterior_integral: float
-    effective_likelihood_sigma_permil: float
+    effective_likelihood_sigma_permil: float | None
     probabilistic_model_discrepancy_included: bool
     surface_data_id: str
     upstream_model_data_id: str
     probability_scope: str
     diagnostic: str
+    sulfate_likelihood_diagnostics: dict | None = None
+    coordinate_integration_diagnostics: dict | None = None
+    pair_resolution_diagnostics: dict | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -185,12 +194,11 @@ def joint_updated_posterior(
     request: UpdatedJointPosteriorInput,
     *,
     surface_path: Path = DEFAULT_OUTPUT_SURFACE_PATH,
+    quadrature_axes: dict[str, np.ndarray] | None = None,
 ) -> UpdatedJointPosteriorResult:
     """Evaluate a two- or three-coordinate posterior without collapsing its ridge."""
 
     numeric = (
-        request.target_air_cap_delta17_permil,
-        request.measurement_sigma_permil,
         request.model_discrepancy_sigma_permil,
         request.credible_mass,
         request.p_o2_pal,
@@ -199,8 +207,21 @@ def joint_updated_posterior(
     )
     if not all(isfinite(value) for value in numeric):
         raise ValueError("joint posterior inputs must be finite")
-    if request.measurement_sigma_permil <= 0.0:
-        raise ValueError("measurement sigma must be positive")
+    if request.sulfate is not None:
+        if not isinstance(request.sulfate, SulfateLikelihoodInput):
+            raise ValueError("sulfate requires an explicit sulfate measurement and process constraint")
+        if any(v is not None for v in (request.target_air_cap_delta17_permil,request.measurement_sigma_permil,
+                                       request.target_air_delta18_conventional_permil,request.delta18_measurement_sigma_permil)):
+            raise ValueError("sulfate and direct-air observation inputs are mutually exclusive")
+        if request.model_discrepancy_sigma_permil != 0.0:
+            raise ValueError("an air-space discrepancy sigma cannot be silently added to sulfate measurement error")
+    else:
+        if request.target_air_cap_delta17_permil is None or request.measurement_sigma_permil is None:
+            raise ValueError("a direct-air target and measurement sigma are required")
+        if not isfinite(request.target_air_cap_delta17_permil) or not isfinite(request.measurement_sigma_permil):
+            raise ValueError("joint posterior observation inputs must be finite")
+        if request.measurement_sigma_permil <= 0.0:
+            raise ValueError("measurement sigma must be positive")
     d18_values = (
         request.target_air_delta18_conventional_permil,
         request.delta18_measurement_sigma_permil,
@@ -229,6 +250,12 @@ def joint_updated_posterior(
         raise ValueError("free_coordinates must contain one to three unique coordinates")
     if any(item not in COORDINATES for item in free):
         raise ValueError("unknown free coordinate")
+    if quadrature_axes is not None and not set(quadrature_axes).issubset(free):
+        raise ValueError("custom quadrature axes must refer to free coordinates")
+    if request.integrate_coordinate is not None and (
+        request.integrate_coordinate not in free or request.sulfate is not None
+    ):
+        raise ValueError("cell integration requires a free coordinate and a Gaussian air likelihood")
 
     surface = load_updated_output_surface(str(Path(surface_path).resolve()))
     axes: dict[Coordinate, np.ndarray] = {}
@@ -255,6 +282,11 @@ def joint_updated_posterior(
             if prior == "log_uniform" or coordinate == "pCO2"
             else np.linspace(lower, upper, size)
         )
+        if quadrature_axes is not None and coordinate in quadrature_axes:
+            axis = np.asarray(quadrature_axes[coordinate], dtype=float)
+            if (axis.ndim != 1 or len(axis) < 17 or not np.all(np.isfinite(axis))
+                    or np.any(np.diff(axis) <= 0) or axis[0] != lower or axis[-1] != upper):
+                raise ValueError("custom quadrature axes must be increasing and preserve the declared bounds")
         axes[coordinate] = axis
         weights[coordinate] = _trapezoid_weights(axis)
         if prior == "uniform":
@@ -312,13 +344,15 @@ def joint_updated_posterior(
         / 1000.0
     )
 
-    effective_sigma = sqrt(
-        request.measurement_sigma_permil**2
-        + request.model_discrepancy_sigma_permil**2
-    )
-    log_likelihood = -0.5 * np.square(
-        (predictions - request.target_air_cap_delta17_permil) / effective_sigma
-    )
+    sulfate_diagnostics = None
+    if request.sulfate is None:
+        effective_sigma = sqrt(request.measurement_sigma_permil**2+request.model_discrepancy_sigma_permil**2)
+        log_likelihood = -0.5*np.square((predictions-request.target_air_cap_delta17_permil)/effective_sigma)
+    else:
+        sulfate_result = exact_sulfate_likelihood(predictions,delta18_predictions,request.sulfate)
+        log_likelihood = sulfate_result.log_likelihood
+        sulfate_diagnostics = sulfate_result.diagnostics
+        effective_sigma = None
     if request.target_air_delta18_conventional_permil is not None:
         log_likelihood -= 0.5 * np.square(
             (
@@ -327,13 +361,21 @@ def joint_updated_posterior(
             )
             / float(request.delta18_measurement_sigma_permil)
         )
-    log_likelihood -= float(np.max(log_likelihood))
+    coordinate_diagnostics = None
+    if request.integrate_coordinate is not None:
+        log_likelihood, coordinate_diagnostics = integrated_coordinate_log_likelihood(
+            surface, request, fields, axes[request.integrate_coordinate], request.integrate_coordinate
+        )
+    if np.any(np.isnan(log_likelihood)) or np.any(np.isposinf(log_likelihood)) or not np.any(np.isfinite(log_likelihood)):
+        raise RuntimeError("observation has no numerically resolved likelihood support on the declared model grid")
+    log_likelihood = log_likelihood-float(np.max(log_likelihood))
     density = np.exp(log_likelihood)
     volume_weights = np.ones_like(density)
     for dimension, coordinate in enumerate(free):
         shape = [1] * len(free)
         shape[dimension] = len(axes[coordinate])
-        density *= priors[coordinate].reshape(shape)
+        if coordinate != request.integrate_coordinate:
+            density *= priors[coordinate].reshape(shape)
         volume_weights *= weights[coordinate].reshape(shape)
     normalization = float(np.sum(density * volume_weights))
     if not np.isfinite(normalization) or normalization <= 0.0:
@@ -394,6 +436,12 @@ def joint_updated_posterior(
         "joint posterior conditional on the declared independent coordinate priors, "
         "the central updated model, Gaussian analytical measurement uncertainty"
     )
+    if request.sulfate is not None:
+        scope = (
+            "joint posterior conditional on the declared independent coordinate priors, the central updated model, "
+            "exact sulfate isotope-atom transfer, Gaussian sulfate measurement errors and the specified "
+            "incorporation/background constraints and formation/preservation assumptions"
+        )
     if request.target_air_delta18_conventional_permil is not None:
         scope += " and conventional delta-18O"
     if discrepancy_included:
@@ -407,6 +455,11 @@ def joint_updated_posterior(
         ". Literature-corner and interpolation guardrails remain "
         "non-probabilistic diagnostics."
     )
+    if coordinate_diagnostics is not None:
+        scope += (
+            f" The {request.integrate_coordinate} likelihood and prior are integrated "
+            "within each cell; the joint density is a cell average along that coordinate."
+        )
     diagnostic = (
         "Posterior mass reaches at least one declared prior boundary; report "
         "the affected marginal as prior-bound sensitive."
@@ -443,4 +496,6 @@ def joint_updated_posterior(
         upstream_model_data_id=surface.upstream_model_data_id,
         probability_scope=scope,
         diagnostic=diagnostic,
+        sulfate_likelihood_diagnostics=sulfate_diagnostics,
+        coordinate_integration_diagnostics=coordinate_diagnostics,
     )

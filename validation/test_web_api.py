@@ -11,6 +11,7 @@ from fastapi.testclient import TestClient
 
 from spherule_to_air_d17o import air_d17o_from_spherule
 from public_model_service import to_jsonable
+import updated_constrained_pco2_posterior as constrained_posterior
 import web_api
 from web_api import app
 from web_api import _cors_origins
@@ -33,8 +34,11 @@ def test_frontend_assets_and_api_work_when_mounted_below_prefix() -> None:
     swagger_initializer = prefixed_client.get("/oxytib/assets/swagger-init.js")
 
     assert root.status_code == 200
-    assert 'href="assets/styles.css?v=1.20.7"' in root.text
-    assert 'src="assets/app.js?v=1.20.7"' in root.text
+    assert 'href="assets/styles.css?v=1.25.0"' in root.text
+    assert 'src="assets/app.js?v=1.25.0"' in root.text
+    assert 'src="assets/mathjax-config.js?v=1.0.0"' in root.text
+    assert 'src="assets/vendor/mathjax/tex-svg.js?v=3.2.2"' in root.text
+    assert "cdn.jsdelivr.net" not in root.text
     assert script.status_code == 200
     assert styles.status_code == 200
     assert health.status_code == 200
@@ -99,8 +103,8 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert 'id="transient-progress-elapsed"' in root.text
     assert 'id="solver-progress"' in root.text
     assert 'id="solver-progress-elapsed"' in root.text
-    assert 'href="assets/styles.css?v=1.20.7"' in root.text
-    assert 'src="assets/app.js?v=1.20.7"' in root.text
+    assert 'href="assets/styles.css?v=1.25.0"' in root.text
+    assert 'src="assets/app.js?v=1.25.0"' in root.text
     assert 'id="reset-surface"' in root.text
     assert 'id="reset-transient"' in root.text
     assert '>Download XLSX</button>' in root.text
@@ -113,8 +117,10 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert 'id="theme-toggle"' in root.text
     assert 'href="/assets/' not in root.text
     assert 'src="/assets/' not in root.text
-    assert "x ∈ {17, 18}" in root.text
-    assert root.text.index("δ<sup>x</sup>O = 1000") < root.text.index("δ′<sup>x</sup>O = 1000")
+    assert r"x\in\{17,18\}" in root.text
+    assert root.text.index(r"\delta^{x}\mathrm{O}=1000") < root.text.index(
+        r"\delta'^{x}\mathrm{O}=1000"
+    )
     assert "Present atmospheric level" in root.text
     assert "1.00 PAL corresponds to 21.2% atmospheric O<sub>2</sub>" in root.text
     assert "4.18 × 10<sup>19</sup> mol" not in root.text
@@ -147,19 +153,28 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert 'id="isotope-summary"' not in root.text
     assert "https://doi.org/10.1016/j.gca.2014.03.026" in root.text
     assert "How to cite" in root.text
+    assert 'class="header-citation"' in root.text
+    assert 'class="solver-citation"' not in root.text
+    assert 'id="solver-marginal"' in root.text
     assert 'href="citation/model.bib"' in root.text
     assert 'href="citation/model.ris"' in root.text
-    assert 'href="citation/CITATION.cff"' in root.text
+    assert 'href="citation/CITATION.cff"' not in root.text
     assert '<a href="docs">API documentation</a>' in root.text
     assert 'href="/docs"' not in root.text
-    assert root.text.count('class="reference-group"') == 5
-    assert root.text.count("<article>", root.text.index('id="view-references"')) == 24
+    assert root.text.count('class="reference-group"') == 6
+    assert root.text.count("<article>", root.text.index('id="view-references"')) == 30
     for citation_url in (
         "https://jpldataeval.jpl.nasa.gov/",
         "https://doi.org/10.1002/qj.3803",
         "https://doi.org/10.3847/PSJ/ae0e1c",
         "https://doi.org/10.1029/2003GL018451",
         "https://doi.org/10.5194/amt-18-2701-2025",
+        "https://doi.org/10.1016/j.gca.2011.01.003",
+        "https://doi.org/10.1038/nature06959",
+        "https://doi.org/10.1016/j.gca.2025.11.036",
+        "https://doi.org/10.1016/j.epsl.2026.119862",
+        "https://doi.org/10.1016/j.epsl.2021.117320",
+        "https://doi.org/10.1038/s41467-025-57282-y",
         "https://doi.org/10.1126/science.abj8826",
         "https://doi.org/10.1098/rspb.1999.0852",
             "https://doi.org/10.1146/annurev-earth-032320-095425",
@@ -171,8 +186,20 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
 
     script = client.get("/assets/app.js")
     styles = client.get("/assets/styles.css")
+    mathjax_config = client.get("/assets/mathjax-config.js")
+    mathjax_bundle = client.get("/assets/vendor/mathjax/tex-svg.js")
     assert script.status_code == 200
+    assert '$("solver-marginal").classList.toggle("hidden", hasField)' in script.text
+    assert "function posteriorIndexBounds" in script.text
+    assert "function drawInterpolatedDensity" in script.text
+    assert "function drawThresholdContour" in script.text
+    assert "function drawThresholdDomainBoundary" in script.text
+    assert "result.field_probability_mass" in script.text
     assert styles.status_code == 200
+    assert mathjax_config.status_code == 200
+    assert mathjax_bundle.status_code == 200
+    assert "window.MathJax" in mathjax_config.text
+    assert len(mathjax_bundle.content) > 2_000_000
     assert "/api/v1/inference/coordinate" in script.text
     assert "/api/v1/export/coordinate.xlsx" in script.text
     assert "/api/v1/export/transient.xlsx" in script.text
@@ -201,7 +228,10 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert "balanced across the plotted field" in script.text
     assert "level === -24 || level === -26" not in script.text
     assert "Color encodes the model-predicted atmospheric" not in script.text
-    assert "drawMarginalLegend(ctx, width, edgeLimited)" in script.text
+    assert "drawMarginalLegend(ctx, width, coordinate, edgeLimited)" in script.text
+    assert 'return "Relative density"' in script.text
+    assert "Probability per log₁₀(pCO₂) interval" not in script.text
+    assert "value * Math.LN10 * axis[index]" in script.text
     assert '"95% credible region"' in script.text
     assert '"Atmospheric O₂ Δ′¹⁷O₀.₅₂₈ (‰)"' in script.text
     assert "Fixed pO₂ =" in script.text
@@ -209,7 +239,7 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert '"No interior solution"' in script.text
     assert "do not identify an interior" in script.text
     assert "solve_boundary_probability_mass >= 0.5" in script.text
-    assert '"Relative compatibility"' in script.text
+    assert '"Compatibility"' in script.text
     assert '"Domain-truncated 95% interval"' in script.text
     assert "function drawMarginalPosterior" in script.text
     assert 'prior: state.solveFor === "pO2" ? "uniform" : "log_uniform"' not in script.text
@@ -286,7 +316,7 @@ def test_coordinate_xlsx_export_contains_provenance_and_posterior_data() -> None
     assert summary["isotope_source"] == "Direct air O2"
     assert summary["solved_coordinate"] == "pCO2"
     assert summary["GPP_constraint_kind"] == "fixed"
-    assert workbook["Posterior"].max_row == 20
+    assert workbook["Posterior"].max_row == 184
 
 
 def test_transient_xlsx_export_reuses_run_and_contains_metadata(
@@ -426,7 +456,14 @@ def test_coordinate_xlsx_export_includes_spherule_context_and_joint_field() -> N
     }
     assert summary["isotope_source"] == "I-type cosmic spherule"
     assert summary["spherule_delta18O_VSMOW"] == pytest.approx(43.269)
-    assert workbook["Joint probability"].max_row == 292
+    field = workbook["Joint probability"]
+    rows = list(field.iter_rows(min_row=4, values_only=True))
+    assert field.max_row < 58_104
+    assert len({row[0] for row in rows}) == 181
+    assert len({row[2] for row in rows}) == 321
+    assert sum(row[4] for row in rows) == pytest.approx(1.0)
+    assert sum(row[4] for row in rows if row[6]) == pytest.approx(summary["field_hpd_probability_mass"])
+    assert "unlisted combinations are zero" in summary["joint_probability_storage"]
 
 
 def test_health_and_model_metadata_expose_one_accepted_model() -> None:
@@ -576,8 +613,25 @@ def test_coordinate_inference_endpoint_accepts_constraints_for_any_solved_axis()
 @pytest.mark.parametrize("first_kind", ["fixed", "normal", "range"])
 @pytest.mark.parametrize("second_kind", ["fixed", "normal", "range"])
 def test_coordinate_inference_public_constraint_matrix(
-    solve_for: str, first_kind: str, second_kind: str
+    solve_for: str,
+    first_kind: str,
+    second_kind: str,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    import posterior_field_refinement
+
+    # This matrix checks API combinations; the full-resolution case has its own audit.
+    monkeypatch.setattr(posterior_field_refinement, "PAIR_AXIS_FLOORS",
+                        {"pCO2": 65, "GPP": 65, "pO2": 65})
+    monkeypatch.setattr(
+        constrained_posterior,
+        "PUBLIC_RESOLUTION_FLOORS",
+        {
+            1: {"pCO2": 17, "GPP": 17, "pO2": 17},
+            2: {"pCO2": 17, "GPP": 17, "pO2": 17},
+            3: {"pCO2": 17, "GPP": 17, "pO2": 17},
+        },
+    )
     definitions = {
         "pCO2": {
             "fixed": {"kind": "fixed", "center": 294.0},
@@ -623,7 +677,7 @@ def test_coordinate_inference_public_constraint_matrix(
     low, high = result["equal_tailed_credible_interval"]
     assert low <= result["posterior_median"] <= high
     assert set(result["effective_constraint_bounds"]) == set(constrained)
-    assert result["final_solve_axis_size"] == result["initial_solve_axis_size"]
+    assert result["final_solve_axis_size"] >= result["initial_solve_axis_size"]
     assert result["final_solve_bounds"][0] >= result["initial_solve_bounds"][0]
     assert result["final_solve_bounds"][1] <= result["initial_solve_bounds"][1]
     assert 0.0 <= result["solve_boundary_probability_mass"] <= 1.0

@@ -109,6 +109,18 @@ def _append_summary_rows(
         ("posterior_mode_at_boundary", result.get("solve_mode_at_boundary"), ""),
         ("probability_scope", result["probability_scope"], ""),
     ]
+    sulfate = inputs.get("sulfate")
+    if sulfate is not None:
+        air_fields = {"target_air_Delta_prime_17O_0.528", "Delta_prime_17O_analytical_sigma",
+                      "target_air_delta18O_VSMOW", "delta18O_analytical_sigma"}
+        rows = [row for row in rows if row[0] not in air_fields]
+        rows.extend([
+            ("sulfate_Delta_prime_17O_0.528", sulfate["measured_cap_delta17_permil"], "permil"),
+            ("sulfate_Delta_prime_17O_analytical_sigma", sulfate["cap_delta17_sigma_permil"], "permil (1 sigma)"),
+            ("sulfate_delta18O_VSMOW", sulfate["measured_delta18_permil"], "permil"),
+            ("sulfate_delta18O_analytical_sigma", sulfate["delta18_sigma_permil"], "permil (1 sigma)"),
+            ("primary_sulfate_interpretation_assumed", True, "conditional on stated process assumptions"),
+        ])
     spherule = context.get("spherule")
     if spherule:
         rows.extend(
@@ -145,8 +157,21 @@ def _append_summary_rows(
                     (f"{name}_effective_upper", effective[1], _unit(name)),
                 ]
             )
+    for key, value in _flatten_mapping({"coordinate_integration": result.get("coordinate_integration_diagnostics"),
+                                      "field_refinement": result.get("field_refinement_diagnostics")}):
+        if value is not None:
+            rows.append((key, _cell_value(value), "numerical integration"))
+    if result.get("field_probability_mass") is not None:
+        rows.extend([
+            ("field_hpd_density_threshold", result.get("field_hpd_density_threshold"), "reported coordinate units"),
+            ("field_hpd_probability_mass", result.get("field_hpd_probability_mass"), "probability"),
+            ("joint_probability_storage", "Zero-density, zero-mass grid nodes are omitted except axis anchors; unlisted combinations are zero.", "Both complete axes are retained"),
+        ])
     for row in rows:
         sheet.append(row)
+        for cell in sheet[sheet.max_row]:
+            if isinstance(cell.value, str):
+                cell.data_type = "s"
 
 
 def build_coordinate_inference_workbook(
@@ -166,6 +191,27 @@ def build_coordinate_inference_workbook(
     _prepare_sheet(summary, title="Constrained model solution", headers=("Field", "Value", "Unit or note"))
     _append_summary_rows(summary, envelope, context)
     _finish_table(summary, (42, 70, 24))
+
+    if result["inputs"].get("sulfate") is not None:
+        process = workbook.create_sheet("Sulfate transfer")
+        _prepare_sheet(process, title="Conditional sulfate transfer", headers=("Field", "Value"))
+        metadata = {
+            "observation_and_process": result["inputs"]["sulfate"],
+            "isotope_coordinate": "logarithmic Delta-prime-17O, slope 0.528; conventional delta18O, VSMOW; per mil",
+            "incorporation_units": "fraction of all oxygen atoms, 0-1; after formation-stage exchange",
+            "background_units": "effective non-air Delta-prime-17O, per mil; after formation",
+            "likelihood_diagnostics": result.get("sulfate_likelihood_diagnostics"),
+        }
+        # Observation inputs are already tabulated above; keep diagnostics distinct.
+        if metadata["likelihood_diagnostics"] is not None:
+            metadata["likelihood_diagnostics"] = {
+                key: value for key, value in metadata["likelihood_diagnostics"].items() if key != "observation"
+            }
+        for key, value in _flatten_mapping(metadata):
+            process.append((key, _cell_value(value)))
+            if isinstance(process.cell(process.max_row, 2).value, str):
+                process.cell(process.max_row, 2).data_type = "s"
+        _finish_table(process, (60, 95))
 
     posterior = workbook.create_sheet("Posterior")
     coordinate = result["solve_for"]
@@ -208,6 +254,10 @@ def build_coordinate_inference_workbook(
         for x_index, x_value in enumerate(result["field_x_axis"]):
             for y_index, y_value in enumerate(y_axis):
                 flat_index = x_index * len(y_axis) + y_index
+                if (x_index > 0 and y_index > 0
+                        and result["field_probability_mass"][flat_index] == 0.0
+                        and result["field_density"][flat_index] == 0.0):
+                    continue
                 field.append(
                     (
                         x_value,

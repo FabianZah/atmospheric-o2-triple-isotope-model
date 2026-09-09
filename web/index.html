@@ -4,8 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OXYTIB</title>
-  <link rel="stylesheet" href="assets/styles.css?v=1.20.7">
-  <script defer src="assets/app.js?v=1.20.7"></script>
+  <link rel="stylesheet" href="assets/styles.css?v=1.25.0">
+  <script defer src="assets/mathjax-config.js?v=1.0.0"></script>
+  <script defer src="assets/vendor/mathjax/tex-svg.js?v=3.2.2"></script>
+  <script defer src="assets/app.js?v=1.25.0"></script>
 </head>
 <body>
   <header class="topbar">
@@ -17,6 +19,13 @@
       </div>
     </div>
     <div class="topbar-actions">
+      <aside class="header-citation" aria-label="How to cite OXYTIB">
+        <strong>Cite OXYTIB</strong>
+        <div>
+          <a href="citation/model.bib" download>BibTeX</a>
+          <a href="citation/model.ris" download>RIS</a>
+        </div>
+      </aside>
       <label class="theme-switch" for="theme-toggle">
         <input id="theme-toggle" type="checkbox" role="switch" aria-label="Use dark appearance">
         <span class="theme-track" aria-hidden="true"><i></i></span>
@@ -48,6 +57,7 @@
             <div class="segmented" id="source-selector">
               <button type="button" class="active" data-source="air">Direct air</button>
               <button type="button" data-source="spherule">I-type cosmic spherule</button>
+              <button type="button" data-source="sulfate">Sulfate</button>
             </div>
           </fieldset>
 
@@ -84,6 +94,60 @@
               </div>
             </div>
             <output id="converted-air" class="conversion-output"></output>
+          </div>
+
+          <div id="sulfate-inputs" class="input-group hidden">
+            <label for="sulfate-d17">Sulfate Δ′<sup>17</sup>O<sub>0.528</sub> <span>‰</span></label>
+            <input id="sulfate-d17" type="text" inputmode="decimal" value="-0.200" placeholder="Insert value">
+            <label for="sulfate-d18">Sulfate δ<sup>18</sup>O <span>‰ VSMOW</span></label>
+            <input id="sulfate-d18" type="text" inputmode="decimal" value="15.000" placeholder="Insert value">
+            <div class="paired-inputs">
+              <div><label for="sulfate-d17-sigma">Δ′<sup>17</sup>O 1σ</label><input id="sulfate-d17-sigma" type="text" inputmode="decimal" value="0.030" placeholder="Insert value"></div>
+              <div><label for="sulfate-d18-sigma">δ<sup>18</sup>O 1σ</label><input id="sulfate-d18-sigma" type="text" inputmode="decimal" value="0.500" placeholder="Insert value"></div>
+            </div>
+
+            <label for="sulfate-fractionation">O₂ incorporation treatment</label>
+            <select id="sulfate-fractionation" aria-describedby="sulfate-treatment-note">
+              <option value="none" selected>No fractionation assumed</option>
+              <option value="peng_2026_irreversible">Irreversible incorporation · 25 °C</option>
+              <option value="peng_2026_equilibrium">Equilibrated incorporation · 25 °C</option>
+              <option value="specified">Custom isotope shifts</option>
+            </select>
+            <p id="sulfate-treatment-note" class="field-note" aria-live="polite"></p>
+            <p id="sulfate-pathway-fraction" class="field-note hidden">Air-derived oxygen: <strong>25%, fixed</strong></p>
+            <details id="sulfate-advanced" class="sulfate-advanced hidden">
+              <summary>Custom transfer settings</summary>
+              <div id="sulfate-fractionation-fields" class="input-group">
+                <label for="sulfate-log18">δ′<sup>18</sup>O shift <span>‰</span></label>
+                <input id="sulfate-log18" type="text" inputmode="decimal" placeholder="Insert value">
+                <label for="sulfate-shift17">Δ′<sup>17</sup>O shift <span>‰, 0.528</span></label>
+                <input id="sulfate-shift17" type="text" inputmode="decimal" placeholder="Insert value">
+                <p class="field-note">Transferred oxygen minus atmospheric O₂, before mixing.</p>
+              </div>
+            </details>
+
+            <fieldset id="sulfate-incorporation-inputs" class="sulfate-process">
+              <legend>Air-derived oxygen <span>% of sulfate oxygen</span></legend>
+              <label class="sr-only" for="sulfate-f-mode">Incorporation constraint</label>
+              <select id="sulfate-f-mode"><option value="fixed">Fixed</option><option value="normal">Value ± 1σ</option><option value="range">Exact range</option></select>
+              <div id="sulfate-f-center-fields"><label for="sulfate-f">Fraction <span>%</span></label><input id="sulfate-f" type="text" inputmode="decimal" placeholder="Insert value"></div>
+              <div id="sulfate-f-normal-fields" class="hidden"><label for="sulfate-f-sigma">Fraction 1σ <span>percentage points</span></label><input id="sulfate-f-sigma" type="text" inputmode="decimal" placeholder="Insert value"></div>
+              <div id="sulfate-f-range-fields" class="paired-inputs hidden">
+                <div><label for="sulfate-f-lower">Lower <span>%</span></label><input id="sulfate-f-lower" type="text" inputmode="decimal" placeholder="Lower bound"></div>
+                <div><label for="sulfate-f-upper">Upper <span>%</span></label><input id="sulfate-f-upper" type="text" inputmode="decimal" placeholder="Upper bound"></div>
+              </div>
+            </fieldset>
+            <fieldset class="sulfate-process">
+              <legend>Non-air oxygen component</legend>
+              <label class="sr-only" for="sulfate-b-mode">Non-air oxygen constraint</label>
+              <select id="sulfate-b-mode"><option value="fixed">Fixed</option><option value="normal">Value ± 1σ</option><option value="range">Exact range</option></select>
+              <div id="sulfate-b-center-fields"><label for="sulfate-b">Δ′<sup>17</sup>O<sub>0.528</sub> <span>‰</span></label><input id="sulfate-b" type="text" inputmode="decimal" placeholder="Insert value"></div>
+              <div id="sulfate-b-normal-fields" class="hidden"><label for="sulfate-b-sigma">Δ′<sup>17</sup>O 1σ <span>‰</span></label><input id="sulfate-b-sigma" type="text" inputmode="decimal" placeholder="Insert value"></div>
+              <div id="sulfate-b-range-fields" class="paired-inputs hidden">
+                <div><label for="sulfate-b-lower">Lower <span>‰</span></label><input id="sulfate-b-lower" type="text" inputmode="decimal" placeholder="Lower bound"></div>
+                <div><label for="sulfate-b-upper">Upper <span>‰</span></label><input id="sulfate-b-upper" type="text" inputmode="decimal" placeholder="Upper bound"></div>
+              </div>
+            </fieldset>
           </div>
 
           <fieldset>
@@ -189,7 +253,7 @@
             <div class="result-strip">
               <div><span>Input constraints</span><strong id="result-constraints"></strong></div>
             </div>
-            <div class="solver-marginal">
+            <div class="solver-marginal" id="solver-marginal">
               <div class="solver-probability-heading">
                 <div><h3 id="solver-marginal-title">Probability distribution</h3></div>
                 <button class="plot-export" type="button" data-canvas="solver-marginal-canvas" data-filename="constrained_solution_distribution" disabled title="Download plot as PNG">↓ PNG</button>
@@ -306,9 +370,9 @@
       <div class="prose-columns">
         <article>
           <h2>Notation</h2>
-          <div class="equation">δ<sup>x</sup>O = 1000 [(R<sup>x</sup><sub>sample</sub> / R<sup>x</sup><sub>VSMOW</sub>) − 1], &nbsp;R<sup>x</sup> = <sup>x</sup>O / <sup>16</sup>O, &nbsp;x ∈ {17, 18}</div>
-          <div class="equation">δ′<sup>x</sup>O = 1000 ln(δ<sup>x</sup>O / 1000 + 1), &nbsp;x ∈ {17, 18}</div>
-          <div class="equation">Δ′<sup>17</sup>O<sub>0.528</sub> = δ′<sup>17</sup>O − 0.528 δ′<sup>18</sup>O</div>
+          <div class="equation">$$\delta^{x}\mathrm{O}=1000\left(\frac{{}^{x}R_{\mathrm{sample}}}{{}^{x}R_{\mathrm{VSMOW}}}-1\right),\qquad {}^{x}R=\frac{{}^{x}\mathrm{O}}{{}^{16}\mathrm{O}},\qquad x\in\{17,18\}$$</div>
+          <div class="equation">$$\delta'^{x}\mathrm{O}=1000\ln\left(1+\frac{\delta^{x}\mathrm{O}}{1000}\right),\qquad x\in\{17,18\}$$</div>
+          <div class="equation">$$\Delta'^{17}\mathrm{O}_{0.528}=\delta'^{17}\mathrm{O}-0.528\,\delta'^{18}\mathrm{O}$$</div>
           <dl class="notation-list">
             <div><dt>δ<sup>x</sup>O</dt><dd>Conventional oxygen-isotope composition relative to VSMOW, in ‰.</dd></div>
             <div><dt>δ′<sup>x</sup>O</dt><dd>Logarithmic oxygen-isotope composition, in ‰.</dd></div>
@@ -323,16 +387,21 @@
         <article>
           <h2>Frequently asked questions</h2>
           <details open><summary>Why must two variables be constrained before solving for the third?</summary><p>One atmospheric O<sub>2</sub> Δ′<sup>17</sup>O observation defines a family of compatible pCO<sub>2</sub>, GPP, and pO<sub>2</sub> states. Independent constraints on two coordinates restrict that family and allow the remaining coordinate to be inferred.</p></details>
-          <details><summary>What does the solution uncertainty interval include?</summary><p>The displayed interval combines analytical isotope uncertainty with the two coordinate constraints entered by the user. A value ± 1σ is treated as Gaussian and an exact range as uniform within its bounds. Structural model uncertainty is assessed separately.</p></details>
-          <details><summary>How is the probability distribution calculated?</summary><p>The model is evaluated across its accepted domain and weighted by the isotope analytical likelihood and entered constraints. Uncertainty in the other coordinates is integrated out. The solved coordinate has a uniform prior in its reported units; a stated range is uniform within its bounds and a 1σ constraint is Gaussian. The displayed profile focuses on the central 99.8% of posterior probability.</p></details>
+          <details><summary>What does the solution uncertainty interval include?</summary><p>The displayed interval combines analytical isotope uncertainty with the two coordinate constraints and any sulfate-process constraints entered by the user. A value ± 1σ is treated as Gaussian and an exact range as uniform within its bounds. Structural model uncertainty is assessed separately.</p></details>
+          <details><summary>How is the probability distribution calculated?</summary><p>The model is evaluated across its accepted domain and weighted by the isotope analytical likelihood and entered constraints. Uncertainty in the other coordinates is integrated out. The solved coordinate has a uniform prior in its reported units; a stated range is uniform within its bounds and a 1σ constraint is Gaussian. For pCO<sub>2</sub>, the plotted curve shows probability per equal log<sub>10</sub>(pCO<sub>2</sub>) interval to match the logarithmic display axis; the inference prior remains uniform in ppm. The displayed profile focuses on the central 99.8% of posterior probability.</p></details>
           <details><summary>What is the difference between the isotope field and the constrained solution?</summary><p>The isotope field shows deterministic central-model Δ′<sup>17</sup>O predictions across pCO<sub>2</sub> and GPP at one fixed pO<sub>2</sub>. The constrained solver combines an isotope measurement and its analytical uncertainty with independent constraints to produce a probability distribution for one requested coordinate.</p></details>
-          <details><summary>What assumptions are made about input uncertainties?</summary><p>The isotope measurements and entered coordinate constraints are treated as statistically independent. Correlations or covariance between inputs are not included by the interface and require a separate joint analysis.</p></details>
+          <details><summary>What assumptions are made about input uncertainties?</summary><p>Entered atmospheric-coordinate constraints and proxy-process constraints are independent. Isotope errors are treated as independent Gaussian errors. Correlated inputs require a separate joint analysis.</p></details>
           <details><summary>What does a boundary-limited solution mean?</summary><p>Appreciable posterior probability reaches an edge of the accepted model domain. The reported interval is therefore limited by that boundary and should not be interpreted as evidence that the true value lies at the boundary.</p></details>
           <details><summary>Does the main solver represent steady state?</summary><p>Yes. The isotope field and constrained solver use steady-state model outputs. Time-dependent adjustment after a change in pCO<sub>2</sub>, GPP, pO<sub>2</sub>, or photosynthesis is calculated separately in the Time response view.</p></details>
           <details><summary>How should the time-response experiments be interpreted?</summary><p>Each experiment applies an imposed change at year zero; negative displayed times show the initial state. Operational equilibrium is reached when both isotope coordinates enter and remain within 0.001‰ of the long-run state. The equilibrium search is independent of the displayed duration and extends to 100,000 years.</p></details>
-          <details><summary>How long do calculations take?</summary><p>Most fixed-constraint calculations finish within seconds. Propagating uncertain constraints requires evaluation across a numerical grid and can take longer. Time-response experiments solve adaptive differential equations; the photosynthesis step is usually the slowest because it integrates the coupled carbon, O<sub>2</sub>, and isotope response over the equilibrium-search horizon. Runtime also depends on the selected constraints, experiment duration, and server load.</p></details>
+          <details><summary>How long do calculations take?</summary><p>Most fixed-constraint calculations finish within seconds. Narrow probability fields may require automatic grid refinement and take a few minutes. Time-response experiments solve adaptive differential equations; the photosynthesis step integrates the coupled carbon, O<sub>2</sub>, and isotope response over the equilibrium-search horizon. Runtime also depends on the selected constraints, experiment duration, and server load.</p></details>
           <details><summary>Can the model be applied to ancient atmospheres?</summary><p>Yes, when the requested state lies inside the accepted model domain and independent evidence constrains the other atmospheric coordinates. Geological interpretations should also consider structural model uncertainty and the applicability of the model assumptions to the investigated interval.</p></details>
           <details><summary>How are cosmic spherules converted?</summary><p>I-type cosmic spherule measurements are converted to atmospheric O<sub>2</sub> using Zahnow et al. (2025), Eq. 3, calibrated by Fischer et al. (2021).</p></details>
+          <details><summary>What does the sulfate input require?</summary><p>Enter the sulfate isotope measurements and uncertainties, the percentage of its oxygen inherited from atmospheric O<sub>2</sub>, and the Δ′<sup>17</sup>O of the non-air oxygen component. The latter describes oxygen from other sources after sulfate formation and exchange, and may differ from the original water. Both process inputs accept a fixed value, 1σ uncertainty or range. The prefilled isotope values and analytical errors are illustrative examples, not reference measurements.</p><p>Bao et al. (2008) established the use of sulfate triple oxygen isotopes to constrain ancient atmospheric O<sub>2</sub> anomalies and pCO<sub>2</sub>. The calculation assumes a preserved or independently reconstructed primary sulfate signal. Later alteration requires independent assessment. Kohl and Bao (2011), Cao and Bao (2013), and Waldeck et al. (2022, 2025) inform these distinctions.</p></details>
+          <details><summary>Why is there no non-air δ<sup>18</sup>O input?</summary><p>For each candidate atmosphere, the solver derives the non-air component's δ<sup>18</sup>O from measured sulfate δ<sup>18</sup>O, the air-derived oxygen fraction and atmospheric δ<sup>18</sup>O, conserving oxygen-isotope atoms. Its Δ′<sup>17</sup>O is supplied separately. This compact formulation leaves non-air δ<sup>18</sup>O free to satisfy the balance; its inferred value still needs to be plausible for the archive. Sulfate δ<sup>18</sup>O is a conditioning measurement, with a locally flat prior on its true value.</p></details>
+          <details><summary>Which O₂ incorporation treatment should I use?</summary><p>Choose a treatment consistent with the sample's formation environment. The default explicitly assumes no incorporation fractionation. The irreversible and equilibrated treatments use the 25 °C O₂ isotope effects calculated by Peng et al. (2026) for sulfite oxidation, with its fixed 25% O₂-derived oxygen contribution. They describe alternative reaction limits, not an automatic choice based on atmospheric pO₂. The non-air oxygen composition remains separately constrained, including subsequent sulfite-side reaction effects.</p><p>Wei et al. (2026) measure water–sulfite precursor equilibration. Those measurements alone do not set the final non-air sulfate composition. Preserved-signal and archive-specific formation constraints are still needed.</p></details>
+          <details><summary>What do the custom isotope shifts mean?</summary><p>Both shifts are transferred oxygen minus atmospheric O₂, before mixing with non-air oxygen. The δ′<sup>18</sup>O shift is logarithmic, 1000 ln α<sub>18</sub>, rather than a difference of conventional δ<sup>18</sup>O values. The Δ′<sup>17</sup>O shift uses slope 0.528. The two shifts specify the isotope-ratio factors independently, including cases with zero δ′<sup>18</sup>O shift but a nonzero Δ′<sup>17</sup>O shift. A raw sulfate measurement alone does not determine these process effects.</p></details>
+          <details><summary>What uncertainty is included for sulfate?</summary><p>The calculation integrates analytical errors and the entered air-derived fraction and non-air oxygen constraints in sulfate measurement space. Fractionation and primary preservation remain conditional assumptions. Combining several uncertain inputs can take a few minutes.</p></details>
           <details><summary>How should cosmic-spherule uncertainties be entered?</summary><p>Enter the analytical 1σ uncertainties of both spherule Δ′<sup>17</sup>O and δ<sup>18</sup>O. They are propagated through the atmospheric conversion. Calibration-parameter sensitivity is assessed separately and is not added to the displayed analytical 1σ interval.</p></details>
           <details><summary>What happens outside the model domain?</summary><p>The calculation is rejected. The accepted surface is not numerically extrapolated.</p></details>
         </article>
@@ -349,7 +418,6 @@
         <div class="citation-actions" aria-label="Download citation">
           <a class="secondary-command" href="citation/model.bib" download>Download BibTeX</a>
           <a class="secondary-command" href="citation/model.ris" download>Download RIS</a>
-          <a class="secondary-command" href="citation/CITATION.cff" download>Download CFF</a>
         </div>
       </section>
       <header class="reference-intro">
@@ -393,6 +461,42 @@
             <strong>Wogan, N. F., et al. (2025)</strong>
             <span>The open-source Photochem code: A general chemical and climate model for interpreting (exo)planet observations. <i>The Planetary Science Journal</i>, 6, 256.</span>
             <a href="https://doi.org/10.3847/PSJ/ae0e1c" target="_blank" rel="noopener noreferrer">doi:10.3847/PSJ/ae0e1c</a>
+          </article>
+        </div>
+      </section>
+
+      <section class="reference-group" aria-labelledby="references-sulfate">
+        <h3 id="references-sulfate">Sulfate incorporation and archive interpretation</h3>
+        <div class="reference-list">
+          <article>
+            <strong>Bao, H., Lyons, J. R., &amp; Zhou, C. (2008)</strong>
+            <span>Triple oxygen isotope evidence for elevated CO<sub>2</sub> levels after a Neoproterozoic glaciation. <i>Nature</i>, 453, 504–506.</span>
+            <a href="https://doi.org/10.1038/nature06959" target="_blank" rel="noopener noreferrer">doi:10.1038/nature06959</a>
+          </article>
+          <article>
+            <strong>Peng, Y., Han, S., &amp; Cao, X. (2026)</strong>
+            <span>Theoretical evaluation of kinetic triple oxygen isotope fractionation during sulfite oxidation by atmospheric oxygen. <i>Geochimica et Cosmochimica Acta</i>, 412, 64–74.</span>
+            <a href="https://doi.org/10.1016/j.gca.2025.11.036" target="_blank" rel="noopener noreferrer">doi:10.1016/j.gca.2025.11.036</a>
+          </article>
+          <article>
+            <strong>Wei, Y., Yan, H., &amp; Fang, Y. (2026)</strong>
+            <span>Experimental determination of equilibrium fractionation of triple oxygen isotopes between dissolved sulfite species and water. <i>Earth and Planetary Science Letters</i>, 679, 119862.</span>
+            <a href="https://doi.org/10.1016/j.epsl.2026.119862" target="_blank" rel="noopener noreferrer">doi:10.1016/j.epsl.2026.119862</a>
+          </article>
+          <article>
+            <strong>Kohl, I. E., &amp; Bao, H. (2011)</strong>
+            <span>Triple-oxygen-isotope determination of molecular oxygen incorporation in sulfate produced during abiotic pyrite oxidation (pH = 2–11). <i>Geochimica et Cosmochimica Acta</i>, 75, 1785–1798.</span>
+            <a href="https://doi.org/10.1016/j.gca.2011.01.003" target="_blank" rel="noopener noreferrer">doi:10.1016/j.gca.2011.01.003</a>
+          </article>
+          <article>
+            <strong>Waldeck et al. (2022)</strong>
+            <span>Calibrating the triple oxygen isotope composition of evaporite minerals as a proxy for marine sulfate. <i>Earth and Planetary Science Letters</i>, 578, 117320.</span>
+            <a href="https://doi.org/10.1016/j.epsl.2021.117320" target="_blank" rel="noopener noreferrer">doi:10.1016/j.epsl.2021.117320</a>
+          </article>
+          <article>
+            <strong>Waldeck et al. (2025)</strong>
+            <span>Marine sulphate captures a Paleozoic transition to a modern terrestrial weathering environment. <i>Nature Communications</i>, 16, 2087.</span>
+            <a href="https://doi.org/10.1038/s41467-025-57282-y" target="_blank" rel="noopener noreferrer">doi:10.1038/s41467-025-57282-y</a>
           </article>
         </div>
       </section>

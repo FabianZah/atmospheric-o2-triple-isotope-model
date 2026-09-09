@@ -7,6 +7,7 @@ from updated_output_surface import (
     SURFACE_FIELDS,
     UpdatedMolecularOutputSurface,
     UpdatedOutputSurfaceInput,
+    load_updated_output_surface,
 )
 
 
@@ -84,6 +85,22 @@ def test_dedicated_delta18_surface_is_exact_at_training_nodes() -> None:
     )
     assert result.central_delta18_prime_permil == pytest.approx(values[2, 1, 2])
     assert result.central_delta18_acceleration_validated is True
+
+
+def test_vectorized_delta18_interpolation_matches_scalar_evaluation() -> None:
+    surface = load_updated_output_surface()
+    points = np.asarray(
+        [
+            [0.35, np.log(275.0), np.log(72.5)],
+            [1.0, np.log(294.0), np.log(290.0)],
+            [1.65, np.log(35_000.0), np.log(435.0)],
+        ]
+    )
+
+    vectorized = surface._delta18_interpolator.evaluate_points(points)
+    scalar = np.asarray([surface._delta18_interpolator(point) for point in points])
+
+    assert vectorized == pytest.approx(scalar, abs=1.0e-12)
 
 
 @pytest.mark.parametrize(

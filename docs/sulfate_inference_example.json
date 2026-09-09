@@ -1,0 +1,22 @@
+{
+  "sulfate": {
+    "measured_cap_delta17_permil": -2.5959322205596855,
+    "measured_delta18_permil": 15.0,
+    "cap_delta17_sigma_permil": 0.03,
+    "delta18_sigma_permil": 0.5,
+    "isotope_error_correlation": 0.0,
+    "incorporation": {"kind": "range", "lower": 0.15, "upper": 0.25},
+    "background": {"kind": "normal", "center": -0.02, "sigma": 0.03},
+    "alpha18_air_to_sulfate": 1.0,
+    "theta_air_to_sulfate": 0.528,
+    "assumption_note": "Synthetic primary-sulfate test, not observed data or recommended defaults. Generated at pCO2=10000 ppm, GPP=72.5 PgC/year, pO2=0.5 PAL, f=0.2, B=-0.02 and no air-path fractionation."
+  },
+  "atmosphere": {
+    "free_coordinates": ["pCO2"],
+    "p_o2_pal": 0.5,
+    "gpp_pgC_per_year": 72.5,
+    "pco2_bounds_ppm": [3000.0, 60000.0],
+    "pco2_prior": "uniform",
+    "pco2_grid_size": 321
+  }
+}

@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -58,6 +59,25 @@ jobs:
             validation/test_updated_output_surface_joint_posterior.py \
             validation/test_updated_uncertainty_layers.py \
             validation/test_uncertainty_contract.py -q
+
+      - name: Numerical inference and completed-result reuse
+        run: |
+          python -m pytest \
+            validation/test_posterior_coordinate_quadrature.py \
+            validation/test_posterior_field_refinement.py \
+            validation/test_posterior_surface_slice.py \
+            validation/test_completed_result_cache.py -q
+
+      - name: Sulfate transfer and uncertainty accuracy
+        run: |
+          python -m pytest \
+            validation/test_oxygen_source_mixing.py \
+            validation/test_sulfate_to_air.py \
+            validation/test_sulfate_transfer_audit.py \
+            validation/test_sulfate_fractionation_audit.py \
+            validation/test_sulfate_uncertainty.py \
+            validation/test_sulfate_likelihood_table.py \
+            validation/test_sulfate_web_api.py -q
 
       - name: Declared transient behavior tests
         run: |

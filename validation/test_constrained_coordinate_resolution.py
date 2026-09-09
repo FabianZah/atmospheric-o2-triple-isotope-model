@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from scipy.ndimage import label as connected_component_labels
 
 from updated_constrained_pco2_posterior import (
     ConstrainedCoordinateInput,
@@ -101,6 +102,141 @@ def test_high_co2_refinement_agrees_with_dense_full_domain_quadrature() -> None:
     assert refined.equal_tailed_credible_interval == pytest.approx(
         dense.equal_tailed_credible_interval, abs=12.0
     )
+
+
+def test_low_delta17_uncertain_gpp_profile_converges_without_false_modes() -> None:
+    common = dict(
+        solve_for="pCO2",
+        target_air_cap_delta17_permil=-10.0,
+        measurement_sigma_permil=0.015,
+        target_air_delta18_conventional_permil=23.9,
+        delta18_measurement_sigma_permil=0.3,
+        constraints={
+            "GPP": CoordinateConstraint("range", lower=145.0, upper=435.0),
+            "pO2": CoordinateConstraint("fixed", center=1.0),
+        },
+    )
+    public = constrained_coordinate_posterior(ConstrainedCoordinateInput(**common))
+    dense = constrained_coordinate_posterior(
+        ConstrainedCoordinateInput(
+            **common,
+            pco2_grid_size=401,
+            gpp_grid_size=321,
+            po2_grid_size=17,
+            enforce_public_resolution=False,
+        )
+    )
+
+    axis = np.asarray(public.solve_axis)
+    density_per_log_interval = (
+        np.asarray(public.solve_marginal_density) * np.log(10.0) * axis
+    )
+    density_per_log_interval /= np.max(density_per_log_interval)
+    peak_count = np.sum(
+        (density_per_log_interval[1:-1] > density_per_log_interval[:-2])
+        & (density_per_log_interval[1:-1] >= density_per_log_interval[2:])
+        & (density_per_log_interval[1:-1] >= 0.05)
+    )
+
+    assert public.multidimensional_resolution_applied is True
+    assert public.requested_grid_sizes == {"pCO2": 181, "GPP": 81, "pO2": 41}
+    assert public.effective_grid_sizes["pCO2"] >= 721
+    assert public.effective_grid_sizes["GPP"] >= 1281
+    assert public.numerical_refinement_applied is True
+    assert public.hpd_resolution_refinement_applied is True
+    assert public.final_solve_bounds[0] > public.initial_solve_bounds[0]
+    assert public.final_solve_bounds[1] < public.initial_solve_bounds[1]
+    assert peak_count == 1
+    assert public.posterior_median == pytest.approx(dense.posterior_median, abs=500.0)
+    assert public.equal_tailed_credible_interval == pytest.approx(
+        dense.equal_tailed_credible_interval, abs=600.0
+    )
+
+
+def test_high_co2_probability_field_has_resolved_hpd_support() -> None:
+    result = constrained_coordinate_posterior(
+        ConstrainedCoordinateInput(
+            solve_for="pCO2",
+            target_air_cap_delta17_permil=-10.0,
+            measurement_sigma_permil=0.07,
+            target_air_delta18_conventional_permil=23.9,
+            delta18_measurement_sigma_permil=0.3,
+            constraints={
+                "GPP": CoordinateConstraint("normal", center=72.5, sigma=29.0),
+                "pO2": CoordinateConstraint("fixed", center=0.5),
+            },
+        )
+    )
+
+    probability = np.asarray(result.field_probability_mass).reshape(
+        result.field_shape
+    )
+    pco2_mass = np.sum(probability, axis=1)
+    cumulative = np.cumsum(pco2_mass) / np.sum(pco2_mass)
+    lower = max(0, int(np.searchsorted(cumulative, 0.001)) - 2)
+    upper = min(len(pco2_mass) - 1, int(np.searchsorted(cumulative, 0.999)) + 2)
+
+    assert result.numerical_refinement_applied is True
+    assert upper - lower + 1 >= 65
+    assert result.field_hpd_probability_mass == pytest.approx(0.95, abs=0.002)
+    assert result.posterior_median == pytest.approx(14_768.0, abs=75.0)
+
+
+def test_precise_low_delta17_hpd_ridge_is_refined_and_connected() -> None:
+    result = constrained_coordinate_posterior(
+        ConstrainedCoordinateInput(
+            solve_for="pCO2",
+            target_air_cap_delta17_permil=-10.0,
+            measurement_sigma_permil=0.015,
+            target_air_delta18_conventional_permil=23.9,
+            delta18_measurement_sigma_permil=0.3,
+            constraints={
+                "GPP": CoordinateConstraint("normal", center=290.0, sigma=29.0),
+                "pO2": CoordinateConstraint("fixed", center=1.0),
+            },
+        )
+    )
+
+    mask = np.asarray(result.field_hpd_mask, dtype=bool).reshape(result.field_shape)
+    _, components = connected_component_labels(
+        mask, structure=np.ones((3, 3), dtype=int)
+    )
+
+    assert result.hpd_resolution_refinement_applied is True
+    assert result.effective_grid_sizes["pCO2"] >= 721
+    assert result.effective_grid_sizes["GPP"] >= 1281
+    assert result.field_shape == (result.effective_grid_sizes["pCO2"], result.effective_grid_sizes["GPP"])
+    assert components == 1
+    assert result.field_hpd_probability_mass == pytest.approx(0.95, abs=0.002)
+    assert result.posterior_median == pytest.approx(34_152.0, abs=75.0)
+    density = np.asarray(result.field_density).reshape(result.field_shape)
+    mass = np.asarray(result.field_probability_mass).reshape(result.field_shape)
+    assert np.array_equal(mask, density >= result.field_hpd_density_threshold)
+    assert np.sum(mass[mask]) == pytest.approx(result.field_hpd_probability_mass)
+    assert "without downsampling" in result.probability_scope
+
+
+@pytest.mark.parametrize("solve_for", ("pCO2", "GPP"))
+def test_precise_fixed_low_o2_field_is_concentrated_and_resolved(solve_for):
+    uncertain = ("GPP", CoordinateConstraint("normal", center=522, sigma=29)) if solve_for == "pCO2" else (
+        "pCO2", CoordinateConstraint("normal", center=44000, sigma=4000))
+    result = constrained_coordinate_posterior(ConstrainedCoordinateInput(
+        solve_for=solve_for, target_air_cap_delta17_permil=-11, measurement_sigma_permil=.015,
+        target_air_delta18_conventional_permil=23.9, delta18_measurement_sigma_permil=.3,
+        constraints={uncertain[0]: uncertain[1], "pO2": CoordinateConstraint("fixed", center=.2)},
+        po2_grid_size=17))
+    mask = np.asarray(result.field_hpd_mask).reshape(result.field_shape)
+    density = np.asarray(result.field_density).reshape(result.field_shape)
+    mass = np.asarray(result.field_probability_mass).reshape(result.field_shape)
+    assert connected_component_labels(mask, np.ones((3,3)))[1] == 1
+    assert np.array_equal(mask, density >= result.field_hpd_density_threshold)
+    assert mass.sum() == pytest.approx(1)
+    assert mass[mask].sum() == pytest.approx(.95, abs=.0005)
+    if solve_for == "pCO2":
+        assert result.field_refinement_diagnostics["outer_quadrature_nodes_retained"]
+        assert (result.field_x_axis[0],result.field_x_axis[-1]) == (50,60000)
+        assert (result.field_y_axis[0],result.field_y_axis[-1]) == (406,638)
+        assert result.posterior_median == pytest.approx(44011,abs=25)
 
 
 def test_true_domain_edge_remains_boundary_sensitive_and_is_not_refined() -> None:

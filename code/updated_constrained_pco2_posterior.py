@@ -8,6 +8,8 @@ from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
+from sulfate_uncertainty import SulfateLikelihoodInput
+from scipy.ndimage import label as connected_component_labels
 
 from updated_output_surface import DEFAULT_OUTPUT_SURFACE_PATH, load_updated_output_surface
 from updated_output_surface_joint_posterior import (
@@ -19,7 +21,13 @@ from updated_output_surface_joint_posterior import (
 ConstraintKind = Literal["fixed", "normal", "range"]
 Coordinate = Literal["pCO2", "GPP", "pO2"]
 COORDINATES: tuple[Coordinate, ...] = ("pCO2", "GPP", "pO2")
-MIN_RESOLVED_AXIS_INTERVALS = 8
+MIN_RESOLVED_AXIS_INTERVALS = 64
+PUBLIC_RESOLUTION_FLOORS: dict[int, dict[Coordinate, int]] = {
+    1: {"pCO2": 181, "GPP": 81, "pO2": 41},
+    2: {"pCO2": 181, "GPP": 321, "pO2": 65},
+    3: {"pCO2": 181, "GPP": 121, "pO2": 33},
+}
+MAX_INTERNAL_POSTERIOR_CELLS = 2_000_000
 
 
 @dataclass(frozen=True)
@@ -49,8 +57,8 @@ class ConstrainedPCO2Input:
 @dataclass(frozen=True)
 class ConstrainedCoordinateInput:
     solve_for: Coordinate
-    target_air_cap_delta17_permil: float
-    measurement_sigma_permil: float
+    target_air_cap_delta17_permil: float | None
+    measurement_sigma_permil: float | None
     constraints: dict[Coordinate, CoordinateConstraint]
     target_air_delta18_conventional_permil: float | None = None
     delta18_measurement_sigma_permil: float | None = None
@@ -58,6 +66,8 @@ class ConstrainedCoordinateInput:
     pco2_grid_size: int = 181
     gpp_grid_size: int = 81
     po2_grid_size: int = 41
+    enforce_public_resolution: bool = True
+    sulfate: SulfateLikelihoodInput | None = None
 
 
 @dataclass(frozen=True)
@@ -87,6 +97,10 @@ class ConstrainedCoordinateResult:
     solve_boundary_probability_mass: float
     solve_mode_at_boundary: bool
     numerical_refinement_applied: bool
+    hpd_resolution_refinement_applied: bool
+    multidimensional_resolution_applied: bool
+    requested_grid_sizes: dict[str, int]
+    effective_grid_sizes: dict[str, int]
     initial_solve_axis_size: int
     final_solve_axis_size: int
     initial_solve_bounds: tuple[float, float]
@@ -94,6 +108,10 @@ class ConstrainedCoordinateResult:
     probability_scope: str
     surface_data_id: str
     upstream_model_data_id: str
+    sulfate_likelihood_diagnostics: dict | None = None
+    coordinate_integration_diagnostics: dict | None = None
+    field_hpd_density_threshold: float | None = None
+    field_refinement_diagnostics: dict | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -221,6 +239,35 @@ def _bounds_field(coordinate: Coordinate) -> str:
     }[coordinate]
 
 
+def _effective_grid_sizes(
+    request: ConstrainedCoordinateInput,
+    free: tuple[Coordinate, ...],
+) -> dict[Coordinate, int]:
+    requested: dict[Coordinate, int] = {
+        "pCO2": request.pco2_grid_size,
+        "GPP": request.gpp_grid_size,
+        "pO2": request.po2_grid_size,
+    }
+    if not request.enforce_public_resolution:
+        return requested
+    floors = PUBLIC_RESOLUTION_FLOORS[len(free)]
+    effective = {
+        coordinate: (
+            max(requested[coordinate], floors[coordinate])
+            if coordinate in free
+            else requested[coordinate]
+        )
+        for coordinate in COORDINATES
+    }
+    cells = int(np.prod([effective[coordinate] for coordinate in free]))
+    if cells > MAX_INTERNAL_POSTERIOR_CELLS:
+        raise ValueError(
+            "effective constrained-posterior grid exceeds the internal "
+            f"{MAX_INTERNAL_POSTERIOR_CELLS:,}-cell limit"
+        )
+    return effective
+
+
 def _adaptive_solve_refinement(
     joint,
     solve_for: Coordinate,
@@ -262,6 +309,81 @@ def _adaptive_solve_refinement(
         applied = True
 
     return current, applied, initial_bounds, len(initial_axis)
+
+
+def _refine_fragmented_pair_hpd(
+    joint,
+    *,
+    surface_path: Path,
+) -> tuple[Any, bool]:
+    """Resolve a numerically fragmented two-coordinate HPD ridge."""
+
+    if len(joint.free_coordinates) != 2:
+        return joint, False
+    from posterior_field_refinement import field_resolution_trigger
+
+    mask = np.asarray(joint.hpd_mask, dtype=bool).reshape(joint.posterior_shape)
+    mass = np.asarray(joint.posterior_probability_mass).reshape(joint.posterior_shape)
+    if not field_resolution_trigger(mask, mass)["needed"]:
+        return joint, False
+    updates: dict[str, int] = {}
+    cells = 1
+    for coordinate in joint.free_coordinates:
+        current_size = len(joint.axes[coordinate])
+        refined_size = 4 * (current_size - 1) + 1
+        updates[_grid_size_field(coordinate)] = refined_size
+        cells *= refined_size
+    if cells > MAX_INTERNAL_POSTERIOR_CELLS:
+        from posterior_coordinate_quadrature import PosteriorResolutionError
+        raise PosteriorResolutionError(
+            "fragmented HPD refinement exceeds the internal "
+            f"{MAX_INTERNAL_POSTERIOR_CELLS:,}-cell limit"
+        )
+    refined = joint_updated_posterior(
+        replace(joint.inputs, **updates), surface_path=surface_path
+    )
+    mass = np.asarray(refined.posterior_probability_mass).reshape(refined.posterior_shape)
+    mask = np.asarray(refined.hpd_mask).reshape(refined.posterior_shape)
+    trigger = field_resolution_trigger(mask, mass)
+    if not trigger["needed"]:
+        return refined, True
+
+    # Concentrate both axes using the resolved mass and retain original outer
+    # nodes. Increasing a full-domain log grid alone can still miss a thin ridge.
+    axes = {}
+    for dim, coordinate in enumerate(joint.free_coordinates):
+        axis = np.asarray(refined.axes[coordinate])
+        cumulative = np.cumsum(mass.sum(axis=1-dim))
+        cumulative /= cumulative[-1]
+        lower = max(0, int(np.searchsorted(cumulative, 1e-6))-2)
+        upper = min(len(axis)-1, int(np.searchsorted(cumulative, 1-1e-6))+2)
+        occupied = np.flatnonzero(mask.any(axis=1-dim))
+        if len(occupied):
+            lower, upper = min(lower, occupied[0]), max(upper, occupied[-1])
+        original = np.asarray(joint.axes[coordinate])
+        spacing = np.geomspace if coordinate == "pCO2" else np.linspace
+        axes[coordinate] = np.r_[original[original < axis[lower]],
+            spacing(axis[lower], axis[upper], len(axis)), original[original > axis[upper]]]
+    if np.prod([len(a) for a in axes.values()]) > MAX_INTERNAL_POSTERIOR_CELLS:
+        from posterior_coordinate_quadrature import PosteriorResolutionError
+        raise PosteriorResolutionError("concentrated pair-field refinement exceeds its grid budget")
+    final = joint_updated_posterior(refined.inputs, surface_path=surface_path, quadrature_axes=axes)
+    final_mask = np.asarray(final.hpd_mask).reshape(final.posterior_shape)
+    diagnostics = {"method": "concentrated two-coordinate quadrature with original outer nodes",
+                   "trigger": trigger, "original_shape": list(joint.posterior_shape),
+                   "uniform_refined_shape": list(refined.posterior_shape),
+                   "refined_shape": list(final.posterior_shape),
+                   "refined_components": int(connected_component_labels(final_mask, np.ones((3, 3)))[1]),
+                   "outer_quadrature_nodes_retained": True}
+    return replace(final, pair_resolution_diagnostics=diagnostics), True
+
+
+def _grid_size_field(coordinate: Coordinate) -> str:
+    return {
+        "pCO2": "pco2_grid_size",
+        "GPP": "gpp_grid_size",
+        "pO2": "po2_grid_size",
+    }[coordinate]
 
 
 def _preferred_companion(
@@ -316,6 +438,12 @@ def constrained_coordinate_posterior(
         for coordinate in COORDINATES
         if coordinate == request.solve_for or coordinate in free_constraints
     )
+    effective_grid_sizes = _effective_grid_sizes(request, free)
+    requested_grid_sizes = {
+        "pCO2": request.pco2_grid_size,
+        "GPP": request.gpp_grid_size,
+        "pO2": request.po2_grid_size,
+    }
     fixed_values: dict[Coordinate, float] = {
         "pCO2": 294.0,
         "GPP": 290.0,
@@ -343,6 +471,11 @@ def constrained_coordinate_posterior(
         prior_means[coordinate] = mean
         prior_sigmas[coordinate] = sigma
 
+    companion = _preferred_companion(request.solve_for, free_constraints)
+    integrated_coordinate = next(
+        (item for item in free if item not in {request.solve_for, companion}), None
+    ) if len(free) == 3 and request.enforce_public_resolution and request.sulfate is None else None
+
     joint = joint_updated_posterior(
         UpdatedJointPosteriorInput(
             target_air_cap_delta17_permil=request.target_air_cap_delta17_permil,
@@ -351,6 +484,8 @@ def constrained_coordinate_posterior(
                 request.target_air_delta18_conventional_permil
             ),
             delta18_measurement_sigma_permil=request.delta18_measurement_sigma_permil,
+            sulfate=request.sulfate,
+            integrate_coordinate=integrated_coordinate,
             free_coordinates=free,
             credible_mass=request.credible_mass,
             p_o2_pal=fixed_values["pO2"],
@@ -368,9 +503,9 @@ def constrained_coordinate_posterior(
             gpp_prior_sigma=prior_sigmas["GPP"],
             po2_prior_mean=prior_means["pO2"],
             po2_prior_sigma=prior_sigmas["pO2"],
-            pco2_grid_size=request.pco2_grid_size,
-            gpp_grid_size=request.gpp_grid_size,
-            po2_grid_size=request.po2_grid_size,
+            pco2_grid_size=effective_grid_sizes["pCO2"],
+            gpp_grid_size=effective_grid_sizes["GPP"],
+            po2_grid_size=effective_grid_sizes["pO2"],
         ),
         surface_path=surface_path,
     )
@@ -389,6 +524,16 @@ def constrained_coordinate_posterior(
             surface_path=surface_path,
         )
     )
+    if request.enforce_public_resolution:
+        joint, hpd_refinement_applied = _refine_fragmented_pair_hpd(
+            joint, surface_path=surface_path
+        )
+    else:
+        hpd_refinement_applied = False
+    final_grid_sizes = requested_grid_sizes.copy()
+    final_grid_sizes.update(
+        {coordinate: len(joint.axes[coordinate]) for coordinate in free}
+    )
     companion = _preferred_companion(request.solve_for, free_constraints)
     field_coordinates: tuple[Coordinate, Coordinate] | None = None
     field_axes: tuple[np.ndarray, np.ndarray] | None = None
@@ -400,7 +545,7 @@ def constrained_coordinate_posterior(
         field_coordinates = tuple(
             item for item in COORDINATES if item in {request.solve_for, companion}
         )
-        field_axes = tuple(
+        dense_field_axes = tuple(
             np.asarray(joint.axes[item], dtype=float) for item in field_coordinates
         )
         full_mass = np.asarray(joint.posterior_probability_mass, dtype=float).reshape(
@@ -412,14 +557,17 @@ def constrained_coordinate_posterior(
         pair_mass = np.sum(full_mass, axis=sum_axes) if sum_axes else full_mass
         pair_mass = np.asarray(pair_mass, dtype=float)
         pair_mass /= float(np.sum(pair_mass))
+        field_axes = dense_field_axes
         pair_density, pair_mask, pair_hpd_mass = _pair_hpd(
             pair_mass,
             field_axes[0],
             field_axes[1],
             request.credible_mass,
         )
+    measurement_kind = ("exact sulfate transfer and integrated measurement/process " if request.sulfate is not None
+                        else "Gaussian isotope measurement ")
     scope = (
-        "Posterior from the central updated model, Gaussian isotope measurement "
+        "Posterior from the central updated model, " + measurement_kind +
         f"likelihoods, a bounded uniform {request.solve_for} prior in its reported "
         "units, and the explicitly supplied constraints on the other coordinates. "
         "Gaussian coordinate constraints are normalized over center +/- 4 sigma "
@@ -430,6 +578,24 @@ def constrained_coordinate_posterior(
         scope += (
             " Solved-coordinate quadrature was adaptively refined over resolved "
             "support without changing the declared prior or likelihood."
+        )
+    if hpd_refinement_applied:
+        scope += (
+            " A narrow or fragmented two-coordinate HPD ridge was recomputed on a "
+            "finer grid, retained in the returned field and "
+            "credible region without downsampling."
+        )
+    if joint.pair_resolution_diagnostics is not None:
+        scope += " Both axes were concentrated over posterior support while retaining original outer quadrature nodes."
+    if joint.coordinate_integration_diagnostics is not None:
+        scope += (
+            f" The {integrated_coordinate} likelihood and constraint were integrated "
+            "analytically within adaptively refined forward-response intervals."
+        )
+    if effective_grid_sizes != requested_grid_sizes:
+        scope += (
+            " Numerical quadrature axes were raised to the public convergence "
+            "floors without changing the model, likelihood, or coordinate priors."
         )
     final_solve_axis = np.asarray(joint.axes[request.solve_for], dtype=float)
     final_solve_mass = np.asarray(
@@ -448,7 +614,7 @@ def constrained_coordinate_posterior(
         )
     mode_index = int(np.argmax(final_solve_density))
     mode_at_boundary = mode_index in {0, len(final_solve_density) - 1}
-    return ConstrainedCoordinateResult(
+    result = ConstrainedCoordinateResult(
         inputs=request,
         status=(
             "solve_boundary_sensitive" if boundary_sensitive else "posterior_computed"
@@ -492,7 +658,14 @@ def constrained_coordinate_posterior(
         solve_boundary_direction=boundary_direction,
         solve_boundary_probability_mass=boundary_probability_mass,
         solve_mode_at_boundary=mode_at_boundary,
-        numerical_refinement_applied=refinement_applied,
+        numerical_refinement_applied=refinement_applied or joint.pair_resolution_diagnostics is not None,
+        field_refinement_diagnostics=joint.pair_resolution_diagnostics,
+        hpd_resolution_refinement_applied=hpd_refinement_applied,
+        multidimensional_resolution_applied=(
+            final_grid_sizes != requested_grid_sizes
+        ),
+        requested_grid_sizes=requested_grid_sizes,
+        effective_grid_sizes=final_grid_sizes,
         initial_solve_axis_size=initial_solve_axis_size,
         final_solve_axis_size=len(final_solve_axis),
         initial_solve_bounds=initial_solve_bounds,
@@ -502,7 +675,15 @@ def constrained_coordinate_posterior(
         probability_scope=scope,
         surface_data_id=joint.surface_data_id,
         upstream_model_data_id=joint.upstream_model_data_id,
+        sulfate_likelihood_diagnostics=joint.sulfate_likelihood_diagnostics,
+        coordinate_integration_diagnostics=joint.coordinate_integration_diagnostics,
+        field_hpd_density_threshold=(None if pair_density is None else float(np.min(pair_density[pair_mask]))),
     )
+    if request.enforce_public_resolution and integrated_coordinate is not None:
+        from posterior_field_refinement import refine_integrated_pair_field
+
+        result = refine_integrated_pair_field(result, joint, surface)
+    return result
 
 
 def constrained_pco2_posterior(

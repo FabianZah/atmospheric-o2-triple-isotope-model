@@ -12,6 +12,8 @@ The authoritative machine-readable model identity is
 - `spherule_inversion_workflow.md`: I-type cosmic-spherule conversion,
   uncertainty propagation, and constrained inference.
 - `constrained_coordinate_inference.md`: fixed, normal, and range constraints.
+- `sulfate_transfer.md`: sulfate inputs, oxygen incorporation, and uncertainty integration.
+- `posterior_numerical_resolution.md`: numerical resolution of probability fields.
 - `GPP_NORMALIZATION_POLICY.md`: absolute and relative GPP reporting.
 - `server_deployment.md`: independent Linux-server deployment and recovery.
 - `validation_evidence_bundle.md`: evidence provenance and integrity policy.

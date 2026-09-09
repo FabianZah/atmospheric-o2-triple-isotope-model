@@ -433,11 +433,7 @@ class UpdatedMolecularOutputSurface:
         if isinstance(self._delta18_interpolator, RegularGridInterpolator):
             evaluated = np.asarray(self._delta18_interpolator(points), dtype=float)
         else:
-            evaluated = np.fromiter(
-                (self._delta18_interpolator(point) for point in points),
-                dtype=float,
-                count=len(points),
-            )
+            evaluated = self._delta18_interpolator.evaluate_points(points)
         return evaluated.reshape(po2.shape)
 
 
@@ -476,6 +472,49 @@ class _LocalTensorQuadraticInterpolator:
                 self.values[np.ix_(i, j, k)],
             )
         )
+
+    @staticmethod
+    def _vectorized_indices_and_weights(
+        axis: np.ndarray, queries: np.ndarray
+    ) -> tuple[np.ndarray, np.ndarray]:
+        starts = np.clip(np.searchsorted(axis, queries) - 1, 0, len(axis) - 3)
+        indices = starts[:, None] + np.arange(3)[None, :]
+        nodes = axis[indices]
+        weights = np.ones_like(nodes)
+        for i in range(3):
+            for j in range(3):
+                if i != j:
+                    weights[:, i] *= (
+                        (queries - nodes[:, j]) / (nodes[:, i] - nodes[:, j])
+                    )
+        return indices, weights
+
+    def evaluate_points(
+        self, points: np.ndarray, *, chunk_size: int = 100_000
+    ) -> np.ndarray:
+        """Evaluate many points with the same local quadratic convention."""
+
+        points = np.asarray(points, dtype=float)
+        if points.ndim != 2 or points.shape[1] != 3:
+            raise ValueError("quadratic interpolation points must have shape (n, 3)")
+        result = np.empty(len(points), dtype=float)
+        for start in range(0, len(points), chunk_size):
+            stop = min(len(points), start + chunk_size)
+            chunk = points[start:stop]
+            selections = [
+                self._vectorized_indices_and_weights(axis, chunk[:, dimension])
+                for dimension, axis in enumerate(self.axes)
+            ]
+            (i, wi), (j, wj), (k, wk) = selections
+            blocks = self.values[
+                i[:, :, None, None],
+                j[:, None, :, None],
+                k[:, None, None, :],
+            ]
+            result[start:stop] = np.einsum(
+                "na,nb,nc,nabc->n", wi, wj, wk, blocks
+            )
+        return result
 
 
 @lru_cache(maxsize=4)
