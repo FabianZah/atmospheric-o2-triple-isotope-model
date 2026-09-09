@@ -3,12 +3,17 @@ from types import SimpleNamespace
 
 import numpy as np
 import pytest
-from scipy.integrate import quad
+from scipy.integrate import quad, trapezoid
 
 from posterior_coordinate_quadrature import (
     affine_gaussian_log_integral, integrated_coordinate_log_likelihood,
 )
 from updated_output_surface import load_updated_output_surface
+
+
+@pytest.fixture(autouse=True)
+def _without_legacy_numpy_trapz(monkeypatch):
+    monkeypatch.delattr(np, "trapz", raising=False)
 
 
 @pytest.mark.parametrize("prior_sigma", (None, .17))
@@ -62,7 +67,7 @@ def test_high_co2_slice_matches_dense_independent_trapezoidal_integral(prior):
     d18 = 1000*np.expm1(surface.evaluate_central_delta18_prime_grid(**fields)/1000)
     likelihood = np.exp(-.5*((d17+10)/.015)**2-.5*((d18-23.9)/.3)**2
                         - (0 if prior == "uniform" else .5*((dense_z[None,:]-1)/.1)**2))
-    expected = np.trapz(likelihood, dense_z, axis=1)
+    expected = trapezoid(likelihood, dense_z, axis=1)
     assert np.sum(np.abs(actual-expected))/np.sum(expected) < .0005
     assert diagnostics["status"] == "converged"
     assert diagnostics["maximum_final_response_error_sigma"] <= .01
@@ -102,11 +107,11 @@ def test_modern_air_and_gpp_nuisance_range_match_dense_reference():
     gpp = np.linspace(232.,348.,17)
     logs, diagnostics = integrated_coordinate_log_likelihood(
         surface,request,{"pO2":1.,"pCO2":x[:,None],"GPP":gpp[None,:]},gpp,"GPP")
-    actual = np.trapz(np.exp(logs),gpp,axis=1)
+    actual = trapezoid(np.exp(logs),gpp,axis=1)
     dense = np.linspace(232.,348.,1025)
     fields = dict(p_o2_pal=1.,p_co2_ppm=x[:,None],gpp_pgC_per_year=dense[None,:])
     d17 = surface.evaluate_central_cap_delta17_grid(**fields)
     d18 = 1000*np.expm1(surface.evaluate_central_delta18_prime_grid(**fields)/1000)
-    expected = np.trapz(np.exp(-.5*((d17+.432)/.015)**2-.5*((d18-23.9)/.3)**2),dense,axis=1)
+    expected = trapezoid(np.exp(-.5*((d17+.432)/.015)**2-.5*((d18-23.9)/.3)**2),dense,axis=1)
     assert np.sum(abs(actual-expected))/np.sum(expected) < .0005
     assert diagnostics["coordinate"] == "GPP"

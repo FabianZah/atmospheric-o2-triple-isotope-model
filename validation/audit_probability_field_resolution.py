@@ -8,6 +8,7 @@ from time import perf_counter
 
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.integrate import trapezoid
 from scipy.ndimage import label
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,7 +31,7 @@ def reference_field(x, y, *, target, sigma, po2_sigma, nodes):
         d18 = 1000*np.expm1(surface.evaluate_central_delta18_prime_grid(**kwargs)/1000)
         likelihood = np.exp(-.5*((d17-target)/sigma)**2-.5*((d18-23.9)/.3)**2
                             -.5*((z[None,None,:]-1)/po2_sigma)**2)
-        result[start:start+8] = np.trapz(likelihood,z,axis=2)
+        result[start:start+8] = trapezoid(likelihood,z,axis=2)
     result *= np.exp(-.5*((y[None,:]-290)/29)**2)
     weights = np.multiply.outer(_trapezoid_weights(x),_trapezoid_weights(y))
     return result/np.sum(result*weights)
