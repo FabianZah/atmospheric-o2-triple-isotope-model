@@ -127,6 +127,8 @@ jobs:
             --env OXYTIB_MAX_COMPUTE_REQUESTS=1 \
             --cap-drop ALL --security-opt no-new-privileges \
             oxytib:ci
+          docker exec oxytib-ci python -c \
+            'from openpyxl.xml import LXML; from lxml import etree; assert LXML, "Streaming XLSX backend is unavailable"; print("Streaming XML backend:", etree.LXML_VERSION)'
 
       - name: Verify deployed model identity and known answer
         run: |

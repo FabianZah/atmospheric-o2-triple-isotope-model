@@ -133,3 +133,12 @@ def test_export_temp_files_are_removed_without_touching_another_workbook(envelop
         assert set(_writer.ALL_TEMP_FILES) == initial_files
         assert other_file.is_file()
     assert not other_file.exists()
+
+
+def test_streaming_requires_incremental_xml_backend_before_creating_files(monkeypatch):
+    initial_files = set(_writer.ALL_TEMP_FILES)
+    monkeypatch.setattr(exporter, "LXML", False)
+    with pytest.raises(RuntimeError, match="Streaming XLSX export requires lxml"):
+        with exporter._streaming_workbook():
+            pytest.fail("buffered XML backend must not be used")
+    assert set(_writer.ALL_TEMP_FILES) == initial_files

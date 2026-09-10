@@ -184,6 +184,7 @@ def test_production_image_uses_pinned_python_and_api_dependencies() -> None:
         "uvicorn==0.40.0",
     }
     assert required_pins <= set(lock.splitlines())
+    assert "lxml==6.1.3" in lock.splitlines()
     assert ">=" not in lock
     assert "~=" not in lock
 
@@ -196,6 +197,7 @@ def test_container_ci_exercises_shared_server_limits_and_dense_export() -> None:
     assert "--cpus 0.75" in start
     assert "--env OXYTIB_MAX_COMPUTE_REQUESTS=1" in start
     assert "size=256m" in start
+    assert "assert LXML" in start
     load = next(step for step in steps if step.get("name") == "Verify dense posterior export within shared-server limits")
     assert "--check-dense-export" in load["run"]
     assert load["timeout-minutes"] == 12

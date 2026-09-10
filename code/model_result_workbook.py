@@ -11,6 +11,7 @@ from typing import Any
 
 from openpyxl import Workbook
 from openpyxl.cell import WriteOnlyCell
+from openpyxl.xml import LXML
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
@@ -81,6 +82,11 @@ class _StreamingTable:
 
 @contextmanager
 def _streaming_workbook() -> Iterator[Workbook]:
+    if not LXML:
+        raise RuntimeError(
+            "Streaming XLSX export requires lxml; install code/requirements-api.txt "
+            "and ensure OPENPYXL_LXML is enabled."
+        )
     workbook = Workbook(write_only=True)
     try:
         yield workbook

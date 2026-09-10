@@ -99,8 +99,10 @@ and allows two. Both provide a 256 MiB temporary filesystem for XLSX assembly;
 temporary-filesystem memory also counts toward the container memory limit.
 The application keeps no persistent scientific state.
 
-Constrained-solution XLSX exports stream formatted rows instead of retaining
-the worksheet cell grid in memory. The inference arrays, cached-result decoding,
+Constrained-solution XLSX exports stream formatted rows through the required
+`lxml` backend instead of retaining the worksheet cell grid in memory. The
+container and API requirements include this dependency; leave `OPENPYXL_LXML`
+enabled. CI verifies the backend before the load test. The inference arrays, cached-result decoding,
 temporary XML and compressed workbook still require memory. Keep a single
 application worker, confirm available host memory, and exercise a dense export
 in the staging container before reducing memory limits or increasing
