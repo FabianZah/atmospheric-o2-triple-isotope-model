@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import asyncio
+from contextlib import suppress
 from io import BytesIO
 
+import httpx
 from openpyxl import load_workbook
 import pytest
 from fastapi import FastAPI
@@ -34,8 +37,8 @@ def test_frontend_assets_and_api_work_when_mounted_below_prefix() -> None:
     swagger_initializer = prefixed_client.get("/oxytib/assets/swagger-init.js")
 
     assert root.status_code == 200
-    assert 'href="assets/styles.css?v=1.25.0"' in root.text
-    assert 'src="assets/app.js?v=1.25.0"' in root.text
+    assert 'href="assets/styles.css?v=1.25.2"' in root.text
+    assert 'src="assets/app.js?v=1.25.2"' in root.text
     assert 'src="assets/mathjax-config.js?v=1.0.0"' in root.text
     assert 'src="assets/vendor/mathjax/tex-svg.js?v=3.2.2"' in root.text
     assert "cdn.jsdelivr.net" not in root.text
@@ -87,6 +90,106 @@ def test_oversized_request_body_is_rejected_before_model_execution() -> None:
     assert response.json()["detail"] == "request body exceeds the public API size limit"
 
 
+@pytest.mark.parametrize("first_outcome", ["complete", "error", "cancel"])
+def test_compute_capacity_keeps_reads_available_and_releases_slots(first_outcome) -> None:
+    async def exercise():
+        application = FastAPI()
+        entered = asyncio.Event()
+        release = asyncio.Event()
+        calls = 0
+
+        @application.post("/api/v1/forward")
+        async def calculation():
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                entered.set()
+                await release.wait()
+                if first_outcome == "error":
+                    raise RuntimeError("test calculation failed")
+            return {"status": "complete"}
+
+        @application.get("/")
+        @application.get("/api/v1/health")
+        async def read_only():
+            return {"status": "ok"}
+
+        limited = web_api.ComputeConcurrencyMiddleware(
+            application, maximum=1, queue_timeout_seconds=0.01,
+        )
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=limited), base_url="http://test",
+        ) as http:
+            first = asyncio.create_task(http.post("/api/v1/forward", json={}))
+            try:
+                await asyncio.wait_for(entered.wait(), timeout=2)
+                for path in ("/", "/api/v1/health"):
+                    response = await asyncio.wait_for(http.get(path), timeout=2)
+                    assert response.status_code == 200
+                blocked = await asyncio.wait_for(
+                    http.post("/api/v1/forward", json={}), timeout=2,
+                )
+                assert blocked.status_code == 503
+                assert blocked.headers["retry-after"] == "2"
+                assert blocked.json()["detail"] == (
+                    "model capacity is temporarily occupied; retry shortly"
+                )
+                assert calls == 1
+                if first_outcome == "cancel":
+                    first.cancel()
+                    with pytest.raises(asyncio.CancelledError):
+                        await first
+                else:
+                    release.set()
+                    if first_outcome == "error":
+                        with pytest.raises(RuntimeError, match="test calculation failed"):
+                            await first
+                    else:
+                        assert (await first).status_code == 200
+                recovered = await http.post("/api/v1/forward", json={})
+                assert recovered.status_code == 200
+                assert calls == 2
+            finally:
+                release.set()
+                if not first.done():
+                    first.cancel()
+                    with suppress(asyncio.CancelledError):
+                        await first
+
+    asyncio.run(exercise())
+
+
+def test_faq_merges_overlapping_topics_and_preserves_input_guidance() -> None:
+    html = client.get("/").text
+    guide = html.split('id="view-guide"', 1)[1].split('id="view-references"', 1)[0]
+    faq = guide.split("<h2>Frequently asked questions</h2>", 1)[1]
+
+    assert faq.count("<summary>") == 13
+    for former_question in (
+        "What assumptions are made about input uncertainties?",
+        "Does the main solver represent steady state?",
+        "How should the time-response experiments be interpreted?",
+        "How are cosmic spherules converted?",
+        "How should cosmic-spherule uncertainties be entered?",
+        "What happens outside the model domain?",
+    ):
+        assert f"<summary>{former_question}</summary>" not in faq
+    for guidance in (
+        "A fixed value is held constant",
+        "an exact range as uniform within its bounds",
+        "independent Gaussian errors",
+        "Structural model uncertainty is assessed separately",
+        "the inference prior remains uniform in ppm",
+        "flags entries outside them",
+        "Compatible states may extend beyond that edge",
+        "gradual pCO<sub>2</sub> trajectory",
+        "independent of the displayed duration",
+        "Zahnow et al. (2025), Eq. 3",
+        "Fischer et al. (2021)",
+    ):
+        assert guidance in faq
+
+
 def test_root_serves_independent_frontend_and_static_assets() -> None:
     root = client.get("/")
     assert root.status_code == 200
@@ -103,8 +206,8 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert 'id="transient-progress-elapsed"' in root.text
     assert 'id="solver-progress"' in root.text
     assert 'id="solver-progress-elapsed"' in root.text
-    assert 'href="assets/styles.css?v=1.25.0"' in root.text
-    assert 'src="assets/app.js?v=1.25.0"' in root.text
+    assert 'href="assets/styles.css?v=1.25.2"' in root.text
+    assert 'src="assets/app.js?v=1.25.2"' in root.text
     assert 'id="reset-surface"' in root.text
     assert 'id="reset-transient"' in root.text
     assert '>Download XLSX</button>' in root.text
@@ -128,13 +231,12 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert "Sources are grouped by how they inform the model" not in root.text
     assert "Why must two variables be constrained before solving for the third?" in root.text
     assert "What is the difference between the isotope field and the constrained solution?" in root.text
-    assert "What assumptions are made about input uncertainties?" in root.text
-    assert "What does a boundary-limited solution mean?" in root.text
-    assert "Does the main solver represent steady state?" in root.text
-    assert "How should the time-response experiments be interpreted?" in root.text
+    assert "What does the solution uncertainty interval include?" in root.text
+    assert "What do model limits and boundary-limited results mean?" in root.text
+    assert "How do steady-state results and time-response experiments differ?" in root.text
     assert "How long do calculations take?" in root.text
     assert "Can the model be applied to ancient atmospheres?" in root.text
-    assert "How should cosmic-spherule uncertainties be entered?" in root.text
+    assert "How are cosmic-spherule inputs converted?" in root.text
     assert "remain within 0.001‰ of the long-run state" in root.text
     assert "All Δ" not in root.text
     assert 'id="air-d18"' in root.text

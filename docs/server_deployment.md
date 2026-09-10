@@ -13,9 +13,10 @@ The application container:
 - has a read-only filesystem and a small `noexec` temporary filesystem;
 - drops Linux capabilities and forbids privilege escalation;
 - has CPU, memory, and process limits;
-- stores no submitted constraints, calculated results, or workbooks;
+- reuses completed results through a bounded, short-lived in-memory export cache;
 - rejects request bodies above 1 MiB;
-- admits at most two simultaneous model calculations by default;
+- admits one calculation or export at a time on the shared-server profile,
+  or two on the dedicated-server profile;
 - validates API fields and bounds model grid sizes before calculation.
 
 The Traefik route adds HTTPS, browser security headers, 30 requests per minute
@@ -91,6 +92,27 @@ limiter, so a provider firewall or upstream rate limiter is recommended before
 advertising a high-volume public service.
 
 ## Operations
+
+The shared-server profile reserves up to 1536 MiB for the application and
+allows one compute request at a time. The dedicated-server profile uses 2 GiB
+and allows two. Both provide a 256 MiB temporary filesystem for XLSX assembly;
+temporary-filesystem memory also counts toward the container memory limit.
+The application keeps no persistent scientific state.
+
+Dense probability fields can make XLSX export more memory-intensive than
+inference. Keep a single application worker, confirm available host memory,
+and exercise a dense export in the staging container before increasing
+concurrency. Existing untracked environment files retain their old values:
+review `OXYTIB_MEMORY` and `OXYTIB_MAX_COMPUTE_REQUESTS` when updating.
+
+The optional load check computes and exports a refined low-oxygen field and
+can take several minutes. Run it against staging, alongside container-memory
+monitoring:
+
+```bash
+python validation/verify_public_deployment.py \
+  --base-url http://127.0.0.1:18000 --check-dense-export
+```
 
 Inspect status and bounded logs with the Compose file used for deployment:
 

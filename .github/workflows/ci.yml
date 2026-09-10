@@ -121,7 +121,9 @@ jobs:
         run: |
           docker run --detach --name oxytib-ci \
             --publish 127.0.0.1:8000:8000 \
-            --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --read-only --tmpfs /tmp:rw,noexec,nosuid,size=256m \
+            --memory 1536m --memory-swap 1536m --pids-limit 128 --cpus 0.75 \
+            --env OXYTIB_MAX_COMPUTE_REQUESTS=1 \
             --cap-drop ALL --security-opt no-new-privileges \
             oxytib:ci
 
@@ -139,6 +141,15 @@ jobs:
           done
           python validation/verify_public_deployment.py \
             --base-url http://127.0.0.1:8000
+
+      - name: Verify dense posterior export within shared-server limits
+        timeout-minutes: 12
+        run: |
+          python validation/verify_public_deployment.py \
+            --base-url http://127.0.0.1:8000 --check-dense-export
+          docker stats --no-stream oxytib-ci
+          docker exec oxytib-ci python -c \
+            'from pathlib import Path; p = Path("/sys/fs/cgroup/memory.peak"); print("cgroup peak memory bytes:", p.read_text().strip() if p.exists() else "unavailable")'
 
       - name: Show container logs on failure
         if: failure()

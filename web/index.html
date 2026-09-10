@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OXYTIB</title>
-  <link rel="stylesheet" href="assets/styles.css?v=1.25.0">
+  <link rel="stylesheet" href="assets/styles.css?v=1.25.2">
   <script defer src="assets/mathjax-config.js?v=1.0.0"></script>
   <script defer src="assets/vendor/mathjax/tex-svg.js?v=3.2.2"></script>
-  <script defer src="assets/app.js?v=1.25.0"></script>
+  <script defer src="assets/app.js?v=1.25.2"></script>
 </head>
 <body>
   <header class="topbar">
@@ -144,8 +144,8 @@
               <div id="sulfate-b-center-fields"><label for="sulfate-b">Δ′<sup>17</sup>O<sub>0.528</sub> <span>‰</span></label><input id="sulfate-b" type="text" inputmode="decimal" placeholder="Insert value"></div>
               <div id="sulfate-b-normal-fields" class="hidden"><label for="sulfate-b-sigma">Δ′<sup>17</sup>O 1σ <span>‰</span></label><input id="sulfate-b-sigma" type="text" inputmode="decimal" placeholder="Insert value"></div>
               <div id="sulfate-b-range-fields" class="paired-inputs hidden">
-                <div><label for="sulfate-b-lower">Lower <span>‰</span></label><input id="sulfate-b-lower" type="text" inputmode="decimal" placeholder="Lower bound"></div>
-                <div><label for="sulfate-b-upper">Upper <span>‰</span></label><input id="sulfate-b-upper" type="text" inputmode="decimal" placeholder="Upper bound"></div>
+                <div><label for="sulfate-b-lower">Δ′<sup>17</sup>O lower <span>‰</span></label><input id="sulfate-b-lower" type="text" inputmode="decimal" placeholder="Lower bound"></div>
+                <div><label for="sulfate-b-upper">Δ′<sup>17</sup>O upper <span>‰</span></label><input id="sulfate-b-upper" type="text" inputmode="decimal" placeholder="Upper bound"></div>
               </div>
             </fieldset>
           </div>
@@ -387,23 +387,18 @@
         <article>
           <h2>Frequently asked questions</h2>
           <details open><summary>Why must two variables be constrained before solving for the third?</summary><p>One atmospheric O<sub>2</sub> Δ′<sup>17</sup>O observation defines a family of compatible pCO<sub>2</sub>, GPP, and pO<sub>2</sub> states. Independent constraints on two coordinates restrict that family and allow the remaining coordinate to be inferred.</p></details>
-          <details><summary>What does the solution uncertainty interval include?</summary><p>The displayed interval combines analytical isotope uncertainty with the two coordinate constraints and any sulfate-process constraints entered by the user. A value ± 1σ is treated as Gaussian and an exact range as uniform within its bounds. Structural model uncertainty is assessed separately.</p></details>
-          <details><summary>How is the probability distribution calculated?</summary><p>The model is evaluated across its accepted domain and weighted by the isotope analytical likelihood and entered constraints. Uncertainty in the other coordinates is integrated out. The solved coordinate has a uniform prior in its reported units; a stated range is uniform within its bounds and a 1σ constraint is Gaussian. For pCO<sub>2</sub>, the plotted curve shows probability per equal log<sub>10</sub>(pCO<sub>2</sub>) interval to match the logarithmic display axis; the inference prior remains uniform in ppm. The displayed profile focuses on the central 99.8% of posterior probability.</p></details>
+          <details><summary>What does the solution uncertainty interval include?</summary><p>The displayed interval combines analytical isotope uncertainty with the two coordinate constraints and any sulfate-process constraints entered by the user. A fixed value is held constant, a value ± 1σ is treated as Gaussian, and an exact range as uniform within its bounds. These inputs are treated as independent, with independent Gaussian errors for the isotope measurements. Structural model uncertainty is assessed separately.</p></details>
+          <details><summary>How is the probability distribution calculated?</summary><p>Candidate atmospheres are weighted by agreement with the isotope measurement and entered constraints. The calculation averages over the allowed values of the other coordinates to obtain the distribution for the requested variable. That variable has a uniform prior in its reported units across the accepted domain. For pCO<sub>2</sub>, the plotted curve shows probability per equal log<sub>10</sub>(pCO<sub>2</sub>) interval to match the logarithmic display axis; the inference prior remains uniform in ppm.</p></details>
           <details><summary>What is the difference between the isotope field and the constrained solution?</summary><p>The isotope field shows deterministic central-model Δ′<sup>17</sup>O predictions across pCO<sub>2</sub> and GPP at one fixed pO<sub>2</sub>. The constrained solver combines an isotope measurement and its analytical uncertainty with independent constraints to produce a probability distribution for one requested coordinate.</p></details>
-          <details><summary>What assumptions are made about input uncertainties?</summary><p>Entered atmospheric-coordinate constraints and proxy-process constraints are independent. Isotope errors are treated as independent Gaussian errors. Correlated inputs require a separate joint analysis.</p></details>
-          <details><summary>What does a boundary-limited solution mean?</summary><p>Appreciable posterior probability reaches an edge of the accepted model domain. The reported interval is therefore limited by that boundary and should not be interpreted as evidence that the true value lies at the boundary.</p></details>
-          <details><summary>Does the main solver represent steady state?</summary><p>Yes. The isotope field and constrained solver use steady-state model outputs. Time-dependent adjustment after a change in pCO<sub>2</sub>, GPP, pO<sub>2</sub>, or photosynthesis is calculated separately in the Time response view.</p></details>
-          <details><summary>How should the time-response experiments be interpreted?</summary><p>Each experiment applies an imposed change at year zero; negative displayed times show the initial state. Operational equilibrium is reached when both isotope coordinates enter and remain within 0.001‰ of the long-run state. The equilibrium search is independent of the displayed duration and extends to 100,000 years.</p></details>
+          <details><summary>What do model limits and boundary-limited results mean?</summary><p>The solver shows the accepted input ranges and flags entries outside them. A boundary-limited result occurs when appreciable posterior probability reaches an edge of the accepted model domain. Compatible states may extend beyond that edge, so the inferred interval is only partially constrained. A peak at the boundary should be interpreted together with the warning and the entered constraints.</p></details>
+          <details><summary>How do steady-state results and time-response experiments differ?</summary><p>The isotope field and constrained solver describe steady states. Time response follows adjustment after an imposed change in pCO<sub>2</sub>, GPP, pO<sub>2</sub>, or photosynthesis. Year zero marks the start of the change, including a gradual pCO<sub>2</sub> trajectory; negative times show the initial state. Operational equilibrium is reached when both isotope coordinates enter and remain within 0.001‰ of the long-run state. The equilibrium search is independent of the displayed duration and extends to 100,000 years.</p></details>
           <details><summary>How long do calculations take?</summary><p>Most fixed-constraint calculations finish within seconds. Narrow probability fields may require automatic grid refinement and take a few minutes. Time-response experiments solve adaptive differential equations; the photosynthesis step integrates the coupled carbon, O<sub>2</sub>, and isotope response over the equilibrium-search horizon. Runtime also depends on the selected constraints, experiment duration, and server load.</p></details>
           <details><summary>Can the model be applied to ancient atmospheres?</summary><p>Yes, when the requested state lies inside the accepted model domain and independent evidence constrains the other atmospheric coordinates. Geological interpretations should also consider structural model uncertainty and the applicability of the model assumptions to the investigated interval.</p></details>
-          <details><summary>How are cosmic spherules converted?</summary><p>I-type cosmic spherule measurements are converted to atmospheric O<sub>2</sub> using Zahnow et al. (2025), Eq. 3, calibrated by Fischer et al. (2021).</p></details>
-          <details><summary>What does the sulfate input require?</summary><p>Enter the sulfate isotope measurements and uncertainties, the percentage of its oxygen inherited from atmospheric O<sub>2</sub>, and the Δ′<sup>17</sup>O of the non-air oxygen component. The latter describes oxygen from other sources after sulfate formation and exchange, and may differ from the original water. Both process inputs accept a fixed value, 1σ uncertainty or range. The prefilled isotope values and analytical errors are illustrative examples, not reference measurements.</p><p>Bao et al. (2008) established the use of sulfate triple oxygen isotopes to constrain ancient atmospheric O<sub>2</sub> anomalies and pCO<sub>2</sub>. The calculation assumes a preserved or independently reconstructed primary sulfate signal. Later alteration requires independent assessment. Kohl and Bao (2011), Cao and Bao (2013), and Waldeck et al. (2022, 2025) inform these distinctions.</p></details>
-          <details><summary>Why is there no non-air δ<sup>18</sup>O input?</summary><p>For each candidate atmosphere, the solver derives the non-air component's δ<sup>18</sup>O from measured sulfate δ<sup>18</sup>O, the air-derived oxygen fraction and atmospheric δ<sup>18</sup>O, conserving oxygen-isotope atoms. Its Δ′<sup>17</sup>O is supplied separately. This compact formulation leaves non-air δ<sup>18</sup>O free to satisfy the balance; its inferred value still needs to be plausible for the archive. Sulfate δ<sup>18</sup>O is a conditioning measurement, with a locally flat prior on its true value.</p></details>
-          <details><summary>Which O₂ incorporation treatment should I use?</summary><p>Choose a treatment consistent with the sample's formation environment. The default explicitly assumes no incorporation fractionation. The irreversible and equilibrated treatments use the 25 °C O₂ isotope effects calculated by Peng et al. (2026) for sulfite oxidation, with its fixed 25% O₂-derived oxygen contribution. They describe alternative reaction limits, not an automatic choice based on atmospheric pO₂. The non-air oxygen composition remains separately constrained, including subsequent sulfite-side reaction effects.</p><p>Wei et al. (2026) measure water–sulfite precursor equilibration. Those measurements alone do not set the final non-air sulfate composition. Preserved-signal and archive-specific formation constraints are still needed.</p></details>
-          <details><summary>What do the custom isotope shifts mean?</summary><p>Both shifts are transferred oxygen minus atmospheric O₂, before mixing with non-air oxygen. The δ′<sup>18</sup>O shift is logarithmic, 1000 ln α<sub>18</sub>, rather than a difference of conventional δ<sup>18</sup>O values. The Δ′<sup>17</sup>O shift uses slope 0.528. The two shifts specify the isotope-ratio factors independently, including cases with zero δ′<sup>18</sup>O shift but a nonzero Δ′<sup>17</sup>O shift. A raw sulfate measurement alone does not determine these process effects.</p></details>
-          <details><summary>What uncertainty is included for sulfate?</summary><p>The calculation integrates analytical errors and the entered air-derived fraction and non-air oxygen constraints in sulfate measurement space. Fractionation and primary preservation remain conditional assumptions. Combining several uncertain inputs can take a few minutes.</p></details>
-          <details><summary>How should cosmic-spherule uncertainties be entered?</summary><p>Enter the analytical 1σ uncertainties of both spherule Δ′<sup>17</sup>O and δ<sup>18</sup>O. They are propagated through the atmospheric conversion. Calibration-parameter sensitivity is assessed separately and is not added to the displayed analytical 1σ interval.</p></details>
-          <details><summary>What happens outside the model domain?</summary><p>The calculation is rejected. The accepted surface is not numerically extrapolated.</p></details>
+          <details><summary>How are cosmic-spherule inputs converted?</summary><p>Enter the I-type cosmic spherule's Δ′<sup>17</sup>O and δ<sup>18</sup>O with their analytical 1σ uncertainties. The measurements and uncertainties are converted to atmospheric O<sub>2</sub> using Zahnow et al. (2025), Eq. 3, calibrated by Fischer et al. (2021). Calibration-parameter sensitivity is assessed separately.</p></details>
+          <details><summary>What does the sulfate input require?</summary><p>Enter the sulfate isotope measurements and uncertainties, the air-derived oxygen percentage, and the non-air component's Δ′<sup>17</sup>O after sulfate formation and exchange. Both process inputs accept a fixed value, 1σ uncertainty or exact range. Choose constraints appropriate to a preserved or independently reconstructed primary sulfate signal. The prefilled isotope values and analytical errors are illustrative examples.</p></details>
+          <details><summary>Why is there no sulfate non-air δ<sup>18</sup>O input?</summary><p>For each candidate atmosphere, the solver derives it by oxygen-isotope mass balance from measured sulfate δ<sup>18</sup>O, the air-derived oxygen fraction, atmospheric δ<sup>18</sup>O and the selected incorporation treatment. The non-air component's Δ′<sup>17</sup>O is supplied separately. Its inferred δ<sup>18</sup>O should be plausible for the sample's formation environment.</p></details>
+          <details><summary>Which sulfate O<sub>2</sub> incorporation treatment should I use?</summary><p>The default transfers atmospheric O<sub>2</sub>'s isotope composition unchanged. The irreversible and equilibrated options apply the 25 °C isotope effects calculated by Peng et al. (2026) for sulfite oxidation, with a fixed 25% contribution of O<sub>2</sub>-derived oxygen. Choose the treatment that matches the sample's formation process, or use custom shifts supported by independent evidence. The non-air oxygen composition is constrained separately.</p></details>
+          <details><summary>What do the sulfate custom isotope shifts mean?</summary><p>Each shift is the isotope composition of the transferred oxygen minus that of atmospheric O<sub>2</sub>, before mixing with non-air oxygen. The δ′<sup>18</sup>O shift equals 1000 ln α<sub>18</sub>; the Δ′<sup>17</sup>O shift uses slope 0.528. Enter shifts supported by the sample's formation conditions.</p></details>
         </article>
       </div>
     </section>
@@ -461,42 +456,6 @@
             <strong>Wogan, N. F., et al. (2025)</strong>
             <span>The open-source Photochem code: A general chemical and climate model for interpreting (exo)planet observations. <i>The Planetary Science Journal</i>, 6, 256.</span>
             <a href="https://doi.org/10.3847/PSJ/ae0e1c" target="_blank" rel="noopener noreferrer">doi:10.3847/PSJ/ae0e1c</a>
-          </article>
-        </div>
-      </section>
-
-      <section class="reference-group" aria-labelledby="references-sulfate">
-        <h3 id="references-sulfate">Sulfate incorporation and archive interpretation</h3>
-        <div class="reference-list">
-          <article>
-            <strong>Bao, H., Lyons, J. R., &amp; Zhou, C. (2008)</strong>
-            <span>Triple oxygen isotope evidence for elevated CO<sub>2</sub> levels after a Neoproterozoic glaciation. <i>Nature</i>, 453, 504–506.</span>
-            <a href="https://doi.org/10.1038/nature06959" target="_blank" rel="noopener noreferrer">doi:10.1038/nature06959</a>
-          </article>
-          <article>
-            <strong>Peng, Y., Han, S., &amp; Cao, X. (2026)</strong>
-            <span>Theoretical evaluation of kinetic triple oxygen isotope fractionation during sulfite oxidation by atmospheric oxygen. <i>Geochimica et Cosmochimica Acta</i>, 412, 64–74.</span>
-            <a href="https://doi.org/10.1016/j.gca.2025.11.036" target="_blank" rel="noopener noreferrer">doi:10.1016/j.gca.2025.11.036</a>
-          </article>
-          <article>
-            <strong>Wei, Y., Yan, H., &amp; Fang, Y. (2026)</strong>
-            <span>Experimental determination of equilibrium fractionation of triple oxygen isotopes between dissolved sulfite species and water. <i>Earth and Planetary Science Letters</i>, 679, 119862.</span>
-            <a href="https://doi.org/10.1016/j.epsl.2026.119862" target="_blank" rel="noopener noreferrer">doi:10.1016/j.epsl.2026.119862</a>
-          </article>
-          <article>
-            <strong>Kohl, I. E., &amp; Bao, H. (2011)</strong>
-            <span>Triple-oxygen-isotope determination of molecular oxygen incorporation in sulfate produced during abiotic pyrite oxidation (pH = 2–11). <i>Geochimica et Cosmochimica Acta</i>, 75, 1785–1798.</span>
-            <a href="https://doi.org/10.1016/j.gca.2011.01.003" target="_blank" rel="noopener noreferrer">doi:10.1016/j.gca.2011.01.003</a>
-          </article>
-          <article>
-            <strong>Waldeck et al. (2022)</strong>
-            <span>Calibrating the triple oxygen isotope composition of evaporite minerals as a proxy for marine sulfate. <i>Earth and Planetary Science Letters</i>, 578, 117320.</span>
-            <a href="https://doi.org/10.1016/j.epsl.2021.117320" target="_blank" rel="noopener noreferrer">doi:10.1016/j.epsl.2021.117320</a>
-          </article>
-          <article>
-            <strong>Waldeck et al. (2025)</strong>
-            <span>Marine sulphate captures a Paleozoic transition to a modern terrestrial weathering environment. <i>Nature Communications</i>, 16, 2087.</span>
-            <a href="https://doi.org/10.1038/s41467-025-57282-y" target="_blank" rel="noopener noreferrer">doi:10.1038/s41467-025-57282-y</a>
           </article>
         </div>
       </section>
@@ -590,6 +549,42 @@
             <strong>Zahnow, F., et al. (2025)</strong>
             <span>Traces of the oxygen isotope composition of ancient air in fossilized cosmic dust. <i>Communications Earth &amp; Environment</i>, 6, 577.</span>
             <a href="https://doi.org/10.1038/s43247-025-02541-5" target="_blank" rel="noopener noreferrer">doi:10.1038/s43247-025-02541-5</a>
+          </article>
+        </div>
+      </section>
+
+      <section class="reference-group" aria-labelledby="references-sulfate">
+        <h3 id="references-sulfate">Sulfate incorporation and archive interpretation</h3>
+        <div class="reference-list">
+          <article>
+            <strong>Bao, H., Lyons, J. R., &amp; Zhou, C. (2008)</strong>
+            <span>Triple oxygen isotope evidence for elevated CO<sub>2</sub> levels after a Neoproterozoic glaciation. <i>Nature</i>, 453, 504–506.</span>
+            <a href="https://doi.org/10.1038/nature06959" target="_blank" rel="noopener noreferrer">doi:10.1038/nature06959</a>
+          </article>
+          <article>
+            <strong>Peng, Y., Han, S., &amp; Cao, X. (2026)</strong>
+            <span>Theoretical evaluation of kinetic triple oxygen isotope fractionation during sulfite oxidation by atmospheric oxygen. <i>Geochimica et Cosmochimica Acta</i>, 412, 64–74.</span>
+            <a href="https://doi.org/10.1016/j.gca.2025.11.036" target="_blank" rel="noopener noreferrer">doi:10.1016/j.gca.2025.11.036</a>
+          </article>
+          <article>
+            <strong>Wei, Y., Yan, H., &amp; Fang, Y. (2026)</strong>
+            <span>Experimental determination of equilibrium fractionation of triple oxygen isotopes between dissolved sulfite species and water. <i>Earth and Planetary Science Letters</i>, 679, 119862.</span>
+            <a href="https://doi.org/10.1016/j.epsl.2026.119862" target="_blank" rel="noopener noreferrer">doi:10.1016/j.epsl.2026.119862</a>
+          </article>
+          <article>
+            <strong>Kohl, I. E., &amp; Bao, H. (2011)</strong>
+            <span>Triple-oxygen-isotope determination of molecular oxygen incorporation in sulfate produced during abiotic pyrite oxidation (pH = 2–11). <i>Geochimica et Cosmochimica Acta</i>, 75, 1785–1798.</span>
+            <a href="https://doi.org/10.1016/j.gca.2011.01.003" target="_blank" rel="noopener noreferrer">doi:10.1016/j.gca.2011.01.003</a>
+          </article>
+          <article>
+            <strong>Waldeck et al. (2022)</strong>
+            <span>Calibrating the triple oxygen isotope composition of evaporite minerals as a proxy for marine sulfate. <i>Earth and Planetary Science Letters</i>, 578, 117320.</span>
+            <a href="https://doi.org/10.1016/j.epsl.2021.117320" target="_blank" rel="noopener noreferrer">doi:10.1016/j.epsl.2021.117320</a>
+          </article>
+          <article>
+            <strong>Waldeck et al. (2025)</strong>
+            <span>Marine sulphate captures a Paleozoic transition to a modern terrestrial weathering environment. <i>Nature Communications</i>, 16, 2087.</span>
+            <a href="https://doi.org/10.1038/s41467-025-57282-y" target="_blank" rel="noopener noreferrer">doi:10.1038/s41467-025-57282-y</a>
           </article>
         </div>
       </section>

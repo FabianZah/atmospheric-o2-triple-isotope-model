@@ -16,7 +16,7 @@ services:
       - "8000"
     read_only: true
     tmpfs:
-      - /tmp:rw,noexec,nosuid,size=64m
+      - /tmp:rw,noexec,nosuid,size=256m
     security_opt:
       - no-new-privileges:true
     cap_drop:

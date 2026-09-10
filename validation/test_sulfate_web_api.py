@@ -203,7 +203,7 @@ def test_sulfate_controls_and_help_are_shipped_with_the_app():
     assert 'id="sulfate-correlation"' not in html
     assert "independent Gaussian errors" in html
     assert "Non-air oxygen component" in html
-    assert "illustrative examples, not reference measurements" in html
+    assert "The prefilled isotope values and analytical errors are illustrative examples." in html
     assert 'id="sulfate-advanced" class="sulfate-advanced" open' not in html
     for field, value in (("sulfate-d17", "-0.200"), ("sulfate-d18", "15.000"),
                          ("sulfate-d17-sigma", "0.030"), ("sulfate-d18-sigma", "0.500")):
@@ -213,6 +213,28 @@ def test_sulfate_controls_and_help_are_shipped_with_the_app():
     assert 'id="sulfate-alpha"' not in html
     assert 'value="peng_2026_irreversible"' in html
     assert 'value="peng_2026_equilibrium"' in html
+
+
+def test_sulfate_range_labels_and_concise_help():
+    with TestClient(app) as client:
+        html = client.get("/").text
+    for bound in ("lower", "upper"):
+        assert f'for="sulfate-b-{bound}">Δ′<sup>17</sup>O {bound} <span>‰</span>' in html
+    guide = html.split('id="view-guide"', 1)[1].split('id="view-references"', 1)[0]
+    for question in (
+        "Why is there no sulfate non-air δ<sup>18</sup>O input?",
+        "Which sulfate O<sub>2</sub> incorporation treatment should I use?",
+        "What do the sulfate custom isotope shifts mean?",
+    ):
+        assert f"<summary>{question}</summary>" in guide
+    assert "Bao et al. (2008) established" not in guide
+    assert "What uncertainty is included for sulfate?" not in guide
+    assert "preserved or independently reconstructed primary sulfate signal" in guide
+    assert "any sulfate-process constraints entered by the user" in guide
+    assert "fixed 25% contribution" in guide
+    assert html.index('id="references-proxy"') < html.index('id="references-sulfate"')
+    assert html.index('id="references-sulfate"') < html.index('id="references-domain"')
+    assert html.count('href="https://doi.org/10.1038/nature06959"') == 1
 
 
 def named_payload(treatment="peng_2026_irreversible"):
