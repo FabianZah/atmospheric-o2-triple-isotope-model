@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager, suppress
+from collections.abc import Iterator
 from datetime import datetime, timezone
 from io import BytesIO
 import json
 from typing import Any
 
 from openpyxl import Workbook
+from openpyxl.cell import WriteOnlyCell
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
@@ -22,6 +25,78 @@ HEADER_FONT = Font(color="FFFFFF", bold=True)
 SOFTWARE_NAME = "OXYTIB"
 SOFTWARE_VERSION = "0.1.0"
 REPOSITORY_URL = "https://github.com/FabianZah/atmospheric-o2-triple-isotope-model"
+DATA_ALIGNMENT = Alignment(vertical="top", wrap_text=True)
+
+
+class _StreamingTable:
+    """Style each row before serializing it, retaining no worksheet cell grid."""
+
+    def __init__(
+        self, workbook: Workbook, name: str, *, title: str,
+        headers: tuple[str, ...], widths: tuple[float, ...],
+        number_formats: dict[int, str] | None = None,
+    ) -> None:
+        self.sheet = workbook.create_sheet(name)
+        self.number_formats = number_formats or {}
+        self.columns = len(headers)
+        self.row_count = 3
+        self.sheet.freeze_panes = "A4"
+        self.sheet.row_dimensions[1].height = 24
+        self.sheet.merged_cells.add(f"A1:{get_column_letter(self.columns)}1")
+        for index, width in enumerate(widths, start=1):
+            self.sheet.column_dimensions[get_column_letter(index)].width = width
+        cell = WriteOnlyCell(self.sheet, title)
+        cell.fill = TITLE_FILL
+        cell.font = TITLE_FONT
+        cell.alignment = Alignment(vertical="center")
+        self.sheet.append([cell])
+        self.sheet.append([])
+        cells = []
+        for header in headers:
+            cell = WriteOnlyCell(self.sheet, header)
+            cell.fill = HEADER_FILL
+            cell.font = HEADER_FONT
+            cell.alignment = Alignment(vertical="center")
+            cells.append(cell)
+        self.sheet.append(cells)
+
+    def append(self, values: tuple[Any, ...]) -> None:
+        cells = []
+        for column, value in enumerate(values, start=1):
+            cell = WriteOnlyCell(self.sheet, value)
+            # Metadata is literal text, including strings beginning with '='.
+            if isinstance(value, str):
+                cell.data_type = "s"
+            cell.alignment = DATA_ALIGNMENT
+            if column in self.number_formats:
+                cell.number_format = self.number_formats[column]
+            cells.append(cell)
+        self.sheet.append(cells)
+        self.row_count += 1
+
+    def finish(self) -> None:
+        self.sheet.auto_filter.ref = f"A3:{get_column_letter(self.columns)}{self.row_count}"
+        self.sheet.close()
+
+
+@contextmanager
+def _streaming_workbook() -> Iterator[Workbook]:
+    workbook = Workbook(write_only=True)
+    try:
+        yield workbook
+    finally:
+        # openpyxl only removes its XML files after a successful save. On an
+        # aborted export, clean up this workbook's writers, never shared temp files.
+        for sheet in workbook.worksheets:
+            writer = sheet._writer
+            if writer is None:
+                continue
+            with suppress(Exception):
+                if not sheet.closed:
+                    sheet.close()
+            with suppress(FileNotFoundError):
+                writer.cleanup()
+        workbook.close()
 
 
 def _unit(coordinate: str) -> str:
@@ -58,7 +133,7 @@ def _finish_table(sheet: Worksheet, widths: tuple[float, ...]) -> None:
 
 
 def _append_summary_rows(
-    sheet: Worksheet,
+    sheet: _StreamingTable,
     envelope: dict[str, Any],
     context: dict[str, Any],
 ) -> None:
@@ -169,9 +244,6 @@ def _append_summary_rows(
         ])
     for row in rows:
         sheet.append(row)
-        for cell in sheet[sheet.max_row]:
-            if isinstance(cell.value, str):
-                cell.data_type = "s"
 
 
 def build_coordinate_inference_workbook(
@@ -180,21 +252,30 @@ def build_coordinate_inference_workbook(
 ) -> bytes:
     """Return a self-contained XLSX export for one constrained inference."""
 
+    with _streaming_workbook() as workbook:
+        return _write_coordinate_inference_workbook(workbook, envelope, context)
+
+
+def _write_coordinate_inference_workbook(
+    workbook: Workbook, envelope: dict[str, Any], context: dict[str, Any],
+) -> bytes:
     result = envelope["result"]
-    workbook = Workbook()
     workbook.properties.creator = "OXYTIB"
     workbook.properties.title = "Constrained atmospheric O2 isotope inference"
     workbook.properties.subject = f"{SOFTWARE_NAME} {SOFTWARE_VERSION}"
 
-    summary = workbook.active
-    summary.title = "Summary"
-    _prepare_sheet(summary, title="Constrained model solution", headers=("Field", "Value", "Unit or note"))
+    summary = _StreamingTable(
+        workbook, "Summary", title="Constrained model solution",
+        headers=("Field", "Value", "Unit or note"), widths=(42, 70, 24),
+    )
     _append_summary_rows(summary, envelope, context)
-    _finish_table(summary, (42, 70, 24))
+    summary.finish()
 
     if result["inputs"].get("sulfate") is not None:
-        process = workbook.create_sheet("Sulfate transfer")
-        _prepare_sheet(process, title="Conditional sulfate transfer", headers=("Field", "Value"))
+        process = _StreamingTable(
+            workbook, "Sulfate transfer", title="Conditional sulfate transfer",
+            headers=("Field", "Value"), widths=(60, 95),
+        )
         metadata = {
             "observation_and_process": result["inputs"]["sulfate"],
             "isotope_coordinate": "logarithmic Delta-prime-17O, slope 0.528; conventional delta18O, VSMOW; per mil",
@@ -209,16 +290,15 @@ def build_coordinate_inference_workbook(
             }
         for key, value in _flatten_mapping(metadata):
             process.append((key, _cell_value(value)))
-            if isinstance(process.cell(process.max_row, 2).value, str):
-                process.cell(process.max_row, 2).data_type = "s"
-        _finish_table(process, (60, 95))
+        process.finish()
 
-    posterior = workbook.create_sheet("Posterior")
     coordinate = result["solve_for"]
-    _prepare_sheet(
-        posterior,
+    posterior = _StreamingTable(
+        workbook, "Posterior",
         title=f"{coordinate} marginal posterior",
         headers=(coordinate, "Unit", "Probability mass", "Probability density"),
+        widths=(22, 16, 22, 22),
+        number_formats={1: "0.0000000000", 3: "0.0000000000E+00", 4: "0.0000000000E+00"},
     )
     for axis, mass, density in zip(
         result["solve_axis"],
@@ -227,18 +307,13 @@ def build_coordinate_inference_workbook(
         strict=True,
     ):
         posterior.append((axis, _unit(coordinate), mass, density))
-    for row in posterior.iter_rows(min_row=4, min_col=1, max_col=4):
-        row[0].number_format = "0.0000000000"
-        row[2].number_format = "0.0000000000E+00"
-        row[3].number_format = "0.0000000000E+00"
-    _finish_table(posterior, (22, 16, 22, 22))
+    posterior.finish()
 
     if result.get("field_probability_mass") is not None:
-        field = workbook.create_sheet("Joint probability")
         x_name = result["field_x_coordinate"]
         y_name = result["field_y_coordinate"]
-        _prepare_sheet(
-            field,
+        field = _StreamingTable(
+            workbook, "Joint probability",
             title=f"{x_name}-{y_name} joint probability field",
             headers=(
                 x_name,
@@ -249,6 +324,9 @@ def build_coordinate_inference_workbook(
                 "Probability density",
                 "Inside 95% HPD",
             ),
+            widths=(20, 16, 20, 16, 22, 22, 18),
+            number_formats={1: "0.0000000000", 3: "0.0000000000",
+                            5: "0.0000000000E+00", 6: "0.0000000000E+00"},
         )
         y_axis = result["field_y_axis"]
         for x_index, x_value in enumerate(result["field_x_axis"]):
@@ -269,12 +347,7 @@ def build_coordinate_inference_workbook(
                         result["field_hpd_mask"][flat_index],
                     )
                 )
-        for row in field.iter_rows(min_row=4, min_col=1, max_col=7):
-            row[0].number_format = "0.0000000000"
-            row[2].number_format = "0.0000000000"
-            row[4].number_format = "0.0000000000E+00"
-            row[5].number_format = "0.0000000000E+00"
-        _finish_table(field, (20, 16, 20, 16, 22, 22, 18))
+        field.finish()
 
     buffer = BytesIO()
     workbook.save(buffer)

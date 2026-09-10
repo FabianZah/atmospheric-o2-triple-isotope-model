@@ -93,15 +93,17 @@ advertising a high-volume public service.
 
 ## Operations
 
-The shared-server profile reserves up to 1536 MiB for the application and
+The shared-server profile limits application memory to 1536 MiB and
 allows one compute request at a time. The dedicated-server profile uses 2 GiB
 and allows two. Both provide a 256 MiB temporary filesystem for XLSX assembly;
 temporary-filesystem memory also counts toward the container memory limit.
 The application keeps no persistent scientific state.
 
-Dense probability fields can make XLSX export more memory-intensive than
-inference. Keep a single application worker, confirm available host memory,
-and exercise a dense export in the staging container before increasing
+Constrained-solution XLSX exports stream formatted rows instead of retaining
+the worksheet cell grid in memory. The inference arrays, cached-result decoding,
+temporary XML and compressed workbook still require memory. Keep a single
+application worker, confirm available host memory, and exercise a dense export
+in the staging container before reducing memory limits or increasing
 concurrency. Existing untracked environment files retain their old values:
 review `OXYTIB_MEMORY` and `OXYTIB_MAX_COMPUTE_REQUESTS` when updating.
 

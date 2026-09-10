@@ -192,13 +192,18 @@ def test_container_ci_exercises_shared_server_limits_and_dense_export() -> None:
     workflow = yaml.safe_load((ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8"))
     steps = workflow["jobs"]["container"]["steps"]
     start = next(step["run"] for step in steps if step.get("name") == "Start hardened application container")
-    assert "--memory 1536m --memory-swap 1536m" in start
+    assert "--memory 768m --memory-swap 768m" in start
     assert "--cpus 0.75" in start
     assert "--env OXYTIB_MAX_COMPUTE_REQUESTS=1" in start
     assert "size=256m" in start
     load = next(step for step in steps if step.get("name") == "Verify dense posterior export within shared-server limits")
     assert "--check-dense-export" in load["run"]
     assert load["timeout-minutes"] == 12
+    report = next(step for step in steps if step.get("name") == "Report container memory and exit state")
+    assert report["if"] == "always()"
+    assert "memory.peak" in report["run"]
+    assert "memory.events" in report["run"]
+    assert "{{json .State}}" in report["run"]
 
 
 @pytest.mark.parametrize("failure", [None, "coarse", "identity", "worksheets", "health"])

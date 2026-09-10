@@ -42,6 +42,7 @@ jobs:
         run: |
           python -m pytest \
             validation/test_web_api.py \
+            validation/test_model_result_workbook.py \
             validation/test_public_cli.py \
             validation/test_isotope_field_contours.py \
             validation/test_constrained_coordinate_resolution.py \
@@ -122,7 +123,7 @@ jobs:
           docker run --detach --name oxytib-ci \
             --publish 127.0.0.1:8000:8000 \
             --read-only --tmpfs /tmp:rw,noexec,nosuid,size=256m \
-            --memory 1536m --memory-swap 1536m --pids-limit 128 --cpus 0.75 \
+            --memory 768m --memory-swap 768m --pids-limit 128 --cpus 0.75 \
             --env OXYTIB_MAX_COMPUTE_REQUESTS=1 \
             --cap-drop ALL --security-opt no-new-privileges \
             oxytib:ci
@@ -147,9 +148,16 @@ jobs:
         run: |
           python validation/verify_public_deployment.py \
             --base-url http://127.0.0.1:8000 --check-dense-export
+
+      - name: Report container memory and exit state
+        if: always()
+        run: |
+          docker inspect --format '{{json .State}}' oxytib-ci
           docker stats --no-stream oxytib-ci
-          docker exec oxytib-ci python -c \
-            'from pathlib import Path; p = Path("/sys/fs/cgroup/memory.peak"); print("cgroup peak memory bytes:", p.read_text().strip() if p.exists() else "unavailable")'
+          if [ "$(docker inspect --format '{{.State.Running}}' oxytib-ci)" = "true" ]; then
+            docker exec oxytib-ci python -c \
+              'from pathlib import Path; root = Path("/sys/fs/cgroup"); [(print(name + ":", (root / name).read_text().strip() if (root / name).exists() else "unavailable")) for name in ("memory.max", "memory.peak", "memory.events")]'
+          fi
 
       - name: Show container logs on failure
         if: failure()
