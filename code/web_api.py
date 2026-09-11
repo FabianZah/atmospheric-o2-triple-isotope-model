@@ -665,8 +665,8 @@ app = FastAPI(
     title="OXYTIB API",
     version=API_VERSION,
     description=(
-        "Typed calculation API for the single accepted updated model. "
-        "Numerical extrapolation outside the published surface is rejected."
+        "Calculation API for OXYTIB atmospheric oxygen isotope budgets and inference. "
+        "Calculations use the documented model domain."
     ),
     docs_url=None,
     redoc_url=None,

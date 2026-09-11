@@ -73,6 +73,14 @@ def test_public_documentation_describes_one_operational_model() -> None:
     prose = "\n".join(path.read_text(encoding="utf-8") for path in PUBLIC_MARKDOWN)
     assert "current model" not in prose.lower()
     assert "updated model" not in prose.lower()
+    for name in (
+        "web_api.py", "public_model_service.py",
+        "updated_constrained_pco2_posterior.py",
+        "updated_output_surface_joint_posterior.py",
+        "updated_output_surface_posterior.py",
+    ):
+        source = (ROOT / "code" / name).read_text(encoding="utf-8")
+        assert "updated model" not in source.lower(), name
     assert "## Branch Policy" not in prose
     gpp = (ROOT / "docs/GPP_NORMALIZATION_POLICY.md").read_text(encoding="utf-8")
     assert "100% modern GPP = 290 Pg C per year" in gpp

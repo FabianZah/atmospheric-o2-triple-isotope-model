@@ -1,4 +1,4 @@
-"""Source-backed biological O2 isotope conventions for the updated model.
+"""Source-backed biological O2 isotope conventions for OXYTIB.
 
 The module keeps biological-process uncertainty separate from uncertainty in
 the numerical value assigned to "100% modern GPP".  Callers supply absolute
@@ -285,7 +285,7 @@ def biological_member(key: str) -> BiologicalEnsembleMember:
 
 
 def central_biological_member() -> BiologicalEnsembleMember:
-    """Return the non-fitted central updated biological convention."""
+    """Return the literature-defined central biological convention."""
 
     return biological_member(CENTRAL_BIOLOGICAL_MEMBER_KEY)
 

@@ -567,7 +567,7 @@ def constrained_coordinate_posterior(
     measurement_kind = ("exact sulfate transfer and integrated measurement/process " if request.sulfate is not None
                         else "Gaussian isotope measurement ")
     scope = (
-        "Posterior from the central updated model, " + measurement_kind +
+        "Posterior from OXYTIB, " + measurement_kind +
         f"likelihoods, a bounded uniform {request.solve_for} prior in its reported "
         "units, and the explicitly supplied constraints on the other coordinates. "
         "Gaussian coordinate constraints are normalized over center +/- 4 sigma "
@@ -766,7 +766,7 @@ def constrained_pco2_posterior(
 
     pco2_edges = joint.edge_probabilities["pCO2"]
     scope = (
-        "Posterior from the central updated model, Gaussian isotope measurement "
+        "Posterior from OXYTIB, Gaussian isotope measurement "
         "likelihoods, a bounded uniform pCO2 prior, and the explicitly supplied "
         "GPP and pO2 constraints. Gaussian coordinate constraints are normalized "
         "over center +/- 4 sigma clipped to the operational domain. No log-uniform "

@@ -1,4 +1,4 @@
-"""Framework-neutral service boundary for the public updated model."""
+"""Framework-neutral service boundary for OXYTIB."""
 
 from __future__ import annotations
 

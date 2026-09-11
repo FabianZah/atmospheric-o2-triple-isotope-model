@@ -307,8 +307,8 @@ def conditional_updated_posterior(
         surface_data_id=surface.surface_data_id,
         upstream_model_data_id=surface.upstream_model_data_id,
         probability_scope=(
-            "conditional on the two fixed physical coordinates, the central "
-            "updated model, the declared bounded prior, and Gaussian analytical "
+            "conditional on the two fixed physical coordinates, OXYTIB, "
+            "the declared bounded prior, and Gaussian analytical "
             "measurement uncertainty"
             + (
                 " for Delta-prime-17O and conventional delta-18O"

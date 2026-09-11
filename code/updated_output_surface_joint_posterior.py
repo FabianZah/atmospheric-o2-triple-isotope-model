@@ -434,11 +434,11 @@ def joint_updated_posterior(
     discrepancy_included = request.model_discrepancy_sigma_permil > 0.0
     scope = (
         "joint posterior conditional on the declared independent coordinate priors, "
-        "the central updated model, Gaussian analytical measurement uncertainty"
+        "OXYTIB, Gaussian analytical measurement uncertainty"
     )
     if request.sulfate is not None:
         scope = (
-            "joint posterior conditional on the declared independent coordinate priors, the central updated model, "
+            "joint posterior conditional on the declared independent coordinate priors, OXYTIB, "
             "exact sulfate isotope-atom transfer, Gaussian sulfate measurement errors and the specified "
             "incorporation/background constraints and formation/preservation assumptions"
         )
