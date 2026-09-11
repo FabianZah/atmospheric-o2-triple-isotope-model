@@ -52,5 +52,4 @@ the declared boundary conditions and transient experiments.
 The model is presented through its deterministic architecture, inputs,
 observational and published-model validation, and four separated uncertainty
 layers. Historical reconstruction calculations document the lineage from
-Young et al. (2014) and serve as validation provenance for the current OXYTIB
-implementation.
+Young et al. (2014) and serve as validation provenance for OXYTIB.

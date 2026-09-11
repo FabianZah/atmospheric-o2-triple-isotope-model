@@ -1,63 +1,34 @@
-# GPP Normalization Policy
+# GPP units and normalization
 
-Last refreshed: 2026-06-15.
+The physical model uses absolute global gross primary production in
+Pg C per year. The browser reports GPP as a percentage of a defined
+modern reference:
 
-The model uses a Young-style photosynthetic O2 flux internally. User-facing
-GPP inputs are entered as percent of a selected modern reference and are then
-converted to the internal Young scale before the isotope model is solved.
+**100% modern GPP = 290 Pg C per year**, following Liang et al. (2023).
 
-## Decision
+The conversion is `absolute GPP = percent modern / 100 * 290`.
+Thus 25% modern corresponds to 72.5 Pg C per year. Console inputs in
+Pg C per year are already absolute and need no percentage conversion.
 
-The public default remains:
+## Literature comparisons
 
-```text
-young_2014
-```
+The normalization utilities also retain Young et al. (2014)'s
+365.125 Pg C per year scale, Beerling (1999)'s 367.527 Pg C per year
+gross oxygen-production equivalent, and explicit custom references.
+These support literature comparisons. Percentages based on different
+references are converted to absolute production before comparison.
 
-This default is interpreted as the Young et al. (2014) gross O2-production
-scale. It is retained because:
+Liang et al. (2023)'s reference uncertainty of ±30 Pg C per year is a
+separate normalization sensitivity. A user-entered GPP uncertainty or range
+is the constraint used by the public inference; the reference uncertainty is
+not silently added to it.
 
-- it is the internal flux scale used to reproduce Young et al. behavior,
-- it keeps validation and application runs traceable to the same model
-  convention,
-- it is nearly identical to the Beerling (1999) total gross O2-production
-  value after stoichiometric conversion.
+## Reporting
 
-Liang et al. (2023), Beerling (1999), and custom global values remain available
-as explicit normalization choices. They are not hidden model constants; they
-are scenario/reference choices and are written into exports. Adnew et al.
-(2025) estimate terrestrial leaf-assimilation GPP and are retained as a
-terrestrial constraint, not a total global O2-production normalization.
+Report the percentage together with its reference and the resulting absolute
+GPP. This keeps biological throughput unambiguous across studies.
+The model's absolute domain is 18.256264-850 Pg C per year, corresponding to
+approximately 6.30-293.10% of the browser reference.
 
-## Modern Reference Values
-
-| key | label | modern reference | ratio to Young scale | role |
-|---|---|---:|---:|---|
-| `young_2014` | Young et al., 2014 gross O2-production scale | 365.125 PgC/yr | 1.000 | default internal/public scale |
-| `beerling_1999` | Beerling, 1999 Table 2 total | 367.527 PgC/yr | 1.0066 | near-equivalent gross O2-production cross-check |
-| `liang_2023` | Liang et al., 2023 | 290 PgC/yr | 0.7942 | modern-reference sensitivity |
-| `custom` | Custom | user-defined | user-defined | explicit user scenario |
-
-## Export Rule
-
-Every exported scenario should include:
-
-- `gpp_user_percent_modern`,
-- `gpp_normalization`,
-- `gpp_normalization_role`,
-- `gpp_normalization_label`,
-- `gpp_modern_reference_pgC_per_year`,
-- `gpp_requested_pgC_per_year`,
-- `gpp_internal_young_scale`.
-
-This lets a user report both the intuitive input, such as "25% modern GPP",
-and the exact absolute reference used by the model.
-
-## Manuscript Language
-
-Recommended wording:
-
-> Unless otherwise stated, GPP percentages are reported relative to the Young
-> et al. (2014) gross O2-production scale used by the model. Alternative
-> modern GPP estimates are treated as explicit sensitivity normalizations and
-> are recorded with each model run.
+The implementation is `code/gpp_normalization.py`. Source conventions and
+reference metadata accompany calculations that use the normalization utility.

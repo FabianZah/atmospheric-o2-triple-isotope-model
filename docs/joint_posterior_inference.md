@@ -1,6 +1,6 @@
 # Joint posterior inference
 
-The updated model supports joint inference over any two or all three of pCO2,
+OXYTIB supports joint inference over any two or all three of pCO2,
 absolute GPP, and pO2. A single atmospheric O2 Delta-prime-17O observation
 usually defines a curved solution ridge, not a unique point. The joint engine
 therefore retains the multidimensional posterior and reports marginal summaries
@@ -43,7 +43,7 @@ documented in `docs/structural_uncertainty_policy.md`. Young, Liu, and Cao-Bao
 model differences may define structural sensitivity envelopes but may not be
 entered as a Gaussian sigma. The Yang-Banerjee residual is eligible only for a
 low-pCO2, 1 PAL, fixed-GPP predictive-error model, and the Brandon residual is
-event specific. No whole-domain empirical discrepancy is currently assigned.
+event specific. Whole-domain empirical discrepancy is outside the declared statistical model.
 
 ## Reported quantities
 
@@ -67,4 +67,4 @@ cover vectorized/scalar surface agreement, two- and three-coordinate
 normalization, generated-target containment, discrepancy propagation, and the
 provenance requirement. The unified release scorecard records joint recovery
 as a formal numerical gate and empirical discrepancy calibration as a separate
-remaining limitation.
+scope limit.

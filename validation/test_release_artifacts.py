@@ -19,10 +19,7 @@ PUBLIC_MARKDOWN = (
     ROOT / "README.md",
     ROOT / "SETUP.md",
     ROOT / "LICENSING.md",
-    ROOT / "docs" / "README.md",
-    ROOT / "docs" / "PROJECT_STRUCTURE.md",
-    ROOT / "docs" / "server_deployment.md",
-    ROOT / "docs" / "spherule_inversion_workflow.md",
+    *sorted((ROOT / "docs").glob("*.md")),
 )
 MARKDOWN_LINK = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 
@@ -64,6 +61,21 @@ def test_public_markdown_links_resolve() -> None:
             if path_part and not (document.parent / path_part).resolve().exists():
                 missing.append(f"{document.relative_to(ROOT)} -> {target}")
     assert missing == []
+
+
+def test_public_documentation_describes_one_operational_model() -> None:
+    obsolete = (
+        "equation_ledger.md", "equation_ledger.csv", "updated_model_validation.md",
+        "young_reproduction_validation.md", "modern_o2_offset_attribution.md",
+        "extrapolation_bounds.md",
+    )
+    assert all(not (ROOT / "docs" / name).exists() for name in obsolete)
+    prose = "\n".join(path.read_text(encoding="utf-8") for path in PUBLIC_MARKDOWN)
+    assert "current model" not in prose.lower()
+    assert "updated model" not in prose.lower()
+    assert "## Branch Policy" not in prose
+    gpp = (ROOT / "docs/GPP_NORMALIZATION_POLICY.md").read_text(encoding="utf-8")
+    assert "100% modern GPP = 290 Pg C per year" in gpp
 
 
 def test_compose_disables_cross_origin_access_by_default() -> None:

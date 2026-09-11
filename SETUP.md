@@ -99,8 +99,7 @@ python validation/audit_young_acceptance_gate.py
 
 ## Layout and import policy
 
-The accepted snapshot retains a flat `code/` and `validation/` namespace to
-avoid changing the audited scientific import graph. `conftest.py` configures
+The model uses a flat `code/` and `validation/` namespace. `conftest.py` configures
 the paths for pytest, and each standalone scientific script contains its own
 repository bootstrap. Normal users should use `run_model.py`.
 

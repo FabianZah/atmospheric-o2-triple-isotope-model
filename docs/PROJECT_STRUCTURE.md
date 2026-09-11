@@ -1,66 +1,43 @@
-# Project structure
-
-## Release layout
-
-The first publication release intentionally retains the audited flat module
-layout:
+# Repository structure
 
 ```text
-run_model.py                 stable public launcher
-code/                        model, inverse tools, API, and runtime dependencies
-web/                         independent browser interface
-model_data/                  versioned runtime surfaces and contracts
-validation/                  release tests and acceptance generators
-docs/                        scientific and software documentation
-outputs/                     generated local artifacts
-.github/workflows/           release and container CI
+run_model.py                 console and API entry point
+code/                        scientific model, inference, exports and API
+web/                         browser interface and bundled equation renderer
+model_data/                  versioned numerical inputs and evidence
+validation/                  regression tests and scientific audits
+docs/                        methods, model use and deployment
+deploy/                      Docker and reverse-proxy configuration
+outputs/                     generated local reports (untracked)
+.github/workflows/           scientific, software and container CI
 ```
 
-This is a conservative reproducibility decision. Moving the scientific modules
-into a conventional installable package would alter a large import graph just
-before publication without changing the model. `run_model.py` provides stable
-calculation, API, and validation commands for normal use.
+## Scientific implementation
 
-## Stable public components
+The model identity, implementation paths and data checksums are defined in
+[the model contract](../model_data/publication_model_contract_v1.json).
 
-The public model identity is defined by
-`model_data/publication_model_contract_v1.json`. Its central implementation is:
+- `public_model_service.py` connects the console, API and model.
+- `updated_molecular_forward_model.py` defines the physical kernel.
+- `updated_output_surface.py` provides accelerated numerical evaluation.
+- The inverse, posterior and transient modules implement the corresponding
+  calculations using the same physical model.
+- `spherule_to_air_d17o.py`, `sulfate_to_air.py` and the sulfate uncertainty
+  modules implement proxy transfer.
+- `model_result_workbook.py` builds scientific exports.
+- `web_api.py`, `public_cli.py` and `web/` expose the model.
 
-- `code/updated_molecular_forward_model.py`
-- `code/updated_output_surface.py`
-- `code/updated_output_surface_inverse.py`
-- `code/updated_output_surface_posterior.py`
-- `code/updated_output_surface_joint_posterior.py`
-- `code/updated_constrained_pco2_posterior.py`
-- `code/posterior_coordinate_quadrature.py`, `code/posterior_field_refinement.py`,
-  and `code/posterior_surface_slice.py`
-- `code/sulfate_to_air.py`, `code/sulfate_uncertainty.py`, and
-  `code/sulfate_likelihood_table.py`
-- `code/model_result_workbook.py` and `code/completed_result_cache.py`
-- `code/updated_molecular_transient.py`
-- `code/updated_photosynthesis_transient.py`
-- `code/updated_pco2_trajectory_transient.py`
-- `code/updated_uncertainty_layers.py`
-- `code/public_model_service.py`
-- `code/public_cli.py`
-- `code/web_api.py`
-- `web/index.html`, `web/styles.css`, and `web/app.js`
-- `web/mathjax-config.js` and the locally bundled renderer in `web/vendor/mathjax/`
+Python modules use a flat namespace. `run_model.py` resolves the repository
+paths; `conftest.py` supplies the paths for regression tests.
 
-The contract includes SHA-256 identities for the central source and runtime
-data files. `validation/audit_publication_model_acceptance.py` is the
-integrated release decision.
+## Reproducibility
 
-## Publication boundary
+Runtime data, observation/reference inputs, validation evidence and their
+supporting code are version controlled. The historical Young response
+calculation and structural sensitivity records provide comparison evidence
+for the model. Tests distinguish these comparisons from the operational
+forward and inverse calculations.
 
-The repository retains the operational dependency closure and the
-additional validation modules required by the release tests and
-published-model response anchors. Compact validation records and digitized
-reference datasets are included where they are direct inputs to the release
-contract. Exploratory download scripts, private source documents, and generated
-local outputs remain outside the publication repository.
-
-A later software-only release may move modules into an installable package.
-That refactor should occur after the scientific release tag and must preserve
-contract hashes through an explicitly reviewed version change and full
-regression comparison.
+Generated reports belong in `outputs/`. Copyrighted papers, personal
+manuscripts, credentials and exploratory downloads remain outside the
+public repository. See [licensing](../LICENSING.md) for third-party data terms.

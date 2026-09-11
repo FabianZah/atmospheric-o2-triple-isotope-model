@@ -24,8 +24,8 @@ When either constraining coordinate is uncertain, the corresponding joint
 posterior is evaluated. If both constraints are uncertain, the coordinate not
 shown in the two-dimensional field is marginalized. Every result contains the
 solved-coordinate marginal density, median, and equal-tailed 95% credible
-interval. The interface plots this marginal distribution and shades its 95%
-interval.
+interval. The interface shows the joint probability field when coordinate constraints
+are uncertain and the one-dimensional marginal for fixed-coordinate cases.
 
 If the solved-coordinate posterior occupies fewer than eight intervals of the
 initial quadrature grid, the solver repeats the quadrature over the negligible-
@@ -36,12 +36,12 @@ records the initial and final solved axis bounds and sizes. A posterior that
 reaches an actual input or operational-domain edge is not truncated away and
 remains explicitly boundary-sensitive.
 
-This probability calculation includes the central updated model, analytical
+This probability calculation includes the OXYTIB physical model, analytical
 isotope uncertainty, and the user-supplied constraints. It does not silently
 include structural model discrepancy. Structural sensitivity remains a
 separate validation result.
 
-The typed endpoint is `POST /api/v1/inference/coordinate`. The earlier
+The typed endpoint is `POST /api/v1/inference/coordinate`. The
 `POST /api/v1/inference/pco2` endpoint remains available for compatibility.
 The public interface can repeat the typed request through
 `POST /api/v1/export/coordinate.xlsx` to produce a workbook containing model

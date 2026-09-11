@@ -44,7 +44,7 @@ This audit evaluates the single OXYTIB publication model against its declared ev
 
 ## Decision
 
-There are no release-blocking failures. The deterministic core is accepted for steady forward and inverse applications and for the declared time-response experiments. High-pCO2 model-family spread, the rejected climate and marine-access candidates, and incomplete fully coupled transients remain explicit scope limits rather than hidden corrections.
+There are no release-blocking failures. The deterministic core is accepted for steady forward and inverse applications and for the declared time-response experiments. High-pCO2 model-family spread, the climate and marine-access sensitivity cases, and operator-split transient coupling remain explicit scope limits rather than hidden corrections.
 
 Central-model change policy: Replace a central equation or parameter only when independently constrained evidence improves multiple validation families while preserving conservation, modern observations, and surface behavior.
 

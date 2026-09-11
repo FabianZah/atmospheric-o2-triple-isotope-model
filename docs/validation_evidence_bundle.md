@@ -20,7 +20,7 @@ The bundle includes the central release scorecard, Liu and Cao-Bao model
 comparisons, the Luz inverse-architecture comparison, Yang/Banerjee and Brandon
 observational checks, the marine-accessibility sensitivity, and the separated
 uncertainty-layer audit. It also carries the reviewed Clima pressure/pO2
-structural end members and the low-CO2 predictive-error candidate required to
+structural end members and the low-CO2 predictive-error assessment required to
 rebuild the uncertainty contract from a clean checkout.
 
 ## Regeneration policy

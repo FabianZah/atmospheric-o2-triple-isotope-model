@@ -1,4 +1,4 @@
-# Updated Molecular Model Release Scorecard
+# OXYTIB validation scorecard
 
 This scorecard evaluates the molecular engine used by the public UI. Young comparisons are diagnostics, not fitted constraints. The accepted modern-reference discrepancy is reported but is not applied inside the model.
 
@@ -43,8 +43,8 @@ This scorecard evaluates the molecular engine used by the public UI. Young compa
 | uncertainty | Empirical structural model-discrepancy calibration | False  | limitation | required before a default joint posterior is presented as calibrated |
 | transient | Fully simultaneous carbon-oxygen coupling | False  | limitation | required before claiming fully coupled transient dynamics |
 
-`pass` and `fail` are formal release gates. `diagnostic` records Young agreement without retuning. `limitation` identifies remaining publication work.
+`pass` and `fail` are formal release gates. `diagnostic` records Young agreement without retuning. `limitation` identifies the scientific scope of the model.
 
 The companion curve-wide mechanism audit is `validation/audit_updated_fig8_response_shape.py`; it reports the required-GPP equivalent without using it as a correction.
 
-Complete values and provenance are in `outputs/updated_molecular_release_scorecard.json`.
+Complete values and provenance are in `model_data/validation_evidence/updated_molecular_release_scorecard.json`.

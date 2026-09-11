@@ -31,6 +31,14 @@ def _run(arguments: list[str]) -> int:
         return 130
 
 
+def _run_api(arguments: list[str]) -> int:
+    if os.name == "posix":
+        # Let the server receive container signals directly, including as PID 1.
+        os.chdir(ROOT)
+        os.execv(arguments[0], arguments)
+    return _run(arguments)
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Run the OXYTIB publication model."
@@ -67,7 +75,7 @@ def _build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = _build_parser().parse_args()
     if args.command == "api":
-        return _run(
+        return _run_api(
             [
                 sys.executable,
                 str(ROOT / "code" / "web_api.py"),

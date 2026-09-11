@@ -93,7 +93,7 @@ advertising a high-volume public service.
 
 ## Operations
 
-The shared-server profile limits application memory to 1536 MiB and
+The shared-server template defaults to 1536 MiB and
 allows one compute request at a time. The dedicated-server profile uses 2 GiB
 and allows two. Both provide a 256 MiB temporary filesystem for XLSX assembly;
 temporary-filesystem memory also counts toward the container memory limit.
@@ -108,6 +108,16 @@ application worker, confirm available host memory, and exercise a dense export
 in the staging container before reducing memory limits or increasing
 concurrency. Existing untracked environment files retain their old values:
 review `OXYTIB_MEMORY` and `OXYTIB_MAX_COMPUTE_REQUESTS` when updating.
+
+The dense 833 x 961 posterior and XLSX workload passes with
+`OXYTIB_MEMORY=768m` and one admitted request in both Linux CI and private
+shared-host verification. This lower limit is an explicit deployment choice;
+retain host headroom and repeat the load test before increasing concurrency.
+
+On Linux, the API launcher replaces itself with the web server so SIGTERM
+reaches the server directly. Compose allows 30 seconds for shutdown.
+Schedule updates when idle: requests exceeding that grace period can still
+be interrupted. CI verifies graceful shutdown after the workload checks.
 
 The optional load check computes and exports a refined low-oxygen field and
 can take several minutes. Run it against staging, alongside container-memory

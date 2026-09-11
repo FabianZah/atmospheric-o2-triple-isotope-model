@@ -41,6 +41,7 @@ jobs:
       - name: Public HTTP API contract
         run: |
           python -m pytest \
+            validation/test_api_launcher.py \
             validation/test_web_api.py \
             validation/test_model_result_workbook.py \
             validation/test_public_cli.py \
@@ -160,6 +161,23 @@ jobs:
             docker exec oxytib-ci python -c \
               'from pathlib import Path; root = Path("/sys/fs/cgroup"); [(print(name + ":", (root / name).read_text().strip() if (root / name).exists() else "unavailable")) for name in ("memory.max", "memory.peak", "memory.events")]'
           fi
+
+      - name: Verify graceful container shutdown
+        run: |
+          docker stop --time 10 oxytib-ci
+          python - <<'PY'
+          import json
+          import subprocess
+          state = json.loads(subprocess.check_output([
+              "docker", "inspect", "--format", "{{json .State}}", "oxytib-ci"
+          ], text=True))
+          logs = subprocess.check_output(["docker", "logs", "oxytib-ci"], stderr=subprocess.STDOUT, text=True)
+          assert not state["Running"] and not state["OOMKilled"], state
+          assert state["ExitCode"] in (0, 143), state
+          assert "Application shutdown complete." in logs, logs
+          assert "Finished server process" in logs, logs
+          print("Graceful shutdown verified:", state["ExitCode"])
+          PY
 
       - name: Show container logs on failure
         if: failure()
