@@ -177,7 +177,10 @@ def test_production_image_uses_pinned_python_and_api_dependencies() -> None:
         encoding="utf-8"
     )
     required_pins = {
-        "fastapi==0.129.0",
+        "fastapi==0.141.1",
+        "starlette==1.6.0",
+        "click==8.3.3",
+        "idna==3.15",
         "numpy==1.26.4",
         "pydantic==2.12.5",
         "scipy==1.13.1",

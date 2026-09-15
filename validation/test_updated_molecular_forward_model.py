@@ -124,7 +124,7 @@ def test_crossed_holdout_surface_value_is_preserved_without_normalization() -> N
 
     from global_o2_isotope_reservoir import frozen_photochemical_steady_state
     from local_r7_response_operator import LocalR7ResponseSurface
-    from modern_isotope_column import modern_reference_isotope_compositions
+    from modern_isotope_reference import modern_reference_isotope_compositions
     from self_consistent_isotope_fixed_point import solve_mechanistic_fixed_point
     from young_global_o2_budget import (
         GLOBAL_MAJOR_O2_MOLES_1PAL,

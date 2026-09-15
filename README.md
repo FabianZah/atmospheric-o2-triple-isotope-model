@@ -92,10 +92,29 @@ python -m pip install -r code/requirements-dev.txt
 python run_model.py validate
 ```
 
-This verifies runtime data integrity, steady and transient calculations,
-forward-to-inverse closure, API and browser assets, and the integrated
-scientific acceptance decision. Exact direct dependency versions from the
-accepted environment are recorded in `code/requirements-tested.txt`.
+This checks runtime data integrity, a forward-to-inverse smoke calculation,
+API and browser assets, and the scientific acceptance decision using the
+versioned evidence reports. Run the numerical regression suite separately:
+
+```powershell
+python -m pytest validation -q
+```
+
+Regenerate the bundled-input comparisons and their plots:
+
+```powershell
+python run_model.py reproduce
+```
+
+Individual comparisons can be selected, for example `python run_model.py
+reproduce cao-bao yang`. Logs, input hashes, and completion status are saved
+in `outputs/reproduction/manifest.json`. The
+[reproduction guide](docs/reproduction.md) distinguishes these calculations
+from external climate/chemistry runs and evidence aggregation.
+
+Production Python dependencies are pinned in `code/requirements-api-lock.txt`;
+CI tests use the same constraints. To reproduce this stack locally, add
+`-c code/requirements-api-lock.txt` to the dependency installation command.
 
 ## Evidence
 

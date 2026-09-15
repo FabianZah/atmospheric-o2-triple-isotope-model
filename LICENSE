@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ----------------------------------------------------------------------------
-This MIT license applies to the SOURCE CODE only (the *.py files in code/ and
-validation/). Data, documentation, and figures are licensed separately under
-CC-BY-4.0, and some bundled inputs are third-party copyrighted. See LICENSING.md.
+This MIT license applies to OXYTIB-authored source code, including the console
+entry point, model, validation scripts, browser assets and deployment files.
+Third-party components retain their own licenses. Original data, documentation
+and figures are licensed separately under CC-BY-4.0. See LICENSING.md.

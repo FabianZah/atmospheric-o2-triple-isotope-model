@@ -22,7 +22,7 @@ ROOT = next(
 )
 OUTPUTS = ROOT / "outputs"
 DEFAULT_OUTPUT = OUTPUTS / "publication_model_acceptance.json"
-DEFAULT_DOC = ROOT / "docs" / "publication_model_acceptance.md"
+DEFAULT_DOC = ROOT / "outputs" / "publication_model_acceptance.md"
 EVIDENCE = ROOT / "model_data" / "validation_evidence"
 
 SOURCE_PATHS = {
@@ -382,9 +382,8 @@ def _write_markdown(report: dict[str, Any], path: Path) -> None:
                 "There are no release-blocking failures. The deterministic core is "
                 "accepted for steady forward and inverse applications and for the "
                 "declared time-response experiments. High-pCO2 model-family spread, "
-                "the rejected climate and marine-access candidates, and incomplete "
-                "fully coupled transients remain explicit scope limits rather than "
-                "hidden corrections."
+                "the climate and marine-access sensitivity cases, and operator-split "
+                "transient coupling remain explicit scope limits."
             ),
             "",
             f"Central-model change policy: {report['next_model_change_policy']}",

@@ -474,15 +474,15 @@ def run_gate(preset: str) -> dict:
     write_criteria_csv(criteria, OUTPUTS / f"{output_prefix}_criteria.csv")
     write_csv(point_rows, OUTPUTS / f"{output_prefix}_points.csv")
     plot_fig8_shape(point_rows, OUTPUTS / f"{output_prefix}_fig8_shape", preset=preset)
-    write_markdown(criteria, HERE / f"{output_prefix}.md", preset=preset, output_prefix=output_prefix)
+    write_markdown(criteria, OUTPUTS / f"{output_prefix}.md", preset=preset, output_prefix=output_prefix)
     if preset == CURRENT_YOUNG_REPRODUCTION_PRESET:
-        write_markdown(criteria, HERE / "young_acceptance_gate.md", preset=preset, output_prefix=output_prefix)
+        write_markdown(criteria, OUTPUTS / "young_acceptance_gate.md", preset=preset, output_prefix=output_prefix)
     return {
         "preset": preset,
         "passed": sum(item.passed for item in criteria),
         "total": len(criteria),
         "failed": len([item for item in criteria if not item.passed]),
-        "markdown": HERE / f"{output_prefix}.md",
+        "markdown": OUTPUTS / f"{output_prefix}.md",
         "criteria": OUTPUTS / f"{output_prefix}_criteria.csv",
         "plot": OUTPUTS / f"{output_prefix}_fig8_shape.png",
     }
@@ -536,7 +536,7 @@ def main() -> None:
     else:
         presets = parse_presets(args.presets)
     results = [run_gate(preset) for preset in presets]
-    write_summary(results, HERE / "young_acceptance_gate_summary.md")
+    write_summary(results, OUTPUTS / "young_acceptance_gate_summary.md")
     for result in results:
         print(
             f"{result['preset']}: passed {result['passed']}/{result['total']} "
@@ -544,7 +544,7 @@ def main() -> None:
         )
         print(f"Wrote {result['criteria']}")
         print(f"Wrote {result['plot']}")
-    print(f"Wrote {HERE / 'young_acceptance_gate_summary.md'}")
+    print(f"Wrote {OUTPUTS / 'young_acceptance_gate_summary.md'}")
 
 
 if __name__ == "__main__":

@@ -30,7 +30,7 @@ from global_o2_isotope_reservoir import (
     frozen_photochemical_steady_state,
 )
 from local_r7_response_operator import LocalR7ResponseSurface
-from modern_isotope_column import modern_reference_isotope_compositions
+from modern_isotope_reference import modern_reference_isotope_compositions
 from modern_reference_constraints import RECENT_REFERENCE_CONSTRAINTS
 from self_consistent_isotope_fixed_point import (
     solve_mechanistic_fixed_point_with_hybr_fallback,

@@ -22,7 +22,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r code/requirements-dev.txt
+          pip install -r code/requirements-dev.txt -c code/requirements-api-lock.txt
+          pip check
 
       - name: Public package smoke test
         run: python run_model.py smoke
@@ -32,6 +33,7 @@ jobs:
           python -m pytest \
             validation/test_publication_package_smoke.py \
             validation/test_release_artifacts.py \
+            validation/test_reproduction_packaging.py \
             validation/test_public_deployment.py \
             validation/test_validation_evidence_bundle.py \
             validation/test_publication_model_contract.py \

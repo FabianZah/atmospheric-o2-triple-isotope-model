@@ -52,13 +52,17 @@ def _build_parser() -> argparse.ArgumentParser:
     api.add_argument("--port", type=int, default=8000)
 
     calculation = subparsers.add_parser(
-        "calculate", help="Run forward, inverse, or time-response calculations."
+        "calculate", help="Run forward, inverse, or time-response calculations.",
+        add_help=False,
     )
     calculation.add_argument(
         "arguments",
         nargs=argparse.REMAINDER,
         help="Arguments passed to the calculation CLI; use 'calculate --help'.",
     )
+
+    subparsers.add_parser("reproduce", add_help=False,
+                         help="Regenerate selected scientific comparisons and plots.")
 
     subparsers.add_parser(
         "smoke", help="Run the fast publication-package smoke test."
@@ -73,6 +77,13 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> int:
+    if sys.argv[1:2] == ["calculate"]:
+        return _run(
+            [sys.executable, str(ROOT / "code" / "public_cli.py"), *sys.argv[2:]]
+        )
+    if sys.argv[1:2] == ["reproduce"]:
+        return _run([sys.executable, str(ROOT / "validation/reproduce_benchmarks.py"),
+                     *sys.argv[2:]])
     args = _build_parser().parse_args()
     if args.command == "api":
         return _run_api(

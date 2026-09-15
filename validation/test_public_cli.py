@@ -30,6 +30,13 @@ def test_forward_json_stdout_uses_publication_model() -> None:
     assert payload["result"]["inputs"]["p_co2_ppm"] == 294.0
 
 
+def test_calculation_help_lists_commands():
+    help_text = _run("--help").stdout
+    assert "sulfate-infer" in help_text
+    assert "forward" in help_text
+    assert "transient" in help_text
+
+
 def test_inverse_roundtrip() -> None:
     forward_payload = json.loads(_run("forward").stdout)
     target = forward_payload["result"]["central_cap_delta17_prime_permil"]

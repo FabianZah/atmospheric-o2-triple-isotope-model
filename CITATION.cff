@@ -32,10 +32,13 @@ references:
     authors:
       - family-names: "Young"
         given-names: "Edward D."
-      - name: "et al."
+      - family-names: "Yeung"
+        given-names: "Laurence Y."
+      - family-names: "Kohl"
+        given-names: "Issaku E."
     journal: "Geochimica et Cosmochimica Acta"
     volume: 135
     start: 102
     end: 125
     year: 2014
-    notes: "Historical atmospheric O2 Delta'17O response anchor."
+    notes: "Atmospheric oxygen budget architecture and published response comparisons."
