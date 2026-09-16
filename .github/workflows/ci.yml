@@ -61,6 +61,7 @@ jobs:
         run: |
           python -m pytest \
             validation/test_updated_molecular_forward_model.py \
+            validation/test_forward_isotope_constraints.py \
             validation/test_updated_forward_surface.py \
             validation/test_updated_output_surface.py \
             validation/test_updated_output_surface_release.py \

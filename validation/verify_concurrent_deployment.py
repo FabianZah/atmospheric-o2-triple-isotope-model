@@ -18,6 +18,11 @@ from zipfile import ZipFile
 
 def cases():
     initial = {"p_o2_pal": 1.0, "p_co2_ppm": 294.0, "gpp_pgC_per_year": 290.0}
+    forward = {
+        "pco2_constraint": {"kind": "normal", "center": 30000.0, "sigma": 6000.0},
+        "gpp_constraint": {"kind": "normal", "center": 58.0, "sigma": 29.0},
+        "po2_constraint": {"kind": "normal", "center": 0.2, "sigma": 0.2},
+    }
     dense = {
         "solve_for": "pCO2", "target_air_cap_delta17_permil": -8.0,
         "measurement_sigma_permil": 0.015,
@@ -50,6 +55,8 @@ def cases():
         "dense_air_second": ("/api/v1/inference/coordinate", dict(dense, target_air_cap_delta17_permil=-7.5)),
         "dense_air_repeat": ("/api/v1/inference/coordinate", dict(dense)),
         "sulfate": ("/api/v1/inference/coordinate", sulfate),
+        "forward_isotopes": ("/api/v1/forward/isotopes", forward),
+        "forward_isotopes_repeat": ("/api/v1/forward/isotopes", dict(forward)),
     }
 
 
@@ -108,7 +115,8 @@ def run(base, phase, reference):
                 identical[key] = name
             print(json.dumps({name: report["cases"][name]}), flush=True)
     else:
-        for pair in (("photosynthesis", "gpp_step"), ("dense_air", "dense_air_repeat"), ("sulfate", "dense_air_second")):
+        for pair in (("photosynthesis", "gpp_step"), ("dense_air", "dense_air_repeat"),
+                     ("sulfate", "dense_air_second"), ("forward_isotopes", "forward_isotopes_repeat")):
             start = monotonic()
             with ThreadPoolExecutor(max_workers=2) as pool:
                 futures = {name: pool.submit(solve, name) for name in pair}
@@ -130,6 +138,13 @@ def run(base, phase, reference):
         with ThreadPoolExecutor(max_workers=2) as pool:
             report["exports"] = list(pool.map(export, ("dense_air", "dense_air_second")))
         print(json.dumps({"exports": report["exports"]}), flush=True)
+        start = monotonic()
+        data = request(base, "/api/v1/export/isotopes.xlsx", inventory["forward_isotopes"][1], session_cookie(base))
+        with ZipFile(BytesIO(data)) as archive:
+            assert archive.testzip() is None
+            assert "xl/worksheets/sheet3.xml" in archive.namelist()
+        report["forward_export"] = {"seconds": monotonic() - start, "bytes": len(data)}
+        print(json.dumps({"forward_export": report["forward_export"]}), flush=True)
     assert json.loads(request(base, "/api/v1/health"))["status"] == "ok"
     report["status"] = "pass"
     return report

@@ -402,11 +402,13 @@ function beginSolverProgress() {
     elapsedId: "solver-progress-elapsed",
     busyRegionId: "view-solver",
     buttonId: "run-solver",
-    message: "Calculating constrained solution",
+    message: state.solveFor === "isotopes" ? "Predicting atmospheric O₂ isotopes" : "Calculating constrained solution",
   });
 }
 
 function updateCoordinateControls() {
+  const isForward = state.solveFor === "isotopes";
+  $("observed-isotope-inputs").classList.toggle("hidden", isForward);
   $("pco2").disabled = state.solveFor === "pCO2";
   $("gpp").disabled = state.solveFor === "GPP";
   $("po2").disabled = state.solveFor === "pO2";
@@ -417,7 +419,10 @@ function updateCoordinateControls() {
     $(prefix).classList.toggle("hidden", hideValue);
     $(`${prefix}-constraint-definition`).classList.toggle("hidden", coordinate === state.solveFor);
   }
-  $("result-title").innerHTML = `${coordinateLabel(state.solveFor)} solution`;
+  $("result-title").innerHTML = isForward ? "Atmospheric O₂ steady state" : `${coordinateLabel(state.solveFor)} solution`;
+  const label = isForward ? "Calculate isotope composition" : "Calculate constrained solution";
+  $("run-solver").dataset.label = label;
+  if (!$("run-solver").disabled) $("run-solver").textContent = label;
 }
 
 function isotopeConstraintText(target) {
@@ -450,6 +455,7 @@ function isotopeConstraintText(target) {
 }
 
 function renderConstrainedCoordinate(result, target, inputs, constraints, request) {
+  $("forward-d18-result").classList.add("hidden");
   const coordinate = result.solve_for;
   const [low, high] = result.equal_tailed_credible_interval;
   const central = result.posterior_median;
@@ -535,6 +541,30 @@ function renderConstrainedCoordinate(result, target, inputs, constraints, reques
   };
 }
 
+function renderForwardIsotopes(result, constraints, request) {
+  $("solver-empty").classList.add("hidden");
+  $("solver-result").classList.remove("hidden");
+  $("forward-d18-result").classList.remove("hidden");
+  const uncertain = result.uncertain_inputs.length > 0;
+  $("result-coordinate").innerHTML = `Δ′<sup>17</sup>O<sub>0.528</sub>${uncertain ? " median" : ""}`;
+  const d17 = result.isotopes.cap_delta17_prime_permil;
+  const d18 = result.isotopes.delta18_conventional_permil;
+  const interval = (value) => value.interval95
+    ? `${format(value.interval95[0], 3)} to ${format(value.interval95[1], 3)}‰ · 95% propagated interval`
+    : "";
+  $("result-value").textContent = `${format(d17.median, 3)}‰`;
+  $("result-interval").textContent = interval(d17);
+  $("forward-d18-label").innerHTML = `δ<sup>18</sup>O<sub>VSMOW</sub>${uncertain ? " median" : ""}`;
+  $("forward-d18-value").textContent = `${format(d18.median, 3)}‰`;
+  $("forward-d18-interval").textContent = interval(d18);
+  $("result-constraints").innerHTML = Object.entries(constraints)
+    .map(([coordinate, constraint]) => constraintText(coordinate, constraint)).join("<br>");
+  ["solver-marginal", "solver-probability", "solver-method-note"].forEach((id) => $(id).classList.add("hidden"));
+  ["solver-marginal-canvas", "solver-probability-canvas"].forEach(clearPlot);
+  $("download-result-xlsx").disabled = false;
+  state.lastResult = { result, request, constraints, coordinate: "isotopes", forward: true };
+}
+
 async function runSolver() {
   const button = $("run-solver");
   $("solver-error").textContent = "";
@@ -544,7 +574,20 @@ async function runSolver() {
   state.lastResult = null;
   setBusy(button, true, "Calculating…");
   const endProgress = beginSolverProgress();
+  const solveFor = state.solveFor;
+  const solverControls = [...document.querySelectorAll("#view-solver .control-panel input, #view-solver .control-panel select, #view-solver .control-panel button")];
+  const disabledBefore = solverControls.map((control) => control.disabled);
+  solverControls.forEach((control) => { control.disabled = true; });
   try {
+    if (solveFor === "isotopes") {
+      const constraints = Object.fromEntries(["pCO2", "GPP", "pO2"].map((coordinate) => [coordinate, coordinateConstraint(coordinate)]));
+      const request = { pco2_constraint: constraints.pCO2, gpp_constraint: constraints.GPP, po2_constraint: constraints.pO2 };
+      const payload = await api("/api/v1/forward/isotopes", {
+        method: "POST", onComputeState: endProgress.onState, body: JSON.stringify(request),
+      });
+      renderForwardIsotopes(payload.result, constraints, request);
+      return;
+    }
     const target = await isotopeTarget(endProgress.onState);
     const inputs = currentForwardState();
     if (target.sigma <= 0) throw new Error("A positive Δ′¹⁷O analytical uncertainty is required.");
@@ -583,6 +626,7 @@ async function runSolver() {
     $("solver-error").textContent = publicErrorMessage(error);
   } finally {
     endProgress();
+    solverControls.forEach((control, index) => { control.disabled = disabledBefore[index]; });
     setBusy(button, false);
   }
 }
@@ -594,7 +638,8 @@ async function downloadWorkbook() {
   $("solver-error").textContent = "";
   setBusy(button, true, "Preparing…");
   try {
-    const context = {
+    const isForward = state.lastResult.forward;
+    const context = isForward ? {} : {
       isotope_source: target.source,
       ...(target.spherule ? {
         spherule: {
@@ -605,11 +650,11 @@ async function downloadWorkbook() {
         },
       } : {}),
     };
-    const response = await modelFetch("/api/v1/export/coordinate.xlsx", {
+    const response = await modelFetch(isForward ? "/api/v1/export/isotopes.xlsx" : "/api/v1/export/coordinate.xlsx", {
       method: "POST",
       onComputeState: (status) => setBusy(button, true, status === "waiting" ? "Waiting…" : "Preparing…"),
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ inference: request, context }),
+      body: JSON.stringify(isForward ? request : { inference: request, context }),
     });
     if (!response.ok) {
       const payload = await response.json().catch(() => ({}));
@@ -618,7 +663,7 @@ async function downloadWorkbook() {
     const blob = await response.blob();
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `oxytib_${coordinate}_solution.xlsx`;
+    link.download = isForward ? "oxytib_isotope_prediction.xlsx" : `oxytib_${coordinate}_solution.xlsx`;
     link.click();
     URL.revokeObjectURL(link.href);
   } catch (error) {
@@ -1810,6 +1855,11 @@ function bindInterface() {
   }));
   document.querySelectorAll("#solve-selector button").forEach((button) => button.addEventListener("click", () => {
     state.solveFor = button.dataset.coordinate;
+    $("solver-result").classList.add("hidden");
+    $("solver-empty").classList.remove("hidden");
+    $("download-result-xlsx").disabled = true;
+    $("solver-error").textContent = "";
+    state.lastResult = null;
     document.querySelectorAll("#solve-selector button").forEach((item) => item.classList.toggle("active", item === button));
     updateCoordinateControls();
   }));

@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OXYTIB</title>
-  <link rel="stylesheet" href="assets/styles.css?v=1.25.3">
+  <link rel="stylesheet" href="assets/styles.css?v=1.27.0">
   <script defer src="assets/mathjax-config.js?v=1.0.0"></script>
   <script defer src="assets/vendor/mathjax/tex-svg.js?v=3.2.2"></script>
-  <script defer src="assets/app.js?v=1.26.0"></script>
+  <script defer src="assets/app.js?v=1.27.0"></script>
 </head>
 <body>
   <header class="topbar">
@@ -52,6 +52,17 @@
             <button class="text-button" id="reset-inputs" type="button">Reset</button>
           </div>
 
+          <fieldset>
+            <legend>Solve for</legend>
+            <div class="segmented three" id="solve-selector">
+              <button type="button" class="active" data-coordinate="pCO2">pCO<sub>2</sub></button>
+              <button type="button" data-coordinate="GPP">GPP</button>
+              <button type="button" data-coordinate="pO2">pO<sub>2</sub></button>
+              <button type="button" data-coordinate="isotopes">O<sub>2</sub> isotope composition</button>
+            </div>
+          </fieldset>
+
+          <div id="observed-isotope-inputs">
           <fieldset>
             <legend>Isotope source</legend>
             <div class="segmented" id="source-selector">
@@ -150,14 +161,7 @@
             </fieldset>
           </div>
 
-          <fieldset>
-            <legend>Solve for</legend>
-            <div class="segmented three" id="solve-selector">
-              <button type="button" class="active" data-coordinate="pCO2">pCO<sub>2</sub></button>
-              <button type="button" data-coordinate="GPP">GPP</button>
-              <button type="button" data-coordinate="pO2">pO<sub>2</sub></button>
-            </div>
-          </fieldset>
+          </div>
 
           <div class="input-group constraints">
             <label for="pco2" id="pco2-value-label">pCO<sub>2</sub> <span>ppm</span></label>
@@ -249,6 +253,11 @@
               <span id="result-coordinate">pCO<sub>2</sub></span>
               <strong id="result-value"></strong>
               <small id="result-interval"></small>
+            </div>
+            <div class="primary-result hidden" id="forward-d18-result">
+              <span id="forward-d18-label">δ<sup>18</sup>O<sub>VSMOW</sub></span>
+              <strong id="forward-d18-value"></strong>
+              <small id="forward-d18-interval"></small>
             </div>
             <div class="result-strip">
               <div><span>Input constraints</span><strong id="result-constraints"></strong></div>
@@ -391,7 +400,7 @@
           <details><summary>How is the probability distribution calculated?</summary><p>Candidate atmospheres are weighted by agreement with the isotope measurement and entered constraints. The calculation averages over the allowed values of the other coordinates to obtain the distribution for the requested variable. That variable has a uniform prior in its reported units across the accepted domain. For pCO<sub>2</sub>, the plotted curve shows probability per equal log<sub>10</sub>(pCO<sub>2</sub>) interval to match the logarithmic display axis; the inference prior remains uniform in ppm.</p></details>
           <details><summary>What is the difference between the isotope field and the constrained solution?</summary><p>The isotope field shows deterministic central-model Δ′<sup>17</sup>O predictions across pCO<sub>2</sub> and GPP at one fixed pO<sub>2</sub>. The constrained solver combines an isotope measurement and its analytical uncertainty with independent constraints to produce a probability distribution for one requested coordinate.</p></details>
           <details><summary>What do model limits and boundary-limited results mean?</summary><p>The solver shows the accepted input ranges and flags entries outside them. A boundary-limited result occurs when appreciable posterior probability reaches an edge of the accepted model domain. Compatible states may extend beyond that edge, so the inferred interval is only partially constrained. A peak at the boundary should be interpreted together with the warning and the entered constraints.</p></details>
-          <details><summary>How do steady-state results and time-response experiments differ?</summary><p>The isotope field and constrained solver describe steady states. Time response follows adjustment after an imposed change in pCO<sub>2</sub>, GPP, pO<sub>2</sub>, or photosynthesis. Year zero marks the start of the change, including a gradual pCO<sub>2</sub> trajectory; negative times show the initial state. Operational equilibrium is reached when both isotope coordinates enter and remain within 0.001‰ of the long-run state. The equilibrium search is independent of the displayed duration and extends to 100,000 years.</p></details>
+          <details><summary>How do steady-state results and time-response experiments differ?</summary><p>The isotope field and model solver describe steady states. Select <strong>O₂ isotope composition</strong> to predict atmospheric Δ′<sup>17</sup>O and δ<sup>18</sup>O from pCO<sub>2</sub>, GPP, and pO<sub>2</sub>. Uncertain input constraints produce isotope medians and central 95% propagated intervals. Time response follows adjustment after an imposed change in pCO<sub>2</sub>, GPP, pO<sub>2</sub>, or photosynthesis. Year zero marks the start of the change, including a gradual pCO<sub>2</sub> trajectory; negative times show the initial state. Operational equilibrium is reached when both isotope coordinates enter and remain within 0.001‰ of the long-run state. The equilibrium search is independent of the displayed duration and extends to 100,000 years.</p></details>
           <details><summary>How long do calculations take?</summary><p>Most fixed-constraint calculations finish within seconds. Narrow probability fields may require automatic grid refinement and take a few minutes. Time-response experiments solve adaptive differential equations; the photosynthesis step integrates the coupled carbon, O<sub>2</sub>, and isotope response over the equilibrium-search horizon. Runtime also depends on the selected constraints, experiment duration, and server load. When the server is busy, a waiting indicator appears and the calculation starts automatically when capacity becomes available.</p></details>
           <details><summary>Can the model be applied to ancient atmospheres?</summary><p>Yes, when the requested state lies inside the accepted model domain and independent evidence constrains the other atmospheric coordinates. Geological interpretations should also consider structural model uncertainty and the applicability of the model assumptions to the investigated interval.</p></details>
           <details><summary>How are cosmic-spherule inputs converted?</summary><p>Enter the I-type cosmic spherule's Δ′<sup>17</sup>O and δ<sup>18</sup>O with their analytical 1σ uncertainties. The measurements and uncertainties are converted to atmospheric O<sub>2</sub> using Zahnow et al. (2025), Eq. 3, calibrated by Fischer et al. (2021). Calibration-parameter sensitivity is assessed separately.</p></details>

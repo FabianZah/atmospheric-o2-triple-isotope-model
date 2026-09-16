@@ -56,6 +56,11 @@ Run a steady forward calculation:
 python run_model.py calculate forward --po2 1 --pco2 294 --gpp 290
 ```
 
+In the web solver, **O₂ isotope composition** predicts Δ′¹⁷O and conventional
+δ¹⁸O (VSMOW). Fixed, 1σ, or range constraints on pCO₂, GPP, and pO₂ can be
+propagated to isotope intervals. The [forward-constraint guide](docs/forward_isotope_constraints.md)
+describes the calculation and direct Python/API usage.
+
 Infer pCO₂ at fixed pO₂ and GPP:
 
 ```powershell

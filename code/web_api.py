@@ -25,6 +25,7 @@ from public_model_service import (
     constrained_coordinate,
     constrained_pco2,
     forward,
+    forward_isotopes,
     inverse,
     isotope_field,
     joint_posterior,
@@ -35,6 +36,7 @@ from public_model_service import (
     state_step_transient,
 )
 from updated_molecular_forward_model import UpdatedForwardInput
+from forward_isotope_constraints import ForwardIsotopeConstraints, ForwardResolutionError
 from sulfate_to_air import IncorporationConstraint, named_air_fractionation
 from sulfate_uncertainty import (
     BackgroundConstraint, SulfateLikelihoodInput, SulfateIntegrationError, SulfateComputeLimitError,
@@ -54,6 +56,7 @@ from updated_pco2_trajectory_transient import UpdatedPCO2TrajectoryInput
 from model_result_workbook import (
     build_coordinate_inference_workbook,
     build_transient_workbook,
+    build_forward_isotope_workbook,
 )
 
 
@@ -293,6 +296,18 @@ class CoordinateConstraintRequest(StrictRequest):
 
     def solver_input(self) -> CoordinateConstraint:
         return CoordinateConstraint(**self.model_dump())
+
+
+class ForwardIsotopeRequest(StrictRequest):
+    pco2_constraint: CoordinateConstraintRequest
+    gpp_constraint: CoordinateConstraintRequest
+    po2_constraint: CoordinateConstraintRequest
+
+    def solver_input(self) -> ForwardIsotopeConstraints:
+        return ForwardIsotopeConstraints(**{
+            name: getattr(self, name).solver_input()
+            for name in ("pco2_constraint", "gpp_constraint", "po2_constraint")
+        })
 
 
 class ConstrainedPCO2Request(StrictRequest):
@@ -693,6 +708,13 @@ async def unresolved_posterior(_request: Request, exc: PosteriorResolutionError)
     })
 
 
+@app.exception_handler(ForwardResolutionError)
+def forward_resolution_error(_request: Request, exc: ForwardResolutionError) -> JSONResponse:
+    return JSONResponse(status_code=422, content={
+        "detail": str(exc), "code": "forward_resolution_limit",
+    })
+
+
 @app.get("/")
 def root() -> FileResponse:
     return FileResponse(WEB_ROOT / "index.html")
@@ -753,6 +775,27 @@ def steady_forward(request: ForwardRequest) -> dict:
 @app.post("/api/v1/inverse")
 def one_coordinate_inverse(request: InverseRequest) -> dict:
     return inverse(request.solver_input())
+
+
+@app.post("/api/v1/forward/isotopes")
+def constrained_forward_isotopes(request: ForwardIsotopeRequest) -> dict:
+    inputs = request.solver_input()
+    key = completed_result_key({"forward_isotopes": asdict(inputs)}, model_metadata())
+    envelope = _COORDINATE_EXPORT_CACHE.get(key)
+    if envelope is None:
+        envelope = forward_isotopes(inputs)
+        _COORDINATE_EXPORT_CACHE.put(key, envelope)
+    return envelope
+
+
+@app.post("/api/v1/export/isotopes.xlsx")
+def forward_isotope_workbook(request: ForwardIsotopeRequest) -> Response:
+    envelope = constrained_forward_isotopes(request)
+    return Response(
+        content=build_forward_isotope_workbook(envelope),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": 'attachment; filename="oxytib_isotope_prediction.xlsx"'},
+    )
 
 
 @app.post("/api/v1/posterior/conditional")

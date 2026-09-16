@@ -12,6 +12,7 @@ from typing import Any
 import numpy as np
 
 from isotope_field_contours import select_isotope_field_contours
+from forward_isotope_constraints import ForwardIsotopeConstraints, predict_isotopes
 from spherule_to_air_d17o import (
     air_d17o_from_spherule,
     analytical_air_d17o_sigma,
@@ -133,6 +134,10 @@ def result_envelope(result: Any, *, calculation: str) -> dict[str, Any]:
             "extrapolation_permitted": False,
         },
     }
+
+
+def forward_isotopes(request: ForwardIsotopeConstraints) -> dict[str, Any]:
+    return result_envelope(predict_isotopes(request), calculation="steady_forward_constraints")
 
 
 def forward(request: UpdatedForwardInput) -> dict[str, Any]:

@@ -105,6 +105,51 @@ def _streaming_workbook() -> Iterator[Workbook]:
         workbook.close()
 
 
+def build_forward_isotope_workbook(envelope: dict[str, Any]) -> bytes:
+    result = envelope["result"]
+    with _streaming_workbook() as workbook:
+        summary = _StreamingTable(workbook, "Summary", title="Atmospheric O2 steady-state prediction",
+                                  headers=("Quantity", "Value", "Units"), widths=(42, 90, 24))
+        for row in (
+            ("generated_utc", datetime.now(timezone.utc).isoformat(), ""),
+            ("software", SOFTWARE_NAME, ""), ("software_version", SOFTWARE_VERSION, ""),
+            ("repository", REPOSITORY_URL, ""), ("calculation", envelope["calculation"], ""),
+            ("isotope_convention", result["isotope_convention"], ""),
+            ("constraint_convention", result["constraint_convention"], ""),
+            ("interval_convention", result["interval_convention"], ""),
+        ):
+            summary.append(row)
+        for isotope, values in result["isotopes"].items():
+            for statistic, value in values.items():
+                if statistic == "interval95":
+                    if value is not None:
+                        summary.append((f"{isotope}: 2.5 percentile", value[0], "per mil"))
+                        summary.append((f"{isotope}: 97.5 percentile", value[1], "per mil"))
+                else:
+                    summary.append((f"{isotope}: {statistic}", value, "per mil"))
+        summary.finish()
+        inputs = _StreamingTable(workbook, "Input constraints", title="Independent input constraints",
+                                 headers=("Parameter", "Constraint", "Center", "1 sigma", "Lower", "Upper", "Units"),
+                                 widths=(20, 20, 18, 18, 18, 18, 20))
+        for key, coordinate in (("pco2_constraint", "pCO2"), ("gpp_constraint", "GPP"), ("po2_constraint", "pO2")):
+            c = result["inputs"][key]
+            inputs.append((coordinate, c["kind"], c["center"], c["sigma"], c["lower"], c["upper"], _unit(coordinate)))
+        inputs.finish()
+        metadata = _StreamingTable(workbook, "Metadata", title="Reproducibility metadata",
+                                   headers=("Property", "Value"), widths=(40, 110))
+        for key, value in {
+            "effective_bounds": result["effective_bounds"],
+            "numerical_checks": result["numerical_checks"],
+            "publication_model_id": envelope["publication_model_id"],
+            "provenance": envelope["provenance"],
+        }.items():
+            metadata.append((key, json.dumps(value, ensure_ascii=True)))
+        metadata.finish()
+        buffer = BytesIO()
+        workbook.save(buffer)
+        return buffer.getvalue()
+
+
 def _unit(coordinate: str) -> str:
     return {"pCO2": "ppm", "GPP": "PgC yr-1", "pO2": "PAL"}[coordinate]
 
