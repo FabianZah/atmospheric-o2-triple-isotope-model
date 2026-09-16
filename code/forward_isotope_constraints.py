@@ -6,6 +6,7 @@ compare independent scrambled Sobol replicates and successive refinements.
 """
 
 from dataclasses import asdict, dataclass
+from threading import Lock
 
 import numpy as np
 from scipy.special import ndtr, ndtri
@@ -35,6 +36,7 @@ _MIN_POWER = 12
 _MAX_POWER = 22
 _ABS_TOLERANCE = 0.0001  # per mil; one tenth of the displayed isotope precision
 _REL_TOLERANCE = 0.0002  # fraction of the propagated central 95% interval width
+_SAMPLER_INITIALIZATION_LOCK = Lock()
 
 
 def _transform(unit, resolved):
@@ -120,7 +122,10 @@ def predict_isotopes(request: ForwardIsotopeConstraints, *, surface=None):
     if not uncertain:
         combined = np.vstack((central, central, central, central, np.zeros(2)))
     else:
-        samplers = [qmc.Sobol(len(uncertain), scramble=True, seed=seed) for seed in _SEEDS]
+        # SciPy lazily fills shared Sobol direction tables on first use. Guard
+        # construction only; each request then owns independently sampled state.
+        with _SAMPLER_INITIALIZATION_LOCK:
+            samplers = [qmc.Sobol(len(uncertain), scramble=True, seed=seed) for seed in _SEEDS]
         # Preallocate to avoid doubling memory at each refinement. Only populated
         # pages are touched; sorted marginals permit exact merged quantiles.
         storage = np.empty((2, 2, 2**_MAX_POWER))

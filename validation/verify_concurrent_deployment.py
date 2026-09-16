@@ -12,6 +12,7 @@ from http.cookies import SimpleCookie
 import json
 from pathlib import Path
 from time import monotonic
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 from zipfile import ZipFile
 
@@ -66,8 +67,12 @@ def request(base, path, payload=None, cookie=None):
     if cookie:
         headers["Cookie"] = cookie
     req = Request(base.rstrip("/") + path, data=data, headers=headers)
-    with urlopen(req, timeout=600) as response:
-        return response.read()
+    try:
+        with urlopen(req, timeout=600) as response:
+            return response.read()
+    except HTTPError as exc:
+        detail = exc.read(4096).decode("utf-8", errors="replace")
+        raise RuntimeError(f"{path}: HTTP {exc.code}: {detail}") from exc
 
 
 def session_cookie(base):

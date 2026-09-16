@@ -2,6 +2,12 @@
 
 from io import BytesIO
 from itertools import product
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from threading import Barrier, Lock
+import subprocess
+import sys
+import time
 
 import numpy as np
 import pytest
@@ -78,6 +84,57 @@ def test_sorted_replicate_statistics_match_concatenated_numpy():
         np.testing.assert_allclose(stats[:3], np.quantile(all_values, [.025, .5, .975], axis=1), atol=1e-14)
         np.testing.assert_allclose(stats[3], np.mean(all_values, axis=1), atol=1e-14)
         np.testing.assert_allclose(stats[4], np.std(all_values, axis=1), atol=1e-14)
+
+
+def test_sampler_construction_is_serialized_but_requests_can_overlap(monkeypatch):
+    original = propagation.qmc.Sobol
+    guard, start = Lock(), Barrier(2)
+    active = 0
+    def checked_constructor(*args, **kwargs):
+        nonlocal active
+        with guard:
+            active += 1
+            assert active == 1, "Concurrent initialization of SciPy direction tables"
+        try:
+            time.sleep(.01)
+            return original(*args, **kwargs)
+        finally:
+            with guard:
+                active -= 1
+    monkeypatch.setattr(propagation.qmc, "Sobol", checked_constructor)
+    def solve(_):
+        start.wait(timeout=10)
+        return predict_isotopes(ForwardIsotopeConstraints(
+            pco2_constraint=C("range", lower=100, upper=500)), surface=LinearSurface())
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(solve, range(2)))
+    assert results[0] == results[1]
+
+
+def test_cold_process_concurrent_sampling_matches_sequential():
+    root = Path(__file__).resolve().parents[1]
+    script = '''
+import sys
+sys.path.insert(0, 'code')
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
+from forward_isotope_constraints import ForwardIsotopeConstraints, predict_isotopes
+from updated_constrained_pco2_posterior import CoordinateConstraint
+from updated_output_surface import load_updated_output_surface
+load_updated_output_surface()
+request = ForwardIsotopeConstraints(gpp_constraint=CoordinateConstraint('normal', center=290, sigma=29))
+start = Barrier(2)
+def solve(_):
+    start.wait(timeout=10)
+    return predict_isotopes(request)
+with ThreadPoolExecutor(max_workers=2) as pool:
+    results = list(pool.map(solve, range(2)))
+assert results[0] == results[1] == predict_isotopes(request)
+'''
+    completed = subprocess.run([sys.executable, "-c", script], cwd=root,
+                               capture_output=True, text=True, timeout=60)
+    assert completed.returncode == 0, completed.stderr
+    assert "Exception ignored" not in completed.stderr, completed.stderr
 
 
 @pytest.mark.parametrize("inputs", [
