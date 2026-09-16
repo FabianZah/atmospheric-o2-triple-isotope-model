@@ -71,6 +71,9 @@ COMPUTE_QUEUE_TIMEOUT_SECONDS = float(
     os.environ.get("OXYTIB_COMPUTE_QUEUE_TIMEOUT_SECONDS", 120.0)
 )
 MAX_WAITING_REQUESTS = int(os.environ.get("OXYTIB_MAX_WAITING_REQUESTS", 4))
+MAX_WAITING_PER_CLIENT = int(os.environ.get("OXYTIB_MAX_WAITING_PER_CLIENT", 2))
+CLIENT_BUDGET_SECONDS = float(os.environ.get("OXYTIB_CLIENT_BUDGET_SECONDS", 360.0))
+CLIENT_WINDOW_SECONDS = float(os.environ.get("OXYTIB_CLIENT_WINDOW_SECONDS", 600.0))
 ROOT_PATH = os.environ.get("OXYTIB_ROOT_PATH", "").strip()
 if ROOT_PATH:
     ROOT_PATH = "/" + ROOT_PATH.strip("/")
@@ -654,6 +657,9 @@ app.add_middleware(
     maximum=MAX_COMPUTE_REQUESTS,
     queue_timeout_seconds=COMPUTE_QUEUE_TIMEOUT_SECONDS,
     max_waiting=MAX_WAITING_REQUESTS,
+    max_waiting_per_client=MAX_WAITING_PER_CLIENT,
+    client_budget_seconds=CLIENT_BUDGET_SECONDS,
+    client_window_seconds=CLIENT_WINDOW_SECONDS,
 )
 app.add_middleware(RequestBodyLimitMiddleware, max_bytes=MAX_REQUEST_BYTES)
 app.add_middleware(SecurityHeadersMiddleware, headers=SECURITY_HEADERS)

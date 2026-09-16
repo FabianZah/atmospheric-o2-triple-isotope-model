@@ -8,6 +8,7 @@ import argparse
 from concurrent.futures import ThreadPoolExecutor
 from hashlib import sha256
 from io import BytesIO
+from http.cookies import SimpleCookie
 import json
 from pathlib import Path
 from time import monotonic
@@ -52,11 +53,21 @@ def cases():
     }
 
 
-def request(base, path, payload=None):
+def request(base, path, payload=None, cookie=None):
     data = None if payload is None else json.dumps(payload).encode()
-    req = Request(base.rstrip("/") + path, data=data, headers={"Content-Type": "application/json"})
+    headers = {"Content-Type": "application/json"}
+    if cookie:
+        headers["Cookie"] = cookie
+    req = Request(base.rstrip("/") + path, data=data, headers=headers)
     with urlopen(req, timeout=600) as response:
         return response.read()
+
+
+def session_cookie(base):
+    with urlopen(base.rstrip("/") + "/api/v1/model", timeout=30) as response:
+        cookie = SimpleCookie(response.headers.get("Set-Cookie", ""))
+        assert "oxytib_client" in cookie, "Staging must issue a client session"
+        return "oxytib_client=" + cookie["oxytib_client"].value
 
 
 def numerical_result(value):
@@ -70,12 +81,16 @@ def numerical_result(value):
 
 def run(base, phase, reference):
     inventory = cases()
+    # Independent cases model different visitors; the repeated dense pair tests
+    # one visitor's two-slot burst. Export clients are independent downloaders.
+    sessions = {name: session_cookie(base) for name in inventory}
+    sessions["dense_air_repeat"] = sessions["dense_air"]
     report = {"phase": phase, "cases": {}, "pairs": []}
 
     def solve(name):
         path, payload = inventory[name]
         start = monotonic()
-        result = json.loads(request(base, path, payload))["result"]
+        result = json.loads(request(base, path, payload, sessions[name]))["result"]
         row = {"seconds": monotonic() - start,
                "result_sha256": sha256(json.dumps(numerical_result(result), sort_keys=True, separators=(",", ":")).encode()).hexdigest()}
         if phase == "concurrent":
@@ -104,10 +119,11 @@ def run(base, phase, reference):
             print(json.dumps(report["pairs"][-1]), flush=True)
 
         def export(name):
+            cookie = session_cookie(base)
             start = monotonic()
             data = request(base, "/api/v1/export/coordinate.xlsx", {
                 "inference": inventory[name][1], "context": {"isotope_source": "Direct air O2"},
-            })
+            }, cookie)
             with ZipFile(BytesIO(data)) as archive:
                 assert archive.testzip() is None
             return {"name": name, "seconds": monotonic() - start, "bytes": len(data)}

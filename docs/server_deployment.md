@@ -99,7 +99,10 @@ and allows two. Both provide a 256 MiB temporary filesystem for XLSX assembly;
 temporary-filesystem memory also counts toward the container memory limit.
 The application keeps no persistent scientific state.
 
-The application admits requests in arrival order, with at most four waiting
+The application prioritizes waiting clients with fewer active calculations,
+then gives the next turn to the least recently served client. Requests from
+the same client keep arrival order. One client may use both slots while they
+are available. There are at most four waiting
 requests (`OXYTIB_MAX_WAITING_REQUESTS`) and a 120-second queue timeout
 (`OXYTIB_COMPUTE_QUEUE_TIMEOUT_SECONDS`). The browser displays waiting or
 running status for its own request. Status checks use random request IDs and
@@ -109,6 +112,33 @@ exclusively, even when two calculation slots are configured, to limit peak
 memory. Additional requests receive a clear queue-full or wait-limit response.
 Keep the proxy's in-flight limit above active plus waiting requests to leave
 room for status and health checks; the shared template uses eight.
+
+Fair-use settings allow two waiting requests per client
+(`OXYTIB_MAX_WAITING_PER_CLIENT`) and 360 occupied calculation-slot seconds
+within a rolling 600-second window (`OXYTIB_CLIENT_BUDGET_SECONDS` and
+`OXYTIB_CLIENT_WINDOW_SECONDS`). Two simultaneous calculations count twice;
+exclusive exports account for every slot they reserve. Waiting time is free.
+This measures occupied wall time, not CPU time. Running jobs finish normally;
+allowances are checked on submission and again before queued work starts.
+HTTP 429 responses provide a retry time, which can lengthen while an existing
+calculation continues. Completed, failed and cancelled execution time counts.
+The queue timeout is separate from this allowance.
+
+The model metadata endpoint sets a signed, HttpOnly, SameSite=Lax functional
+cookie, `oxytib_client`, valid for one day. This distinguishes browsers sharing
+a university IP, survives reloads, and carries no scientific inputs. Secure
+is set for HTTPS requests; configure trusted proxy handling correctly behind
+TLS termination. API clients without cookies share a peer-address allowance;
+this middleware does not interpret arbitrary forwarded-IP headers. Usage is
+held in memory for the rolling window and resets on process restart. The
+ledger holds at most 1024 clients and 256 completed intervals per client, plus
+in-flight work; saturation rejects new work until records expire.
+
+Anonymous session fairness supplements proxy rate limits; it is not an
+authenticated per-person quota or DDoS defence. Clearing cookies or creating
+fresh sessions can bypass a session allowance. Keep network-level limits and
+provider protection in place. Do not use multiple application workers without
+a shared admission/usage store: these limits are per process.
 
 Constrained-solution XLSX exports stream formatted rows through the required
 `lxml` backend instead of retaining the worksheet cell grid in memory. The
