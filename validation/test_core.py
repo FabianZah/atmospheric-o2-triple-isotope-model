@@ -1344,11 +1344,12 @@ def test_current_architecture_preset_runs_integrated_source_law() -> None:
     )
 
     v2_parallel = run_scenario(ScenarioInput(preset=YOUNG_LIKE_V2_PARALLEL_CO2_NAME))
+    # Allow cross-platform nonlinear-solve roundoff, as for the CO2 check below.
     check_close(
         "v2 parallel candidate O2 modern",
         v2_parallel.outputs["O2_trop_D17O_permil"],
         -0.4382522365894701,
-        2.0e-11,
+        2.0e-10,
     )
     check_close(
         "v2 parallel candidate column flux ratio",
