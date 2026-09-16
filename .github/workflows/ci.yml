@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      check_two_users:
+        description: Run the additional two-calculation memory and result-equivalence audit
+        type: boolean
+        default: false
 
 jobs:
   test:
@@ -45,6 +50,7 @@ jobs:
           python -m pytest \
             validation/test_api_launcher.py \
             validation/test_web_api.py \
+            validation/test_compute_capacity.py \
             validation/test_model_result_workbook.py \
             validation/test_public_cli.py \
             validation/test_isotope_field_contours.py \
@@ -153,6 +159,44 @@ jobs:
         run: |
           python validation/verify_public_deployment.py \
             --base-url http://127.0.0.1:8000 --check-dense-export
+
+      - name: Verify two-calculation staging capacity
+        if: github.event_name == 'workflow_dispatch' && inputs.check_two_users
+        timeout-minutes: 20
+        run: |
+          python validation/verify_concurrent_deployment.py \
+            --base-url http://127.0.0.1:8000 --phase baseline \
+            --output outputs/capacity-baseline.json
+          docker stop --time 10 oxytib-ci
+          docker rm oxytib-ci
+          docker run --detach --name oxytib-ci \
+            --publish 127.0.0.1:8000:8000 \
+            --read-only --tmpfs /tmp:rw,noexec,nosuid,size=256m \
+            --memory 768m --memory-swap 768m --pids-limit 128 --cpus 0.75 \
+            --env OXYTIB_MAX_COMPUTE_REQUESTS=2 \
+            --env OXYTIB_COMPUTE_QUEUE_TIMEOUT_SECONDS=120 \
+            --cap-drop ALL --security-opt no-new-privileges \
+            oxytib:ci
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8000/api/v1/health >/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+          python validation/verify_concurrent_deployment.py \
+            --base-url http://127.0.0.1:8000 --phase concurrent \
+            --reference outputs/capacity-baseline.json \
+            --output outputs/capacity-concurrent.json
+          docker exec oxytib-ci python -c \
+            'from pathlib import Path; import json; p=Path("/sys/fs/cgroup"); d={n:(p/n).read_text().strip() for n in ("memory.max","memory.peak","memory.events")}; print(json.dumps(d)); assert int(d["memory.peak"]) < .9*int(d["memory.max"]), "Insufficient memory headroom for two requests"' \
+            > outputs/capacity-memory.json
+
+      - name: Save two-calculation capacity results
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.check_two_users
+        uses: actions/upload-artifact@v4
+        with:
+          name: two-calculation-capacity
+          path: outputs/capacity-*.json
 
       - name: Report container memory and exit state
         if: always()

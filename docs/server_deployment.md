@@ -99,6 +99,17 @@ and allows two. Both provide a 256 MiB temporary filesystem for XLSX assembly;
 temporary-filesystem memory also counts toward the container memory limit.
 The application keeps no persistent scientific state.
 
+The application admits requests in arrival order, with at most four waiting
+requests (`OXYTIB_MAX_WAITING_REQUESTS`) and a 120-second queue timeout
+(`OXYTIB_COMPUTE_QUEUE_TIMEOUT_SECONDS`). The browser displays waiting or
+running status for its own request. Status checks use random request IDs and
+return no inputs or results. Disconnected waiting requests are removed;
+calculations already running continue to completion. Workbook exports run
+exclusively, even when two calculation slots are configured, to limit peak
+memory. Additional requests receive a clear queue-full or wait-limit response.
+Keep the proxy's in-flight limit above active plus waiting requests to leave
+room for status and health checks; the shared template uses eight.
+
 Constrained-solution XLSX exports stream formatted rows through the required
 `lxml` backend instead of retaining the worksheet cell grid in memory. The
 container and API requirements include this dependency; leave `OPENPYXL_LXML`
@@ -113,6 +124,15 @@ The dense 833 x 961 posterior and XLSX workload passes with
 `OXYTIB_MEMORY=768m` and one admitted request in both Linux CI and private
 shared-host verification. This lower limit is an explicit deployment choice;
 retain host headroom and repeat the load test before increasing concurrency.
+
+To assess two-calculation capacity in private staging, run
+`validation/verify_concurrent_deployment.py --base-url URL --phase baseline
+--output baseline.json`, restart the staging container to clear transient
+caches, and run the same script with `--phase concurrent --reference baseline.json
+--output concurrent.json`. This checks exact result agreement for paired time
+responses, dense probability fields and sulfate inference, followed by two
+requested exports that the server serializes. Monitor container peak memory
+and OOM events alongside these checks before changing live concurrency.
 
 On Linux, the API launcher replaces itself with the web server so SIGTERM
 reaches the server directly. Compose allows 30 seconds for shutdown.

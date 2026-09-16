@@ -88,11 +88,45 @@ function publicErrorMessage(error) {
   return "The entered constraints are outside the model domain.";
 }
 
+async function modelFetch(path, { onComputeState, ...options } = {}) {
+  const tracked = options.method === "POST" && typeof onComputeState === "function";
+  const token = tracked ? crypto.randomUUID() : null;
+  const polling = new AbortController();
+  let stopped = false;
+  let timer;
+  const poll = async () => {
+    let delay = 5000;
+    try {
+      const response = await fetch(applicationUrl(`/api/v1/compute-status/${token}`), {
+        signal: polling.signal, cache: "no-store",
+      });
+      if (response.ok) {
+        const progress = await response.json();
+        if (!stopped && ["waiting", "running"].includes(progress.state)) onComputeState(progress.state);
+      } else if (response.status === 429) delay = 15000;
+    } catch (_) {
+      // A failed status check does not interrupt the calculation request.
+    }
+    if (!stopped) timer = window.setTimeout(poll, delay);
+  };
+  if (tracked) timer = window.setTimeout(poll, 300);
+  try {
+    return await fetch(applicationUrl(path), {
+      ...options,
+      headers: {
+        "Content-Type": "application/json", ...(options.headers || {}),
+        ...(tracked ? { "X-OXYTIB-Request-ID": token } : {}),
+      },
+    });
+  } finally {
+    stopped = true;
+    window.clearTimeout(timer);
+    polling.abort();
+  }
+}
+
 async function api(path, options = {}) {
-  const response = await fetch(applicationUrl(path), {
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
-    ...options,
-  });
+  const response = await modelFetch(path, options);
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(detailMessage(payload));
   return payload;
@@ -272,7 +306,7 @@ function sulfateObservation() {
   };
 }
 
-async function isotopeTarget() {
+async function isotopeTarget(onComputeState) {
   if (state.source === "sulfate") {
     const sulfate = sulfateObservation();
     return { source: "Sulfate", sulfate, sigma: sulfate.cap_delta17_sigma_permil };
@@ -294,6 +328,7 @@ async function isotopeTarget() {
   };
   const payload = await api("/api/v1/proxy/spherule-to-air", {
     method: "POST",
+    onComputeState,
     body: JSON.stringify({
       cap_delta17_spherule_permil: spherule.delta17,
       delta18_spherule_permil: spherule.delta18,
@@ -320,7 +355,7 @@ function setBusy(button, busy, busyText) {
   button.textContent = busy ? busyText : button.dataset.label;
 }
 
-function beginCalculationProgress({ panelId, labelId, elapsedId, busyRegionId, message }) {
+function beginCalculationProgress({ panelId, labelId, elapsedId, busyRegionId, buttonId, message }) {
   const panel = $(panelId);
   const label = $(labelId);
   const elapsed = $(elapsedId);
@@ -335,11 +370,16 @@ function beginCalculationProgress({ panelId, labelId, elapsedId, busyRegionId, m
   };
   updateElapsed();
   const timer = window.setInterval(updateElapsed, 500);
-  return () => {
+  const finish = () => {
     window.clearInterval(timer);
     panel.classList.add("hidden");
     $(busyRegionId).removeAttribute("aria-busy");
   };
+  finish.onState = (status) => {
+    label.textContent = status === "waiting" ? "Waiting for calculation capacity" : message;
+    setBusy($(buttonId), true, status === "waiting" ? "Waiting…" : "Calculating…");
+  };
+  return finish;
 }
 
 function beginTransientProgress(type) {
@@ -348,6 +388,7 @@ function beginTransientProgress(type) {
     labelId: "transient-progress-label",
     elapsedId: "transient-progress-elapsed",
     busyRegionId: "view-transient",
+    buttonId: "run-transient",
     message: type === "photosynthesis"
       ? "Solving coupled photosynthesis, carbon, and O₂ response"
       : "Solving atmospheric isotope response",
@@ -360,6 +401,7 @@ function beginSolverProgress() {
     labelId: "solver-progress-label",
     elapsedId: "solver-progress-elapsed",
     busyRegionId: "view-solver",
+    buttonId: "run-solver",
     message: "Calculating constrained solution",
   });
 }
@@ -503,7 +545,7 @@ async function runSolver() {
   setBusy(button, true, "Calculating…");
   const endProgress = beginSolverProgress();
   try {
-    const target = await isotopeTarget();
+    const target = await isotopeTarget(endProgress.onState);
     const inputs = currentForwardState();
     if (target.sigma <= 0) throw new Error("A positive Δ′¹⁷O analytical uncertainty is required.");
     if (Number.isFinite(target.delta18) && target.delta18Sigma <= 0) {
@@ -533,6 +575,7 @@ async function runSolver() {
     }
     const payload = await api("/api/v1/inference/coordinate", {
       method: "POST",
+      onComputeState: endProgress.onState,
       body: JSON.stringify(request),
     });
     renderConstrainedCoordinate(payload.result, target, inputs, constraints, request);
@@ -562,8 +605,9 @@ async function downloadWorkbook() {
         },
       } : {}),
     };
-    const response = await fetch(applicationUrl("/api/v1/export/coordinate.xlsx"), {
+    const response = await modelFetch("/api/v1/export/coordinate.xlsx", {
       method: "POST",
+      onComputeState: (status) => setBusy(button, true, status === "waiting" ? "Waiting…" : "Preparing…"),
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ inference: request, context }),
     });
@@ -1333,6 +1377,7 @@ async function runIsotopeField() {
     validateSurfaceDomain(xmin, xmax, ymin, ymax);
     const payload = await api("/api/v1/field/isotope", {
       method: "POST",
+      onComputeState: (status) => setBusy(button, true, status === "waiting" ? "Waiting…" : "Calculating…"),
       body: JSON.stringify({
         p_o2_pal: finite(number("surface-po2"), "Isotope-field pO2"),
         pco2_bounds_ppm: [xmin, xmax],
@@ -1516,7 +1561,9 @@ async function runTransient() {
         equilibrium_search_max_years: Math.max(100000, duration),
       };
     }
-    const payload = await api(path, { method: "POST", body: JSON.stringify(request) });
+    const payload = await api(path, {
+      method: "POST", body: JSON.stringify(request), onComputeState: endProgress.onState,
+    });
     const result = payload.result;
     const times = result.time_years;
     const d17 = result.states.map((item) => item.cap_delta17_prime_permil);
@@ -1646,8 +1693,9 @@ async function downloadTransientWorkbook() {
           ? { pco2_trajectory: request }
           : { state_step: request }),
     };
-    const response = await fetch(applicationUrl("/api/v1/export/transient.xlsx"), {
+    const response = await modelFetch("/api/v1/export/transient.xlsx", {
       method: "POST",
+      onComputeState: (status) => setBusy(button, true, status === "waiting" ? "Waiting…" : "Preparing…"),
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });

@@ -38,7 +38,7 @@ def test_frontend_assets_and_api_work_when_mounted_below_prefix() -> None:
 
     assert root.status_code == 200
     assert 'href="assets/styles.css?v=1.25.3"' in root.text
-    assert 'src="assets/app.js?v=1.25.2"' in root.text
+    assert 'src="assets/app.js?v=1.26.0"' in root.text
     assert 'src="assets/mathjax-config.js?v=1.0.0"' in root.text
     assert 'src="assets/vendor/mathjax/tex-svg.js?v=3.2.2"' in root.text
     assert "cdn.jsdelivr.net" not in root.text
@@ -132,7 +132,7 @@ def test_compute_capacity_keeps_reads_available_and_releases_slots(first_outcome
                 assert blocked.status_code == 503
                 assert blocked.headers["retry-after"] == "2"
                 assert blocked.json()["detail"] == (
-                    "model capacity is temporarily occupied; retry shortly"
+                    "The calculation queue wait limit was reached; please try again shortly."
                 )
                 assert calls == 1
                 if first_outcome == "cancel":
@@ -207,7 +207,7 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert 'id="solver-progress"' in root.text
     assert 'id="solver-progress-elapsed"' in root.text
     assert 'href="assets/styles.css?v=1.25.3"' in root.text
-    assert 'src="assets/app.js?v=1.25.2"' in root.text
+    assert 'src="assets/app.js?v=1.26.0"' in root.text
     assert 'id="reset-surface"' in root.text
     assert 'id="reset-transient"' in root.text
     assert '>Download XLSX</button>' in root.text
@@ -319,7 +319,10 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert "accounts for the entered uncertainty" in script.text
     assert "performance.now() - startedAt" in script.text
     assert "fetch(applicationUrl(path)" in script.text
-    assert 'fetch(applicationUrl("/api/v1/export/coordinate.xlsx")' in script.text
+    assert 'modelFetch("/api/v1/export/coordinate.xlsx"' in script.text
+    assert 'modelFetch("/api/v1/export/transient.xlsx"' in script.text
+    assert 'Waiting for calculation capacity' in script.text
+    assert 'X-OXYTIB-Request-ID' in script.text
     assert "Deterministic model isotope field" not in script.text
     assert "contour is emphasized" not in script.text
     assert "level === -10" not in script.text

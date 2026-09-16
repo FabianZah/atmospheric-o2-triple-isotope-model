@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import asyncio
 from dataclasses import asdict
 from functools import lru_cache
 import os
@@ -18,6 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 import uvicorn
 from posterior_coordinate_quadrature import PosteriorResolutionError
 from completed_result_cache import CompletedResultCache, completed_result_key
+from compute_capacity import ComputeConcurrencyMiddleware
 
 from public_model_service import (
     API_VERSION,
@@ -68,8 +68,9 @@ _COORDINATE_EXPORT_CACHE = CompletedResultCache()
 MAX_REQUEST_BYTES = int(os.environ.get("OXYTIB_MAX_REQUEST_BYTES", 1_048_576))
 MAX_COMPUTE_REQUESTS = int(os.environ.get("OXYTIB_MAX_COMPUTE_REQUESTS", 2))
 COMPUTE_QUEUE_TIMEOUT_SECONDS = float(
-    os.environ.get("OXYTIB_COMPUTE_QUEUE_TIMEOUT_SECONDS", 1.0)
+    os.environ.get("OXYTIB_COMPUTE_QUEUE_TIMEOUT_SECONDS", 120.0)
 )
+MAX_WAITING_REQUESTS = int(os.environ.get("OXYTIB_MAX_WAITING_REQUESTS", 4))
 ROOT_PATH = os.environ.get("OXYTIB_ROOT_PATH", "").strip()
 if ROOT_PATH:
     ROOT_PATH = "/" + ROOT_PATH.strip("/")
@@ -80,6 +81,8 @@ if MAX_COMPUTE_REQUESTS < 1:
     raise ValueError("OXYTIB_MAX_COMPUTE_REQUESTS must be positive")
 if COMPUTE_QUEUE_TIMEOUT_SECONDS <= 0.0:
     raise ValueError("OXYTIB_COMPUTE_QUEUE_TIMEOUT_SECONDS must be positive")
+if MAX_WAITING_REQUESTS < 0:
+    raise ValueError("OXYTIB_MAX_WAITING_REQUESTS must be non-negative")
 
 SECURITY_HEADERS = {
     "Content-Security-Policy": (
@@ -149,40 +152,6 @@ class RequestBodyLimitMiddleware:
                 status_code=413,
                 content={"detail": "request body exceeds the public API size limit"},
             )(scope, receive, send)
-
-
-class ComputeConcurrencyMiddleware:
-    """Bound simultaneous model calculations while keeping static routes responsive."""
-
-    def __init__(self, app, maximum: int, queue_timeout_seconds: float) -> None:
-        self.app = app
-        self.semaphore = asyncio.Semaphore(maximum)
-        self.queue_timeout_seconds = queue_timeout_seconds
-
-    async def __call__(self, scope, receive, send) -> None:
-        is_calculation = (
-            scope["type"] == "http"
-            and scope.get("method") == "POST"
-            and scope.get("path", "").startswith("/api/v1/")
-        )
-        if not is_calculation:
-            await self.app(scope, receive, send)
-            return
-        try:
-            await asyncio.wait_for(
-                self.semaphore.acquire(), timeout=self.queue_timeout_seconds
-            )
-        except TimeoutError:
-            await JSONResponse(
-                status_code=503,
-                content={"detail": "model capacity is temporarily occupied; retry shortly"},
-                headers={"Retry-After": "2"},
-            )(scope, receive, send)
-            return
-        try:
-            await self.app(scope, receive, send)
-        finally:
-            self.semaphore.release()
 
 
 class SecurityHeadersMiddleware:
@@ -678,12 +647,13 @@ app.add_middleware(
     allow_origins=_cors_origins(),
     allow_credentials=False,
     allow_methods=["GET", "POST"],
-    allow_headers=["Content-Type"],
+    allow_headers=["Content-Type", "X-OXYTIB-Request-ID"],
 )
 app.add_middleware(
     ComputeConcurrencyMiddleware,
     maximum=MAX_COMPUTE_REQUESTS,
     queue_timeout_seconds=COMPUTE_QUEUE_TIMEOUT_SECONDS,
+    max_waiting=MAX_WAITING_REQUESTS,
 )
 app.add_middleware(RequestBodyLimitMiddleware, max_bytes=MAX_REQUEST_BYTES)
 app.add_middleware(SecurityHeadersMiddleware, headers=SECURITY_HEADERS)

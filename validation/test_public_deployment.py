@@ -127,7 +127,7 @@ def test_traefik_compose_is_staged_bounded_and_prefix_aware() -> None:
         "${OXYTIB_RATE_BURST:-10}"
     )
     assert labels["traefik.http.middlewares.oxytib-inflight.inflightreq.amount"] == (
-        "${OXYTIB_INFLIGHT_REQUESTS:-4}"
+        "${OXYTIB_INFLIGHT_REQUESTS:-8}"
     )
     assert labels[
         "traefik.http.middlewares.oxytib-security.headers.contenttypenosniff"
@@ -146,7 +146,7 @@ def test_traefik_compose_is_staged_bounded_and_prefix_aware() -> None:
     assert "OXYTIB_MAX_REQUEST_BYTES=1048576" in template
     assert "OXYTIB_MAX_COMPUTE_REQUESTS=1" in template
     assert "OXYTIB_RATE_AVERAGE=30" in template
-    assert "OXYTIB_INFLIGHT_REQUESTS=4" in template
+    assert "OXYTIB_INFLIGHT_REQUESTS=8" in template
     assert "PASSWORD=" not in template
     assert "TOKEN=" not in template
 
