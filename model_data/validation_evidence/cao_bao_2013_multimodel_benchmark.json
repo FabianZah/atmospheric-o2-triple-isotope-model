@@ -1,0 +1,294 @@
+{
+  "schema_version": 1,
+  "benchmark_id": "cao_bao_2013_vs_updated_molecular_v1",
+  "status": "passed_source_and_core_shape_with_high_co2_difference",
+  "comparison_role": "Independent high-pCO2 dynamic and response-shape benchmark; no Cao-Bao output is used to calibrate the updated model.",
+  "source_reproduction": {
+    "passed": true,
+    "rows": [
+      {
+        "panel": "A",
+        "o2_rise_mol_per_year": 5000000000000.0,
+        "co2_drawdown_mol_per_year": 17000000000000.0,
+        "figure_minimum_permil": -13.0,
+        "calculated_minimum_permil": -13.225475690648754,
+        "minimum_residual_permil": -0.2254756906487536,
+        "figure_minimum_time_years": 800000.0,
+        "calculated_minimum_time_years": 822800.0,
+        "time_residual_years": 22800.0,
+        "within_visual_uncertainty": true
+      },
+      {
+        "panel": "A",
+        "o2_rise_mol_per_year": 10000000000000.0,
+        "co2_drawdown_mol_per_year": 17000000000000.0,
+        "figure_minimum_permil": -18.5,
+        "calculated_minimum_permil": -18.820566417864523,
+        "minimum_residual_permil": -0.3205664178645229,
+        "figure_minimum_time_years": 720000.0,
+        "calculated_minimum_time_years": 755400.0,
+        "time_residual_years": 35400.0,
+        "within_visual_uncertainty": true
+      },
+      {
+        "panel": "A",
+        "o2_rise_mol_per_year": 15000000000000.0,
+        "co2_drawdown_mol_per_year": 17000000000000.0,
+        "figure_minimum_permil": -22.5,
+        "calculated_minimum_permil": -22.326400323902817,
+        "minimum_residual_permil": 0.17359967609718296,
+        "figure_minimum_time_years": 680000.0,
+        "calculated_minimum_time_years": 711400.0,
+        "time_residual_years": 31400.0,
+        "within_visual_uncertainty": true
+      },
+      {
+        "panel": "B",
+        "o2_rise_mol_per_year": 10000000000000.0,
+        "co2_drawdown_mol_per_year": 17000000000000.0,
+        "figure_minimum_permil": -18.5,
+        "calculated_minimum_permil": -18.820566417864523,
+        "minimum_residual_permil": -0.3205664178645229,
+        "figure_minimum_time_years": 720000.0,
+        "calculated_minimum_time_years": 755400.0,
+        "time_residual_years": 35400.0,
+        "within_visual_uncertainty": true
+      },
+      {
+        "panel": "B",
+        "o2_rise_mol_per_year": 10000000000000.0,
+        "co2_drawdown_mol_per_year": 20000000000000.0,
+        "figure_minimum_permil": -17.5,
+        "calculated_minimum_permil": -17.448599040193773,
+        "minimum_residual_permil": 0.05140095980622661,
+        "figure_minimum_time_years": 650000.0,
+        "calculated_minimum_time_years": 656200.0,
+        "time_residual_years": 6200.0,
+        "within_visual_uncertainty": true
+      },
+      {
+        "panel": "B",
+        "o2_rise_mol_per_year": 10000000000000.0,
+        "co2_drawdown_mol_per_year": 25000000000000.0,
+        "figure_minimum_permil": -15.5,
+        "calculated_minimum_permil": -15.61714492233984,
+        "minimum_residual_permil": -0.11714492233983975,
+        "figure_minimum_time_years": 540000.0,
+        "calculated_minimum_time_years": 540000.0,
+        "time_residual_years": 0.0,
+        "within_visual_uncertainty": true
+      }
+    ]
+  },
+  "comparison_policy": {
+    "common_updated_model_domain_only": true,
+    "baseline_pco2_ppm": 375.0,
+    "absolute_coordinates_not_subtracted": true,
+    "native_coordinate_mismatch": "Cao-Bao uses linear delta17O - 0.52 delta18O; the updated model uses logarithmic Delta-prime-17O with lambda 0.528. Primary comparison is therefore baseline-relative response shape.",
+    "cao_fop_equivalent_gpp_pgC_per_year": 130.91989999999998
+  },
+  "shape": {
+    "by_po2": {
+      "0.1": {
+        "cao_full_domain_monotonically_decreasing": false,
+        "updated_full_domain_monotonically_decreasing": true,
+        "cao_fop_matched_full_domain_monotonically_decreasing": true,
+        "all_monotonically_decreasing_through_30000ppm": true,
+        "updated_rank_correlation": 0.8999999999999998,
+        "cao_fop_matched_rank_correlation": 0.8999999999999998,
+        "high_pco2_response_ratio_updated_over_cao": 1.2987045828157269,
+        "high_pco2_response_ratio_cao_fop_matched_over_cao": 1.7070836012605164,
+        "cao_30000_to_60000ppm_change_permil": 0.04281045164739972,
+        "updated_30000_to_60000ppm_change_permil": -4.2291936005332165,
+        "cao_fop_matched_30000_to_60000ppm_change_permil": -3.850917797413178
+      },
+      "0.3": {
+        "cao_full_domain_monotonically_decreasing": true,
+        "updated_full_domain_monotonically_decreasing": true,
+        "cao_fop_matched_full_domain_monotonically_decreasing": true,
+        "all_monotonically_decreasing_through_30000ppm": true,
+        "updated_rank_correlation": 0.9999999999999999,
+        "cao_fop_matched_rank_correlation": 0.9999999999999999,
+        "high_pco2_response_ratio_updated_over_cao": 0.6414351027779034,
+        "high_pco2_response_ratio_cao_fop_matched_over_cao": 0.8538449786666356,
+        "cao_30000_to_60000ppm_change_permil": -1.6085557957495737,
+        "updated_30000_to_60000ppm_change_permil": -4.21214724602282,
+        "cao_fop_matched_30000_to_60000ppm_change_permil": -3.9169406986117696
+      },
+      "1": {
+        "cao_full_domain_monotonically_decreasing": true,
+        "updated_full_domain_monotonically_decreasing": true,
+        "cao_fop_matched_full_domain_monotonically_decreasing": true,
+        "all_monotonically_decreasing_through_30000ppm": true,
+        "updated_rank_correlation": 0.9999999999999999,
+        "cao_fop_matched_rank_correlation": 0.9999999999999999,
+        "high_pco2_response_ratio_updated_over_cao": 0.37407397309341067,
+        "high_pco2_response_ratio_cao_fop_matched_over_cao": 0.5202662547644487,
+        "cao_30000_to_60000ppm_change_permil": -5.796097475034912,
+        "updated_30000_to_60000ppm_change_permil": -4.14149690749646,
+        "cao_fop_matched_30000_to_60000ppm_change_permil": -4.1772580825409555
+      }
+    }
+  },
+  "source_inconsistency": {
+    "statement": "Main-paper Figure 1 labels one present residence-time value as 1,244 years, while the printed Fop and physical atmospheric O2 inventory imply a longer value.",
+    "implementation_decision": "Use physical pressure-to-inventory conversion for S1c-S3c dynamics because it independently reproduces Figure S6; retain the 1,244-year label as unresolved metadata rather than tuning the solver to it."
+  },
+  "interpretation": {
+    "agreement": "The reduced source model reproduces Fig. S6 without fitted factors. Both Cao-Bao and the updated model predict monotonically more negative atmospheric O2 anomaly with increasing pCO2 through 30,000 ppm across the tested pO2 range.",
+    "structural_difference": "At 0.1 PAL O2, the Cao-Bao steady equation has a small rebound from 30,000 to 60,000 ppm because both Phi(rho) and the residence-time term enter its closed-form solution. The updated model remains monotonic. Cao-Bao's moving-boundary Fig. S2 nevertheless orders higher initial pCO2 experiments toward larger transient depletion.",
+    "scope_limit": "Cao-Bao starts at zero O2 and 0.1 bar CO2, outside the currently validated updated-model domain of at least 0.1 PAL O2 and at most 60,000 ppm CO2. A full moving-boundary transient comparison is therefore not extrapolated."
+  },
+  "common_domain_rows": [
+    {
+      "po2_pal": 0.1,
+      "pco2_ppm": 375.0,
+      "cao_delta17_linear_052_permil": -0.8947442076818064,
+      "updated_delta17_prime_permil": -0.5487551338846404,
+      "updated_cao_fop_matched_delta17_prime_permil": -0.8692881957346741,
+      "cao_response_from_375ppm_permil": 0.0,
+      "updated_response_from_375ppm_permil": 0.0,
+      "updated_cao_fop_matched_response_from_375ppm_permil": 0.0
+    },
+    {
+      "po2_pal": 0.1,
+      "pco2_ppm": 3200.0,
+      "cao_delta17_linear_052_permil": -5.672772129188336,
+      "updated_delta17_prime_permil": -2.395135641164085,
+      "updated_cao_fop_matched_delta17_prime_permil": -4.570726975235991,
+      "cao_response_from_375ppm_permil": -4.7780279215065296,
+      "updated_response_from_375ppm_permil": -1.8463805072794448,
+      "updated_cao_fop_matched_response_from_375ppm_permil": -3.7014387795013173
+    },
+    {
+      "po2_pal": 0.1,
+      "pco2_ppm": 10000.0,
+      "cao_delta17_linear_052_permil": -10.440620398989273,
+      "updated_delta17_prime_permil": -5.855610540652,
+      "updated_cao_fop_matched_delta17_prime_permil": -10.226259458190528,
+      "cao_response_from_375ppm_permil": -9.545876191307466,
+      "updated_response_from_375ppm_permil": -5.30685540676736,
+      "updated_cao_fop_matched_response_from_375ppm_permil": -9.356971262455854
+    },
+    {
+      "po2_pal": 0.1,
+      "pco2_ppm": 30000.0,
+      "cao_delta17_linear_052_permil": -12.836922251339777,
+      "updated_delta17_prime_permil": -11.773324757704492,
+      "updated_cao_fop_matched_delta17_prime_permil": -17.331585680013582,
+      "cao_response_from_375ppm_permil": -11.94217804365797,
+      "updated_response_from_375ppm_permil": -11.224569623819852,
+      "updated_cao_fop_matched_response_from_375ppm_permil": -16.462297484278906
+    },
+    {
+      "po2_pal": 0.1,
+      "pco2_ppm": 60000.0,
+      "cao_delta17_linear_052_permil": -12.794111799692377,
+      "updated_delta17_prime_permil": -16.002518358237708,
+      "updated_cao_fop_matched_delta17_prime_permil": -21.18250347742676,
+      "cao_response_from_375ppm_permil": -11.89936759201057,
+      "updated_response_from_375ppm_permil": -15.453763224353068,
+      "updated_cao_fop_matched_response_from_375ppm_permil": -20.313215281692084
+    },
+    {
+      "po2_pal": 0.3,
+      "pco2_ppm": 375.0,
+      "cao_delta17_linear_052_permil": -0.9133308843309699,
+      "updated_delta17_prime_permil": -0.5243209212820591,
+      "updated_cao_fop_matched_delta17_prime_permil": -0.8163307826977593,
+      "cao_response_from_375ppm_permil": 0.0,
+      "updated_response_from_375ppm_permil": 0.0,
+      "updated_cao_fop_matched_response_from_375ppm_permil": 0.0
+    },
+    {
+      "po2_pal": 0.3,
+      "pco2_ppm": 3200.0,
+      "cao_delta17_linear_052_permil": -6.588620559546865,
+      "updated_delta17_prime_permil": -2.2160736626417137,
+      "updated_cao_fop_matched_delta17_prime_permil": -4.234092241386712,
+      "cao_response_from_375ppm_permil": -5.675289675215896,
+      "updated_response_from_375ppm_permil": -1.6917527413596547,
+      "updated_cao_fop_matched_response_from_375ppm_permil": -3.4177614586889526
+    },
+    {
+      "po2_pal": 0.3,
+      "pco2_ppm": 10000.0,
+      "cao_delta17_linear_052_permil": -14.718608482911604,
+      "updated_delta17_prime_permil": -5.448586635080468,
+      "updated_cao_fop_matched_delta17_prime_permil": -9.62176664312295,
+      "cao_response_from_375ppm_permil": -13.805277598580634,
+      "updated_response_from_375ppm_permil": -4.924265713798409,
+      "updated_cao_fop_matched_response_from_375ppm_permil": -8.80543586042519
+    },
+    {
+      "po2_pal": 0.3,
+      "pco2_ppm": 30000.0,
+      "cao_delta17_linear_052_permil": -22.452109866643802,
+      "updated_delta17_prime_permil": -11.159686737660236,
+      "updated_cao_fop_matched_delta17_prime_permil": -16.663625653850154,
+      "cao_response_from_375ppm_permil": -21.53877898231283,
+      "updated_response_from_375ppm_permil": -10.635365816378176,
+      "updated_cao_fop_matched_response_from_375ppm_permil": -15.847294871152394
+    },
+    {
+      "po2_pal": 0.3,
+      "pco2_ppm": 60000.0,
+      "cao_delta17_linear_052_permil": -24.060665662393376,
+      "updated_delta17_prime_permil": -15.371833983683056,
+      "updated_cao_fop_matched_delta17_prime_permil": -20.580566352461922,
+      "cao_response_from_375ppm_permil": -23.147334778062405,
+      "updated_response_from_375ppm_permil": -14.847513062400996,
+      "updated_cao_fop_matched_response_from_375ppm_permil": -19.764235569764164
+    },
+    {
+      "po2_pal": 1.0,
+      "pco2_ppm": 375.0,
+      "cao_delta17_linear_052_permil": -0.919995814349941,
+      "updated_delta17_prime_permil": -0.4663727810142682,
+      "updated_cao_fop_matched_delta17_prime_permil": -0.6903512415786165,
+      "cao_response_from_375ppm_permil": 0.0,
+      "updated_response_from_375ppm_permil": 0.0,
+      "updated_cao_fop_matched_response_from_375ppm_permil": 0.0
+    },
+    {
+      "po2_pal": 1.0,
+      "pco2_ppm": 3200.0,
+      "cao_delta17_linear_052_permil": -6.973331523959068,
+      "updated_delta17_prime_permil": -1.7815379187927929,
+      "updated_cao_fop_matched_delta17_prime_permil": -3.400534831462544,
+      "cao_response_from_375ppm_permil": -6.053335709609127,
+      "updated_response_from_375ppm_permil": -1.3151651377785247,
+      "updated_cao_fop_matched_response_from_375ppm_permil": -2.7101835898839277
+    },
+    {
+      "po2_pal": 1.0,
+      "pco2_ppm": 10000.0,
+      "cao_delta17_linear_052_permil": -17.066711866556815,
+      "updated_delta17_prime_permil": -4.419386766227384,
+      "updated_cao_fop_matched_delta17_prime_permil": -8.038960466207396,
+      "cao_response_from_375ppm_permil": -16.146716052206873,
+      "updated_response_from_375ppm_permil": -3.953013985213116,
+      "updated_cao_fop_matched_response_from_375ppm_permil": -7.348609224628779
+    },
+    {
+      "po2_pal": 1.0,
+      "pco2_ppm": 30000.0,
+      "cao_delta17_linear_052_permil": -30.3853202710894,
+      "updated_delta17_prime_permil": -9.515256072459776,
+      "updated_cao_fop_matched_delta17_prime_permil": -14.858421085150903,
+      "cao_response_from_375ppm_permil": -29.46532445673946,
+      "updated_response_from_375ppm_permil": -9.048883291445508,
+      "updated_cao_fop_matched_response_from_375ppm_permil": -14.168069843572287
+    },
+    {
+      "po2_pal": 1.0,
+      "pco2_ppm": 60000.0,
+      "cao_delta17_linear_052_permil": -36.18141774612431,
+      "updated_delta17_prime_permil": -13.656752979956236,
+      "updated_cao_fop_matched_delta17_prime_permil": -19.03567916769186,
+      "cao_response_from_375ppm_permil": -35.26142193177437,
+      "updated_response_from_375ppm_permil": -13.190380198941968,
+      "updated_cao_fop_matched_response_from_375ppm_permil": -18.345327926113242
+    }
+  ]
+}

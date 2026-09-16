@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "benchmark_id": "cao_bao_2013_reduced_dynamic_v1",
+  "citation": "Cao and Bao (2013), Proceedings of the National Academy of Sciences 110, 14546-14550",
+  "doi": "10.1073/pnas.1302972110",
+  "source_material": {
+    "main_article": "Equations 1-6, Table 1, and Figure 1",
+    "supporting_information": "Equations S1a-S3c and Figures S1-S6",
+    "local_supporting_information": "external_data/cao_bao_2013/cao_bao_2013_si.pdf"
+  },
+  "native_isotope_coordinate": {
+    "name": "linear Delta17O",
+    "definition": "delta17O - 0.52 * delta18O",
+    "lambda": 0.52,
+    "prime_notation": false
+  },
+  "printed_parameters": {
+    "present_po2_bar": 0.2095,
+    "present_pco2_ppm": 375.0,
+    "fop_mol_o2_per_year": 1.09e16,
+    "gamma_per_year": 0.1321,
+    "theta": 0.017,
+    "fredc_mol_per_year": 1.5e12,
+    "fredh_mol_per_year": 1.0e12,
+    "fvc_mol_per_year": 6.0e12,
+    "fow0_mol_per_year": 7.5e12,
+    "fsw0_mol_per_year": 5.0e12,
+    "fob0_mol_per_year": 1.0e13,
+    "kow": 1.0,
+    "ksw": 0.7,
+    "kob": 1.0
+  },
+  "fig_s6_visual_validation_anchors": [
+    {"panel": "A", "o2_rise_mol_per_year": 5.0e12, "co2_drawdown_mol_per_year": 1.7e13, "minimum_permil": -13.0, "minimum_uncertainty_permil": 1.5, "minimum_time_years": 8.0e5, "time_uncertainty_years": 1.0e5},
+    {"panel": "A", "o2_rise_mol_per_year": 1.0e13, "co2_drawdown_mol_per_year": 1.7e13, "minimum_permil": -18.5, "minimum_uncertainty_permil": 1.5, "minimum_time_years": 7.2e5, "time_uncertainty_years": 1.0e5},
+    {"panel": "A", "o2_rise_mol_per_year": 1.5e13, "co2_drawdown_mol_per_year": 1.7e13, "minimum_permil": -22.5, "minimum_uncertainty_permil": 1.5, "minimum_time_years": 6.8e5, "time_uncertainty_years": 1.0e5},
+    {"panel": "B", "o2_rise_mol_per_year": 1.0e13, "co2_drawdown_mol_per_year": 1.7e13, "minimum_permil": -18.5, "minimum_uncertainty_permil": 1.5, "minimum_time_years": 7.2e5, "time_uncertainty_years": 1.0e5},
+    {"panel": "B", "o2_rise_mol_per_year": 1.0e13, "co2_drawdown_mol_per_year": 2.0e13, "minimum_permil": -17.5, "minimum_uncertainty_permil": 1.5, "minimum_time_years": 6.5e5, "time_uncertainty_years": 1.0e5},
+    {"panel": "B", "o2_rise_mol_per_year": 1.0e13, "co2_drawdown_mol_per_year": 2.5e13, "minimum_permil": -15.5, "minimum_uncertainty_permil": 1.5, "minimum_time_years": 5.4e5, "time_uncertainty_years": 1.0e5}
+  ],
+  "anchor_provenance": {
+    "method": "manual visual reading of the supplied SI Figure S6",
+    "role": "broad source-reproduction check only; not a fitted calibration target",
+    "uncertainty_policy": "intervals reflect line width and plot resolution"
+  },
+  "source_inconsistency": {
+    "statement": "Main-paper Figure 1 labels one present residence-time value as 1,244 years, while the printed Fop and physical atmospheric O2 inventory imply a longer value.",
+    "implementation_decision": "Use physical pressure-to-inventory conversion for S1c-S3c dynamics because it independently reproduces Figure S6; retain the 1,244-year label as unresolved metadata rather than tuning the solver to it."
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "inventory_id": "high_pco2_process_inventory_v1",
+  "central_model_changed": false,
+  "purpose": "Prioritize physical mechanism tests for the updated atmospheric O2 triple-isotope model without fitting inter-model residuals.",
+  "central_model_scope": {
+    "photochemistry": "native one-dimensional Photochem R1-R7 columns reduced to a local isotope-response operator",
+    "atmospheric_structure": "fixed ModernEarth temperature and eddy-diffusion profiles",
+    "global_budget": "one globally mixed O2 reservoir with a source-backed partitioned biological budget",
+    "validated_domain": {
+      "pO2_PAL": [0.1, 2.0],
+      "pCO2_ppm": [50.0, 60000.0],
+      "GPP_PgC_per_year": [18.2563, 850.0]
+    }
+  },
+  "processes": [
+    {
+      "id": "native_vertical_photochemistry",
+      "status": "explicit_central",
+      "current_representation": "Altitude-dependent O/O1D/O2/O3/CO2 chemistry, photolysis, fixed temperature and Kzz in Photochem.",
+      "remaining_question": "Accuracy of the fixed modern atmospheric structure at high pCO2 and nonmodern pO2.",
+      "evidence": ["docs/updated_molecular_forward_model.md"]
+    },
+    {
+      "id": "global_o2_inventory_and_biology",
+      "status": "explicit_central",
+      "current_representation": "pO2-scaled atmospheric O2 inventory, absolute GPP, land-ocean and respiration-pathway ensemble, and equal-and-opposite molecular CO2-O2 transfer.",
+      "remaining_question": "Paleo land-ocean partition, atmosphere-accessible marine production, and source-water isotope composition remain externally constrained inputs.",
+      "evidence": ["docs/updated_molecular_forward_model.md", "docs/liu_2021_multimodel_benchmark.md"]
+    },
+    {
+      "id": "co2_dependent_temperature_and_ozone",
+      "status": "structural_endmember_only",
+      "current_representation": "Clima temperature anomalies passed through native chemistry at 0.1, 1 and 2 PAL; additive-CO2 and fixed-total-dry-major pressure conventions are paired at 1 PAL.",
+      "remaining_question": "Pressure-convention and pO2 interaction tests are complete, but the isothermal stratosphere omits ozone heating.",
+      "evidence": ["docs/high_pco2_climate_profile_audit.md", "outputs/clima_po2_cross_audit.json"]
+    },
+    {
+      "id": "surface_pressure_composition_convention",
+      "status": "audited_structural_robustness",
+      "current_representation": "Central native grid and Clima workflow can use additive CO2 or fixed total dry major-gas pressure.",
+      "remaining_question": "The two conventions differ by at most 0.0404 per mil in global O2 Delta-prime-17O through 30,000 ppm and 0.2270 per mil over the full tested domain; neither Clima end member is promoted.",
+      "evidence": [".github/workflows/clima-high-pco2-profiles.yml", "docs/high_pco2_climate_profile_audit.md", "outputs/clima_pressure_convention_audit.json"]
+    },
+    {
+      "id": "latitude_height_transport",
+      "status": "modern_validation_only",
+      "current_representation": "Conservative ERA5 TEM, Kyy, Kzz and convection operators exist for modern transport validation but are not in the public steady model.",
+      "remaining_question": "Present-day ERA5 transport cannot be imposed on deep-time states without an atmospheric-state-dependent closure.",
+      "evidence": ["docs/next_generation_architecture.md", "docs/ERA5_CONVECTION_INPUT.md"]
+    },
+    {
+      "id": "air_sea_exchange_and_accessible_gpp",
+      "status": "audited_structural_sensitivity_not_promoted",
+      "current_representation": "Liu native GPPOXY and a source-backed marine-accessibility candidate are benchmarked separately from the central total-global-GPP convention.",
+      "remaining_question": "Total global GPP and atmosphere-accessible marine O2 flux are not interchangeable; the candidate improves Liu and modern closure but degrades the Young and Yang guardrails.",
+      "evidence": ["docs/liu_2021_multimodel_benchmark.md", "docs/liu_2021_low_gpp_extension.md", "docs/marine_o2_accessibility_audit.md", "model_data/validation_evidence/marine_o2_accessibility_audit.json"]
+    },
+    {
+      "id": "external_hox_nox_carriers",
+      "status": "bounded_not_promoted",
+      "current_representation": "Atom-conserving external-carrier sensitivity bound.",
+      "remaining_question": "No evidence presently supports promotion into the reduced global O2 forcing.",
+      "evidence": ["docs/external_carrier_global_bound.md"]
+    },
+    {
+      "id": "coupled_slow_carbon_oxygen_reservoirs",
+      "status": "partial_transient_only",
+      "current_representation": "Validated O2 isotope transients and operator-split Fig. 9-type carbon forcing.",
+      "remaining_question": "A fully simultaneous long-term carbon-oxygen cycle is absent and is needed only for claims about coupled transient histories, not steady inversions.",
+      "evidence": ["docs/updated_molecular_forward_model.md", "docs/publication_model_acceptance.md"]
+    }
+  ],
+  "priority_experiments": [
+    {
+      "rank": 1,
+      "id": "clima_fixed_total_dry_major_1pal",
+      "status": "complete",
+      "question": "Does the high-pCO2 ozone and R7 response survive the alternative pressure convention?",
+      "central_model_mutation": false,
+      "required_nodes_pCO2_ppm": [300.0, 1000.0, 3000.0, 10000.0, 30000.0, 60000.0],
+      "pO2_PAL": 1.0,
+      "promotion_gate": "Passed as a robustness diagnostic: chemistry and isotope budgets converge, modern/low-pCO2 behavior is preserved, and high-pCO2 attribution is qualitatively consistent under both pressure conventions.",
+      "result": "The large Clima response survives the pressure convention change; retain both calculations as structural end members and do not promote either to the central model."
+    },
+    {
+      "rank": 2,
+      "id": "clima_po2_cross",
+      "status": "complete",
+      "question": "How does pO2 alter the climate-ozone-O1D response at high pCO2?",
+      "central_model_mutation": false,
+      "required_nodes_pCO2_ppm": [300.0, 10000.0, 30000.0, 60000.0],
+      "pO2_PAL": [0.1, 2.0],
+      "prerequisite": "Rank-1 pressure-convention result is numerically stable and scientifically interpretable.",
+      "result": "All scenarios converge. Low pO2 amplifies and high pO2 partly buffers the high-pCO2 ozone and R7 response; retain exact 0.1 and 2 PAL structural end members without promotion."
+    },
+    {
+      "rank": 3,
+      "id": "ozone_heated_stratosphere_or_bracketing_profiles",
+      "status": "next",
+      "question": "Is the Clima over-response caused by its isothermal stratosphere and missing ozone heating?",
+      "central_model_mutation": false,
+      "prerequisite": "Rank-1 or rank-2 results show that the thermal structure remains a leading uncertainty."
+    },
+    {
+      "rank": 4,
+      "id": "accessible_marine_o2_flux",
+      "status": "complete_not_promoted",
+      "question": "Can source-backed air-sea exchange and marine recycling explain part of the low-GPP architecture spread?",
+      "central_model_mutation": false,
+      "prerequisite": "A common total-GPP versus accessible-O2 flux mapping can be defined without fitting Young, Liu, or Cao-Bao residuals.",
+      "result": "The candidate is mass-conserving and isotope-output-independent. It improves modern Pack closure and Liu response RMSE by 0.124 per mil, but worsens aligned Young Fig. 7 and Fig. 8 mean absolute residuals by 0.007 and 0.140 per mil and slightly degrades Yang low-CO2 tracking. Retain as structural uncertainty, not as the central biological boundary."
+    },
+    {
+      "rank": 5,
+      "id": "state_dependent_2d_transport_reduction",
+      "status": "complete_modern_bound_not_promoted",
+      "question": "Does latitude-height transport materially change the globally integrated R7 forcing?",
+      "central_model_mutation": false,
+      "prerequisite": "A defensible paleostate circulation ensemble or reduction is available; modern ERA5 alone is insufficient.",
+      "result": "Matched-parent ERA5 2-D transport strengthens the modern R7 pump by about 16%, which supplies only 4.97% of the additional forcing required by the former absolute-offset diagnostic. The globally mixed O2 reservoir makes modern transport geometry a secondary effect, and present-day ERA5 cannot define deep-time circulation. Retain as modern validation rather than central paleo forcing."
+    }
+  ],
+  "global_promotion_rule": "Promote a mechanism only if it is independently parameterized, mass and isotope conserving, improves more than one validation family, preserves modern and low-pCO2 gates, and is not an output correction."
+}

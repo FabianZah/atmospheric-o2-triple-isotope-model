@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "matrix_id": "atmospheric_o2_triple_isotope_evidence_matrix_v1",
+  "frozen_on": "2026-08-17",
+  "frozen": true,
+  "forward_model_surface_id": "updated_molecular_output_surface_v1",
+  "purpose": "Classify validation evidence before assigning probabilistic model discrepancy. Inter-model differences are structural diagnostics, not observations of model error.",
+  "default_probabilistic_model_discrepancy": {
+    "available": false,
+    "sigma_permil": null,
+    "reason": "No single residual population spans the validated pCO2-GPP-pO2 domain. Model-model differences are not draws from truth, and observational residuals remain conditional on fixed or inferred GPP and pO2."
+  },
+  "eligibility_policy": {
+    "measurement_uncertainty": "May enter a likelihood when reported for the measured isotope coordinate.",
+    "parameter_uncertainty": "May be propagated only from an explicit prior or independently justified range.",
+    "observational_predictive_residual": "May support a use-case-specific discrepancy estimate only with blocked or otherwise out-of-sample validation and declared fixed inputs.",
+    "model_model_difference": "May define a structural sensitivity envelope and mechanism priority, but not a Gaussian likelihood sigma.",
+    "inverse_architecture_comparison": "Tests response architecture but is not independent predictive validation when the comparison output is derived from the same isotope observation.",
+    "digitized_historical_anchor": "Tests reconstruction behavior and curve shape; digitization residuals are not probabilistic model error."
+  },
+  "evidence": [
+    {
+      "id": "young_2014_fig7_fig8",
+      "registry_model_id": "young_2014",
+      "evidence_type": "digitized_historical_anchor",
+      "independence": "historical source-model anchor; not an observation",
+      "domain": {
+        "pco2_ppm": [294.0, 30000.0],
+        "gpp_percent_reference": [50.0, 100.0],
+        "po2_pal": [1.0, 1.0]
+      },
+      "tested_quantity": "steady pCO2-GPP response shape and isotope amplitude",
+      "metrics": {
+        "fig7_aligned_mean_absolute_residual_permil": 0.0128009,
+        "fig8_aligned_mean_absolute_residual_permil": 0.403343
+      },
+      "probabilistic_discrepancy_eligible": false,
+      "uncertainty_use": "structural_shape_diagnostic",
+      "source_report": "model_data/validation_evidence/updated_molecular_release_scorecard.json"
+    },
+    {
+      "id": "liu_2021_native_low_gpp_grid",
+      "registry_model_id": "liu_2021",
+      "evidence_type": "model_model_difference",
+      "independence": "independent one-dimensional photochemical process model",
+      "domain": {
+        "pco2_ppm": [300.0, 60000.0],
+        "gpp_percent_reference": [5.0, 150.0],
+        "po2_pal": [0.1, 1.0]
+      },
+      "tested_quantity": "baseline-relative pCO2-GPP-pO2 response topology and amplitude",
+      "metrics": {
+        "paired_states": 90,
+        "response_rank_correlation": 0.9957359587095925,
+        "own_reference_response_rmse_permil": 6.176959079638596,
+        "own_reference_max_abs_difference_permil": 14.565712604783094,
+        "accessible_turnover_matched_rmse_permil": 4.40
+      },
+      "probabilistic_discrepancy_eligible": false,
+      "uncertainty_use": "domain_dependent_structural_sensitivity_envelope",
+      "mechanism_follow_up": true,
+      "source_report": "model_data/validation_evidence/liu_2021_low_gpp_multimodel_benchmark.json"
+    },
+    {
+      "id": "cao_bao_2013_high_pco2",
+      "registry_model_id": "cao_bao_2013",
+      "evidence_type": "model_model_difference",
+      "independence": "independent reduced dynamic biosphere-atmosphere architecture",
+      "domain": {
+        "pco2_ppm": [375.0, 60000.0],
+        "po2_pal": [0.1, 1.0]
+      },
+      "tested_quantity": "high-pCO2 response direction, pO2 dependence, and transient minima",
+      "metrics": {
+        "source_fig_s6_cases_reproduced": 6,
+        "all_models_monotonic_through_pco2_ppm": 30000.0,
+        "exchange_matched_response_ratio_at_60000ppm_by_po2": {
+          "0.1": 1.7070836012605164,
+          "0.3": 0.8538449786666356,
+          "1.0": 0.5202662547644487
+        }
+      },
+      "probabilistic_discrepancy_eligible": false,
+      "uncertainty_use": "domain_dependent_structural_sensitivity_envelope",
+      "mechanism_follow_up": true,
+      "source_report": "model_data/validation_evidence/cao_bao_2013_multimodel_benchmark.json"
+    },
+    {
+      "id": "luz_1999_gisp2_productivity",
+      "registry_model_id": "luz_1999",
+      "evidence_type": "inverse_architecture_comparison",
+      "independence": "independent published inversion architecture; GPP is derived from the same isotope and CO2 values",
+      "domain": {
+        "pco2_ppm": [190.0, 235.0],
+        "gpp_percent_reference": [87.0, 97.0],
+        "po2_pal": [1.0, 1.0],
+        "gas_age_kyr": [18.67, 82.03]
+      },
+      "tested_quantity": "normalized-productivity response to measured isotope and pCO2 change",
+      "metrics": {
+        "sample_count": 5,
+        "gpp_rmse_percentage_points": 1.6333400087583438,
+        "gpp_mean_absolute_error_percentage_points": 1.4070669878379163,
+        "pearson_r": 0.9767668512025596
+      },
+      "probabilistic_discrepancy_eligible": false,
+      "uncertainty_use": "inverse_response_architecture_diagnostic",
+      "source_report": "model_data/validation_evidence/luz_1999_productivity_benchmark.json"
+    },
+    {
+      "id": "yang_banerjee_low_co2_tracking",
+      "registry_model_id": "yang_banerjee_ice_core",
+      "evidence_type": "observational_predictive_residual",
+      "independence": "paired measured atmospheric-O2 isotope and ice-core CO2 record; GPP and pO2 are fixed in the forward test",
+      "domain": {
+        "pco2_ppm": [177.83712970638283, 279.1553547028091],
+        "po2_pal": [1.0, 1.0],
+        "age_kyr_bp": [58.016, 796.297]
+      },
+      "tested_quantity": "CO2-driven atmospheric-O2 isotope prediction",
+      "metrics": {
+        "raw_sample_count": 269,
+        "raw_blocked_skill_fraction": 0.2291397814364995,
+        "updated_low_co2_slope_ppm_per_ppm_co2": -0.49460962621687427,
+        "yang_tb_slope_ppm_per_ppm_co2": -0.55,
+        "smoothed_21kyr_cross_validated_co2_rmse_ppm": 12.691283661149805
+      },
+      "probabilistic_discrepancy_eligible": "use_case_specific_only",
+      "eligibility_limit": "Residuals combine analytical error, unmodelled GPP variability, chronology, and any model error; they cannot define a whole-domain structural sigma.",
+      "uncertainty_use": "blocked_low_co2_predictive_error",
+      "source_report": "model_data/validation_evidence/yang_2022_co2_tracking_audit.json"
+    },
+    {
+      "id": "brandon_2020_termination_v",
+      "registry_model_id": "brandon_2020",
+      "evidence_type": "observational_event_constraint",
+      "independence": "predeclared event interval with independent published productivity interpretation",
+      "domain": {
+        "event_age_kyr_bp": [415.0, 430.0],
+        "po2_pal": [1.0, 1.0]
+      },
+      "tested_quantity": "event-scale GPP response after measured CO2 forcing",
+      "metrics": {
+        "inferred_gpp_percent_preindustrial": 112.31667134301135,
+        "published_gpp_percent_range": [110.0, 130.0],
+        "event_sse_reduction_fraction": 0.6762246214292345
+      },
+      "probabilistic_discrepancy_eligible": "event_specific_only",
+      "eligibility_limit": "One event cannot define a stationary whole-domain error distribution.",
+      "uncertainty_use": "event_falsification_and_event_specific_residual",
+      "source_report": "model_data/validation_evidence/brandon_2020_termination_v_audit.json"
+    },
+    {
+      "id": "pack_2021_modern_air",
+      "registry_model_id": null,
+      "evidence_type": "measurement_reference",
+      "independence": "measured modern atmospheric O2 isotope composition",
+      "domain": {
+        "po2_pal": [1.0, 1.0]
+      },
+      "tested_quantity": "absolute modern atmospheric-O2 isotope state",
+      "metrics": {
+        "observed_delta_prime17o_permil": -0.432,
+        "observed_delta_prime17o_one_sigma_permil": 0.015,
+        "model_residual_permil": 0.00564962
+      },
+      "probabilistic_discrepancy_eligible": false,
+      "uncertainty_use": "measurement_reference_uncertainty_and_absolute_state_gate",
+      "source_report": "model_data/validation_evidence/updated_molecular_release_scorecard.json"
+    }
+  ],
+  "next_mechanism_comparison": {
+    "target_domain": "high pCO2 and low GPP",
+    "priority_sources": ["liu_2021_native_low_gpp_grid", "cao_bao_2013_high_pco2", "young_2014_fig7_fig8"],
+    "promotion_rule": "A mechanism may enter the updated model only if its equations and parameters are traceable to independent literature, preserve mass and isotope balance, improve more than one validation family, and do not act as an output correction."
+  }
+}

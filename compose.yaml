@@ -1,0 +1,9 @@
+services:
+  model-api:
+    build:
+      context: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${OXYTIB_API_PORT:-8000}:8000"
+    environment:
+      OXYTIB_CORS_ORIGINS: "${OXYTIB_CORS_ORIGINS:-}"

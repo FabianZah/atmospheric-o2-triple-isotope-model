@@ -1,0 +1,44 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite this record and the scientific sources relevant to your application."
+title: "OXYTIB: Atmospheric oxygen triple-isotope budget and inference model"
+abstract: >-
+  A transparent, reproducible atmospheric oxygen triple-isotope budget and
+  inference model that couples altitude-resolved photochemistry to a
+  conservative global O2 and biological-turnover budget. OXYTIB supports
+  forward calculations, constrained one-coordinate inversions, solution
+  surfaces, transient experiments, and separated uncertainty layers.
+type: software
+version: "0.1.0"
+license: MIT  # code; data/docs are CC-BY-4.0 (see LICENSING.md)
+authors:
+  - family-names: "Zahnow"
+    given-names: "Fabian"
+    email: "fabs2906@gmail.com"
+    orcid: "https://orcid.org/0009-0006-4557-7155"
+keywords:
+  - "OXYTIB"
+  - "triple oxygen isotopes"
+  - "Δ′¹⁷O"
+  - "atmospheric O2"
+  - "paleo-pCO2"
+  - "paleo-pO2"
+  - "gross primary productivity"
+  - "box model"
+  - "stratospheric photochemistry"
+repository-code: "https://github.com/FabianZah/atmospheric-o2-triple-isotope-model"
+references:
+  - type: article
+    title: "On the Δ′¹⁷O budget of atmospheric O2"
+    authors:
+      - family-names: "Young"
+        given-names: "Edward D."
+      - family-names: "Yeung"
+        given-names: "Laurence Y."
+      - family-names: "Kohl"
+        given-names: "Issaku E."
+    journal: "Geochimica et Cosmochimica Acta"
+    volume: 135
+    start: 102
+    end: 125
+    year: 2014
+    notes: "Atmospheric oxygen budget architecture and published response comparisons."

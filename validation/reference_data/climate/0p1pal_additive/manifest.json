@@ -1,0 +1,150 @@
+{
+  "generator": "native Photochem 0.6.7 pO2/pCO2 end-member grid",
+  "pressure_convention": "additive_co2",
+  "temperature_profile": {
+    "mode": "Clima anomaly relative to 360 ppm on the ModernEarth profile",
+    "source_directory": "external_data/clima_high_pco2_profiles"
+  },
+  "boundary_convention": {
+    "pO2": "O2 surface partial pressure = 0.21 bar times PAL",
+    "pCO2": "CO2 surface partial pressure in dyn cm-2 equals ppm at 1 bar",
+    "N2": "N2 remains at 0.78 bar; CO2 is additive",
+    "GPP": "not a photochemical boundary; handled by the global O2 box"
+  },
+  "input_sha256": {
+    "mechanism": "bb72b9ac9fc43104198bcc597f8635c18c332ede16510c2f6975efeef2591f99",
+    "settings": "c63648e01c4b432d31e58c83afb975349a0a8f474f58bf8a547f3b4d4ca4e4af",
+    "stellar_flux": "0257f12135a27022b935f2af10e1fa480907987782b0f96580f755cfcf92b7de",
+    "atmosphere": "d2a3d6cfef512ade9f1e6dc80217f05e1c0f116f2b77205cbdef789c8699b2be"
+  },
+  "scenarios": [
+    {
+      "pO2_PAL": 0.1,
+      "pCO2_ppm": 300.0,
+      "pressure_convention": "additive_co2",
+      "lower_boundary_pressure_dyn_cm2": {
+        "N2": 780000.0,
+        "O2": 21000.0,
+        "CO2": 300.0,
+        "dry_major_total": 801300.0
+      },
+      "converged": true,
+      "artifact": "po2_0p1pal_pco2_300ppm.npz",
+      "artifact_sha256": "3b09c4d561eedb37da413e5a101dfcfcd09cf18014b2851d689f8370a37fd761",
+      "altitude_range_km": [
+        0.5,
+        99.5
+      ],
+      "layer_count": 100,
+      "nsteps": 961,
+      "integration_time_s": 1.2813637180086008e+17,
+      "temperature_profile": {
+        "method": "Clima pCO2 profile minus the 360 ppm Clima profile at log-pressure",
+        "case_profile": "external_data/clima_high_pco2_profiles/clima_po2_0p1pal_pco2_300ppm.npz",
+        "case_profile_sha256": "c8366c3d1044b4b52c712f057e9907d387b27af87623c098b120b4b171712f2e",
+        "reference_profile": "external_data/clima_high_pco2_profiles/clima_po2_0p1pal_pco2_360ppm.npz",
+        "reference_profile_sha256": "3e2acfe9b969e71ca6b687cb5a093d04c273065dbbb07260abe95c3de2e539fe",
+        "reference_pCO2_ppm": 360.0,
+        "minimum_temperature_anomaly_K": -1.308547490505532,
+        "maximum_temperature_anomaly_K": 0.020962950129842284
+      },
+      "grid_status": "generated"
+    },
+    {
+      "pO2_PAL": 0.1,
+      "pCO2_ppm": 10000.0,
+      "pressure_convention": "additive_co2",
+      "lower_boundary_pressure_dyn_cm2": {
+        "N2": 780000.0,
+        "O2": 21000.0,
+        "CO2": 10000.0,
+        "dry_major_total": 811000.0
+      },
+      "converged": true,
+      "artifact": "po2_0p1pal_pco2_10000ppm.npz",
+      "artifact_sha256": "31de8dfef4fca328748b29465d4425950faef2f5eb22e9c7a54cd5caa317739f",
+      "altitude_range_km": [
+        0.5,
+        99.5
+      ],
+      "layer_count": 100,
+      "nsteps": 462,
+      "integration_time_s": 2.1484824562733037e+17,
+      "temperature_profile": {
+        "method": "Clima pCO2 profile minus the 360 ppm Clima profile at log-pressure",
+        "case_profile": "external_data/clima_high_pco2_profiles/clima_po2_0p1pal_pco2_10000ppm.npz",
+        "case_profile_sha256": "d6b09efc520a792aa568a227bd0ed8fbf3eeb8e5215eca3f51f8d20196795983",
+        "reference_profile": "external_data/clima_high_pco2_profiles/clima_po2_0p1pal_pco2_360ppm.npz",
+        "reference_profile_sha256": "3e2acfe9b969e71ca6b687cb5a093d04c273065dbbb07260abe95c3de2e539fe",
+        "reference_pCO2_ppm": 360.0,
+        "minimum_temperature_anomaly_K": 0.0,
+        "maximum_temperature_anomaly_K": 69.15601999876506
+      },
+      "grid_status": "generated"
+    },
+    {
+      "pO2_PAL": 0.1,
+      "pCO2_ppm": 30000.0,
+      "pressure_convention": "additive_co2",
+      "lower_boundary_pressure_dyn_cm2": {
+        "N2": 780000.0,
+        "O2": 21000.0,
+        "CO2": 30000.0,
+        "dry_major_total": 831000.0
+      },
+      "converged": true,
+      "artifact": "po2_0p1pal_pco2_30000ppm.npz",
+      "artifact_sha256": "6ff3af021f900caa0e886fcd69e5ea153ba0e16cd912da0367cc0054a8ae66a1",
+      "altitude_range_km": [
+        0.5,
+        99.5
+      ],
+      "layer_count": 100,
+      "nsteps": 869,
+      "integration_time_s": 1.6016321062972896e+17,
+      "temperature_profile": {
+        "method": "Clima pCO2 profile minus the 360 ppm Clima profile at log-pressure",
+        "case_profile": "external_data/clima_high_pco2_profiles/clima_po2_0p1pal_pco2_30000ppm.npz",
+        "case_profile_sha256": "b339874409d9aebc4c410a72d695b893c9e9e52c51c3b77fc5c1e4d02dbb9a2f",
+        "reference_profile": "external_data/clima_high_pco2_profiles/clima_po2_0p1pal_pco2_360ppm.npz",
+        "reference_profile_sha256": "3e2acfe9b969e71ca6b687cb5a093d04c273065dbbb07260abe95c3de2e539fe",
+        "reference_pCO2_ppm": 360.0,
+        "minimum_temperature_anomaly_K": 0.0,
+        "maximum_temperature_anomaly_K": 79.25690977718835
+      },
+      "grid_status": "generated"
+    },
+    {
+      "pO2_PAL": 0.1,
+      "pCO2_ppm": 60000.0,
+      "pressure_convention": "additive_co2",
+      "lower_boundary_pressure_dyn_cm2": {
+        "N2": 780000.0,
+        "O2": 21000.0,
+        "CO2": 60000.0,
+        "dry_major_total": 861000.0
+      },
+      "converged": true,
+      "artifact": "po2_0p1pal_pco2_60000ppm.npz",
+      "artifact_sha256": "2c75f11526d44533297207951a94da5b1bd2e6fc7c15967c4f6e3b00c477a317",
+      "altitude_range_km": [
+        0.5,
+        99.5
+      ],
+      "layer_count": 100,
+      "nsteps": 56,
+      "integration_time_s": 1.8129653187258755e+17,
+      "temperature_profile": {
+        "method": "Clima pCO2 profile minus the 360 ppm Clima profile at log-pressure",
+        "case_profile": "external_data/clima_high_pco2_profiles/clima_po2_0p1pal_pco2_60000ppm.npz",
+        "case_profile_sha256": "86ba6c2b58ae4e3d5e09b62c99d78df6515c2e09832f931474dd1be79a87b648",
+        "reference_profile": "external_data/clima_high_pco2_profiles/clima_po2_0p1pal_pco2_360ppm.npz",
+        "reference_profile_sha256": "3e2acfe9b969e71ca6b687cb5a093d04c273065dbbb07260abe95c3de2e539fe",
+        "reference_pCO2_ppm": 360.0,
+        "minimum_temperature_anomaly_K": 0.0,
+        "maximum_temperature_anomaly_K": 83.23868220932513
+      },
+      "grid_status": "generated"
+    }
+  ]
+}

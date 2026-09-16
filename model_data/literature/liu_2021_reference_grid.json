@@ -1,0 +1,921 @@
+{
+  "role": "Fixed external-model reference results; OXYTIB predictions are excluded",
+  "source_evidence_sha256": "03c9aa45d154f11962a3096fe3342738280043261f2705bcf4caa74fa0ab609e",
+  "columns": [
+    {
+      "pO2_PAL": 0.1,
+      "pCO2_ppm": 300.0,
+      "dry_run": false,
+      "scenarios": [
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 300.0,
+          "GPP_percent_of_Liu_modern_marine": 5.0,
+          "accessible_O2_exchange_Tmol_per_year": 579.9157075701086,
+          "total_marine_GPP_Tmol_O2_per_year": 600.0,
+          "accessible_fraction": 0.9677419354838708,
+          "surface_cap_delta17_prime_permil": -5.89
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 300.0,
+          "GPP_percent_of_Liu_modern_marine": 10.0,
+          "accessible_O2_exchange_Tmol_per_year": 1123.5866834170856,
+          "total_marine_GPP_Tmol_O2_per_year": 1200.0,
+          "accessible_fraction": 0.9375,
+          "surface_cap_delta17_prime_permil": -3.24
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 300.0,
+          "GPP_percent_of_Liu_modern_marine": 25.0,
+          "accessible_O2_exchange_Tmol_per_year": 2568.198133524767,
+          "total_marine_GPP_Tmol_O2_per_year": 3000.0,
+          "accessible_fraction": 0.8571428571428571,
+          "surface_cap_delta17_prime_permil": -1.48
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 300.0,
+          "GPP_percent_of_Liu_modern_marine": 50.0,
+          "accessible_O2_exchange_Tmol_per_year": 4494.346733668342,
+          "total_marine_GPP_Tmol_O2_per_year": 6000.0,
+          "accessible_fraction": 0.7499999999999999,
+          "surface_cap_delta17_prime_permil": -0.856
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 300.0,
+          "GPP_percent_of_Liu_modern_marine": 100.0,
+          "accessible_O2_exchange_Tmol_per_year": 7190.954773869347,
+          "total_marine_GPP_Tmol_O2_per_year": 12000.0,
+          "accessible_fraction": 0.6,
+          "surface_cap_delta17_prime_permil": -0.539
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 300.0,
+          "GPP_percent_of_Liu_modern_marine": 150.0,
+          "accessible_O2_exchange_Tmol_per_year": 8988.693467336685,
+          "total_marine_GPP_Tmol_O2_per_year": 18000.0,
+          "accessible_fraction": 0.5,
+          "surface_cap_delta17_prime_permil": -0.432
+        }
+      ]
+    },
+    {
+      "pO2_PAL": 0.1,
+      "pCO2_ppm": 3000.0,
+      "dry_run": false,
+      "scenarios": [
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 3000.0,
+          "GPP_percent_of_Liu_modern_marine": 5.0,
+          "accessible_O2_exchange_Tmol_per_year": 579.9157075701086,
+          "total_marine_GPP_Tmol_O2_per_year": 600.0,
+          "accessible_fraction": 0.9677419354838708,
+          "surface_cap_delta17_prime_permil": -21.7
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 3000.0,
+          "GPP_percent_of_Liu_modern_marine": 10.0,
+          "accessible_O2_exchange_Tmol_per_year": 1123.5866834170856,
+          "total_marine_GPP_Tmol_O2_per_year": 1200.0,
+          "accessible_fraction": 0.9375,
+          "surface_cap_delta17_prime_permil": -14.9
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 3000.0,
+          "GPP_percent_of_Liu_modern_marine": 25.0,
+          "accessible_O2_exchange_Tmol_per_year": 2568.198133524767,
+          "total_marine_GPP_Tmol_O2_per_year": 3000.0,
+          "accessible_fraction": 0.8571428571428571,
+          "surface_cap_delta17_prime_permil": -8.09
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 3000.0,
+          "GPP_percent_of_Liu_modern_marine": 50.0,
+          "accessible_O2_exchange_Tmol_per_year": 4494.346733668342,
+          "total_marine_GPP_Tmol_O2_per_year": 6000.0,
+          "accessible_fraction": 0.7499999999999999,
+          "surface_cap_delta17_prime_permil": -5.04
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 3000.0,
+          "GPP_percent_of_Liu_modern_marine": 100.0,
+          "accessible_O2_exchange_Tmol_per_year": 7190.954773869347,
+          "total_marine_GPP_Tmol_O2_per_year": 12000.0,
+          "accessible_fraction": 0.6,
+          "surface_cap_delta17_prime_permil": -3.29
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 3000.0,
+          "GPP_percent_of_Liu_modern_marine": 150.0,
+          "accessible_O2_exchange_Tmol_per_year": 8988.693467336685,
+          "total_marine_GPP_Tmol_O2_per_year": 18000.0,
+          "accessible_fraction": 0.5,
+          "surface_cap_delta17_prime_permil": -2.68
+        }
+      ]
+    },
+    {
+      "pO2_PAL": 0.1,
+      "pCO2_ppm": 10000.0,
+      "dry_run": false,
+      "scenarios": [
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 10000.0,
+          "GPP_percent_of_Liu_modern_marine": 5.0,
+          "accessible_O2_exchange_Tmol_per_year": 579.9157075701086,
+          "total_marine_GPP_Tmol_O2_per_year": 600.0,
+          "accessible_fraction": 0.9677419354838708,
+          "surface_cap_delta17_prime_permil": -32.1
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 10000.0,
+          "GPP_percent_of_Liu_modern_marine": 10.0,
+          "accessible_O2_exchange_Tmol_per_year": 1123.5866834170856,
+          "total_marine_GPP_Tmol_O2_per_year": 1200.0,
+          "accessible_fraction": 0.9375,
+          "surface_cap_delta17_prime_permil": -26.3
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 10000.0,
+          "GPP_percent_of_Liu_modern_marine": 25.0,
+          "accessible_O2_exchange_Tmol_per_year": 2568.198133524767,
+          "total_marine_GPP_Tmol_O2_per_year": 3000.0,
+          "accessible_fraction": 0.8571428571428571,
+          "surface_cap_delta17_prime_permil": -17.7
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 10000.0,
+          "GPP_percent_of_Liu_modern_marine": 50.0,
+          "accessible_O2_exchange_Tmol_per_year": 4494.346733668342,
+          "total_marine_GPP_Tmol_O2_per_year": 6000.0,
+          "accessible_fraction": 0.7499999999999999,
+          "surface_cap_delta17_prime_permil": -12.3
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 10000.0,
+          "GPP_percent_of_Liu_modern_marine": 100.0,
+          "accessible_O2_exchange_Tmol_per_year": 7190.954773869347,
+          "total_marine_GPP_Tmol_O2_per_year": 12000.0,
+          "accessible_fraction": 0.6,
+          "surface_cap_delta17_prime_permil": -8.65
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 10000.0,
+          "GPP_percent_of_Liu_modern_marine": 150.0,
+          "accessible_O2_exchange_Tmol_per_year": 8988.693467336685,
+          "total_marine_GPP_Tmol_O2_per_year": 18000.0,
+          "accessible_fraction": 0.5,
+          "surface_cap_delta17_prime_permil": -7.21
+        }
+      ]
+    },
+    {
+      "pO2_PAL": 0.1,
+      "pCO2_ppm": 30000.0,
+      "dry_run": false,
+      "scenarios": [
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 30000.0,
+          "GPP_percent_of_Liu_modern_marine": 5.0,
+          "accessible_O2_exchange_Tmol_per_year": 579.9157075701086,
+          "total_marine_GPP_Tmol_O2_per_year": 600.0,
+          "accessible_fraction": 0.9677419354838708,
+          "surface_cap_delta17_prime_permil": -37.7
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 30000.0,
+          "GPP_percent_of_Liu_modern_marine": 10.0,
+          "accessible_O2_exchange_Tmol_per_year": 1123.5866834170856,
+          "total_marine_GPP_Tmol_O2_per_year": 1200.0,
+          "accessible_fraction": 0.9375,
+          "surface_cap_delta17_prime_permil": -34.2
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 30000.0,
+          "GPP_percent_of_Liu_modern_marine": 25.0,
+          "accessible_O2_exchange_Tmol_per_year": 2568.198133524767,
+          "total_marine_GPP_Tmol_O2_per_year": 3000.0,
+          "accessible_fraction": 0.8571428571428571,
+          "surface_cap_delta17_prime_permil": -27.5
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 30000.0,
+          "GPP_percent_of_Liu_modern_marine": 50.0,
+          "accessible_O2_exchange_Tmol_per_year": 4494.346733668342,
+          "total_marine_GPP_Tmol_O2_per_year": 6000.0,
+          "accessible_fraction": 0.7499999999999999,
+          "surface_cap_delta17_prime_permil": -21.8
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 30000.0,
+          "GPP_percent_of_Liu_modern_marine": 100.0,
+          "accessible_O2_exchange_Tmol_per_year": 7190.954773869347,
+          "total_marine_GPP_Tmol_O2_per_year": 12000.0,
+          "accessible_fraction": 0.6,
+          "surface_cap_delta17_prime_permil": -16.9
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 30000.0,
+          "GPP_percent_of_Liu_modern_marine": 150.0,
+          "accessible_O2_exchange_Tmol_per_year": 8988.693467336685,
+          "total_marine_GPP_Tmol_O2_per_year": 18000.0,
+          "accessible_fraction": 0.5,
+          "surface_cap_delta17_prime_permil": -14.7
+        }
+      ]
+    },
+    {
+      "pO2_PAL": 0.1,
+      "pCO2_ppm": 60000.0,
+      "dry_run": false,
+      "scenarios": [
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 60000.0,
+          "GPP_percent_of_Liu_modern_marine": 5.0,
+          "accessible_O2_exchange_Tmol_per_year": 579.9157075701086,
+          "total_marine_GPP_Tmol_O2_per_year": 600.0,
+          "accessible_fraction": 0.9677419354838708,
+          "surface_cap_delta17_prime_permil": -39.3
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 60000.0,
+          "GPP_percent_of_Liu_modern_marine": 10.0,
+          "accessible_O2_exchange_Tmol_per_year": 1123.5866834170856,
+          "total_marine_GPP_Tmol_O2_per_year": 1200.0,
+          "accessible_fraction": 0.9375,
+          "surface_cap_delta17_prime_permil": -37.0
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 60000.0,
+          "GPP_percent_of_Liu_modern_marine": 25.0,
+          "accessible_O2_exchange_Tmol_per_year": 2568.198133524767,
+          "total_marine_GPP_Tmol_O2_per_year": 3000.0,
+          "accessible_fraction": 0.8571428571428571,
+          "surface_cap_delta17_prime_permil": -32.0
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 60000.0,
+          "GPP_percent_of_Liu_modern_marine": 50.0,
+          "accessible_O2_exchange_Tmol_per_year": 4494.346733668342,
+          "total_marine_GPP_Tmol_O2_per_year": 6000.0,
+          "accessible_fraction": 0.7499999999999999,
+          "surface_cap_delta17_prime_permil": -27.1
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 60000.0,
+          "GPP_percent_of_Liu_modern_marine": 100.0,
+          "accessible_O2_exchange_Tmol_per_year": 7190.954773869347,
+          "total_marine_GPP_Tmol_O2_per_year": 12000.0,
+          "accessible_fraction": 0.6,
+          "surface_cap_delta17_prime_permil": -22.3
+        },
+        {
+          "pO2_PAL": 0.1,
+          "pCO2_ppm": 60000.0,
+          "GPP_percent_of_Liu_modern_marine": 150.0,
+          "accessible_O2_exchange_Tmol_per_year": 8988.693467336685,
+          "total_marine_GPP_Tmol_O2_per_year": 18000.0,
+          "accessible_fraction": 0.5,
+          "surface_cap_delta17_prime_permil": -20.0
+        }
+      ]
+    },
+    {
+      "pO2_PAL": 0.3,
+      "pCO2_ppm": 300.0,
+      "dry_run": false,
+      "scenarios": [
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 300.0,
+          "GPP_percent_of_Liu_modern_marine": 5.0,
+          "accessible_O2_exchange_Tmol_per_year": 591.8481295365718,
+          "total_marine_GPP_Tmol_O2_per_year": 600.0,
+          "accessible_fraction": 0.9876543209876544,
+          "surface_cap_delta17_prime_permil": -6.06
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 300.0,
+          "GPP_percent_of_Liu_modern_marine": 10.0,
+          "accessible_O2_exchange_Tmol_per_year": 1169.2609388405444,
+          "total_marine_GPP_Tmol_O2_per_year": 1200.0,
+          "accessible_fraction": 0.9756097560975612,
+          "surface_cap_delta17_prime_permil": -3.27
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 300.0,
+          "GPP_percent_of_Liu_modern_marine": 25.0,
+          "accessible_O2_exchange_Tmol_per_year": 2819.982264262489,
+          "total_marine_GPP_Tmol_O2_per_year": 3000.0,
+          "accessible_fraction": 0.9411764705882352,
+          "surface_cap_delta17_prime_permil": -1.41
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 300.0,
+          "GPP_percent_of_Liu_modern_marine": 50.0,
+          "accessible_O2_exchange_Tmol_per_year": 5326.6331658291465,
+          "total_marine_GPP_Tmol_O2_per_year": 6000.0,
+          "accessible_fraction": 0.8888888888888888,
+          "surface_cap_delta17_prime_permil": -0.758
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 300.0,
+          "GPP_percent_of_Liu_modern_marine": 100.0,
+          "accessible_O2_exchange_Tmol_per_year": 9587.939698492462,
+          "total_marine_GPP_Tmol_O2_per_year": 12000.0,
+          "accessible_fraction": 0.8,
+          "surface_cap_delta17_prime_permil": -0.424
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 300.0,
+          "GPP_percent_of_Liu_modern_marine": 150.0,
+          "accessible_O2_exchange_Tmol_per_year": 13074.463225216996,
+          "total_marine_GPP_Tmol_O2_per_year": 18000.0,
+          "accessible_fraction": 0.7272727272727273,
+          "surface_cap_delta17_prime_permil": -0.312
+        }
+      ]
+    },
+    {
+      "pO2_PAL": 0.3,
+      "pCO2_ppm": 3000.0,
+      "dry_run": false,
+      "scenarios": [
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 3000.0,
+          "GPP_percent_of_Liu_modern_marine": 5.0,
+          "accessible_O2_exchange_Tmol_per_year": 591.8481295365718,
+          "total_marine_GPP_Tmol_O2_per_year": 600.0,
+          "accessible_fraction": 0.9876543209876544,
+          "surface_cap_delta17_prime_permil": -21.8
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 3000.0,
+          "GPP_percent_of_Liu_modern_marine": 10.0,
+          "accessible_O2_exchange_Tmol_per_year": 1169.2609388405444,
+          "total_marine_GPP_Tmol_O2_per_year": 1200.0,
+          "accessible_fraction": 0.9756097560975612,
+          "surface_cap_delta17_prime_permil": -14.6
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 3000.0,
+          "GPP_percent_of_Liu_modern_marine": 25.0,
+          "accessible_O2_exchange_Tmol_per_year": 2819.982264262489,
+          "total_marine_GPP_Tmol_O2_per_year": 3000.0,
+          "accessible_fraction": 0.9411764705882352,
+          "surface_cap_delta17_prime_permil": -7.54
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 3000.0,
+          "GPP_percent_of_Liu_modern_marine": 50.0,
+          "accessible_O2_exchange_Tmol_per_year": 5326.6331658291465,
+          "total_marine_GPP_Tmol_O2_per_year": 6000.0,
+          "accessible_fraction": 0.8888888888888888,
+          "surface_cap_delta17_prime_permil": -4.34
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 3000.0,
+          "GPP_percent_of_Liu_modern_marine": 100.0,
+          "accessible_O2_exchange_Tmol_per_year": 9587.939698492462,
+          "total_marine_GPP_Tmol_O2_per_year": 12000.0,
+          "accessible_fraction": 0.8,
+          "surface_cap_delta17_prime_permil": -2.52
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 3000.0,
+          "GPP_percent_of_Liu_modern_marine": 150.0,
+          "accessible_O2_exchange_Tmol_per_year": 13074.463225216996,
+          "total_marine_GPP_Tmol_O2_per_year": 18000.0,
+          "accessible_fraction": 0.7272727272727273,
+          "surface_cap_delta17_prime_permil": -1.88
+        }
+      ]
+    },
+    {
+      "pO2_PAL": 0.3,
+      "pCO2_ppm": 10000.0,
+      "dry_run": false,
+      "scenarios": [
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 10000.0,
+          "GPP_percent_of_Liu_modern_marine": 5.0,
+          "accessible_O2_exchange_Tmol_per_year": 591.8481295365718,
+          "total_marine_GPP_Tmol_O2_per_year": 600.0,
+          "accessible_fraction": 0.9876543209876544,
+          "surface_cap_delta17_prime_permil": -32.8
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 10000.0,
+          "GPP_percent_of_Liu_modern_marine": 10.0,
+          "accessible_O2_exchange_Tmol_per_year": 1169.2609388405444,
+          "total_marine_GPP_Tmol_O2_per_year": 1200.0,
+          "accessible_fraction": 0.9756097560975612,
+          "surface_cap_delta17_prime_permil": -26.5
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 10000.0,
+          "GPP_percent_of_Liu_modern_marine": 25.0,
+          "accessible_O2_exchange_Tmol_per_year": 2819.982264262489,
+          "total_marine_GPP_Tmol_O2_per_year": 3000.0,
+          "accessible_fraction": 0.9411764705882352,
+          "surface_cap_delta17_prime_permil": -17.0
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 10000.0,
+          "GPP_percent_of_Liu_modern_marine": 50.0,
+          "accessible_O2_exchange_Tmol_per_year": 5326.6331658291465,
+          "total_marine_GPP_Tmol_O2_per_year": 6000.0,
+          "accessible_fraction": 0.8888888888888888,
+          "surface_cap_delta17_prime_permil": -11.1
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 10000.0,
+          "GPP_percent_of_Liu_modern_marine": 100.0,
+          "accessible_O2_exchange_Tmol_per_year": 9587.939698492462,
+          "total_marine_GPP_Tmol_O2_per_year": 12000.0,
+          "accessible_fraction": 0.8,
+          "surface_cap_delta17_prime_permil": -6.93
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 10000.0,
+          "GPP_percent_of_Liu_modern_marine": 150.0,
+          "accessible_O2_exchange_Tmol_per_year": 13074.463225216996,
+          "total_marine_GPP_Tmol_O2_per_year": 18000.0,
+          "accessible_fraction": 0.7272727272727273,
+          "surface_cap_delta17_prime_permil": -5.31
+        }
+      ]
+    },
+    {
+      "pO2_PAL": 0.3,
+      "pCO2_ppm": 30000.0,
+      "dry_run": false,
+      "scenarios": [
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 30000.0,
+          "GPP_percent_of_Liu_modern_marine": 5.0,
+          "accessible_O2_exchange_Tmol_per_year": 591.8481295365718,
+          "total_marine_GPP_Tmol_O2_per_year": 600.0,
+          "accessible_fraction": 0.9876543209876544,
+          "surface_cap_delta17_prime_permil": -38.7
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 30000.0,
+          "GPP_percent_of_Liu_modern_marine": 10.0,
+          "accessible_O2_exchange_Tmol_per_year": 1169.2609388405444,
+          "total_marine_GPP_Tmol_O2_per_year": 1200.0,
+          "accessible_fraction": 0.9756097560975612,
+          "surface_cap_delta17_prime_permil": -35.1
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 30000.0,
+          "GPP_percent_of_Liu_modern_marine": 25.0,
+          "accessible_O2_exchange_Tmol_per_year": 2819.982264262489,
+          "total_marine_GPP_Tmol_O2_per_year": 3000.0,
+          "accessible_fraction": 0.9411764705882352,
+          "surface_cap_delta17_prime_permil": -27.6
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 30000.0,
+          "GPP_percent_of_Liu_modern_marine": 50.0,
+          "accessible_O2_exchange_Tmol_per_year": 5326.6331658291465,
+          "total_marine_GPP_Tmol_O2_per_year": 6000.0,
+          "accessible_fraction": 0.8888888888888888,
+          "surface_cap_delta17_prime_permil": -20.9
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 30000.0,
+          "GPP_percent_of_Liu_modern_marine": 100.0,
+          "accessible_O2_exchange_Tmol_per_year": 9587.939698492462,
+          "total_marine_GPP_Tmol_O2_per_year": 12000.0,
+          "accessible_fraction": 0.8,
+          "surface_cap_delta17_prime_permil": -14.7
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 30000.0,
+          "GPP_percent_of_Liu_modern_marine": 150.0,
+          "accessible_O2_exchange_Tmol_per_year": 13074.463225216996,
+          "total_marine_GPP_Tmol_O2_per_year": 18000.0,
+          "accessible_fraction": 0.7272727272727273,
+          "surface_cap_delta17_prime_permil": -11.9
+        }
+      ]
+    },
+    {
+      "pO2_PAL": 0.3,
+      "pCO2_ppm": 60000.0,
+      "dry_run": false,
+      "scenarios": [
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 60000.0,
+          "GPP_percent_of_Liu_modern_marine": 5.0,
+          "accessible_O2_exchange_Tmol_per_year": 591.8481295365718,
+          "total_marine_GPP_Tmol_O2_per_year": 600.0,
+          "accessible_fraction": 0.9876543209876544,
+          "surface_cap_delta17_prime_permil": -40.5
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 60000.0,
+          "GPP_percent_of_Liu_modern_marine": 10.0,
+          "accessible_O2_exchange_Tmol_per_year": 1169.2609388405444,
+          "total_marine_GPP_Tmol_O2_per_year": 1200.0,
+          "accessible_fraction": 0.9756097560975612,
+          "surface_cap_delta17_prime_permil": -38.1
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 60000.0,
+          "GPP_percent_of_Liu_modern_marine": 25.0,
+          "accessible_O2_exchange_Tmol_per_year": 2819.982264262489,
+          "total_marine_GPP_Tmol_O2_per_year": 3000.0,
+          "accessible_fraction": 0.9411764705882352,
+          "surface_cap_delta17_prime_permil": -32.7
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 60000.0,
+          "GPP_percent_of_Liu_modern_marine": 50.0,
+          "accessible_O2_exchange_Tmol_per_year": 5326.6331658291465,
+          "total_marine_GPP_Tmol_O2_per_year": 6000.0,
+          "accessible_fraction": 0.8888888888888888,
+          "surface_cap_delta17_prime_permil": -26.8
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 60000.0,
+          "GPP_percent_of_Liu_modern_marine": 100.0,
+          "accessible_O2_exchange_Tmol_per_year": 9587.939698492462,
+          "total_marine_GPP_Tmol_O2_per_year": 12000.0,
+          "accessible_fraction": 0.8,
+          "surface_cap_delta17_prime_permil": -20.6
+        },
+        {
+          "pO2_PAL": 0.3,
+          "pCO2_ppm": 60000.0,
+          "GPP_percent_of_Liu_modern_marine": 150.0,
+          "accessible_O2_exchange_Tmol_per_year": 13074.463225216996,
+          "total_marine_GPP_Tmol_O2_per_year": 18000.0,
+          "accessible_fraction": 0.7272727272727273,
+          "surface_cap_delta17_prime_permil": -17.3
+        }
+      ]
+    },
+    {
+      "pO2_PAL": 1.0,
+      "pCO2_ppm": 300.0,
+      "dry_run": false,
+      "scenarios": [
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 300.0,
+          "GPP_percent_of_Liu_modern_marine": 5.0,
+          "accessible_O2_exchange_Tmol_per_year": 595.3569645531702,
+          "total_marine_GPP_Tmol_O2_per_year": 600.0,
+          "accessible_fraction": 0.9935097353969046,
+          "surface_cap_delta17_prime_permil": -6.39
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 300.0,
+          "GPP_percent_of_Liu_modern_marine": 10.0,
+          "accessible_O2_exchange_Tmol_per_year": 1183.0357142857144,
+          "total_marine_GPP_Tmol_O2_per_year": 1200.0,
+          "accessible_fraction": 0.9871031746031746,
+          "surface_cap_delta17_prime_permil": -3.43
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 300.0,
+          "GPP_percent_of_Liu_modern_marine": 25.0,
+          "accessible_O2_exchange_Tmol_per_year": 2901.4598540145994,
+          "total_marine_GPP_Tmol_O2_per_year": 3000.0,
+          "accessible_fraction": 0.9683698296836984,
+          "surface_cap_delta17_prime_permil": -1.46
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 300.0,
+          "GPP_percent_of_Liu_modern_marine": 50.0,
+          "accessible_O2_exchange_Tmol_per_year": 5625.000000000001,
+          "total_marine_GPP_Tmol_O2_per_year": 6000.0,
+          "accessible_fraction": 0.9386792452830188,
+          "surface_cap_delta17_prime_permil": -0.762
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 300.0,
+          "GPP_percent_of_Liu_modern_marine": 100.0,
+          "accessible_O2_exchange_Tmol_per_year": 10600.0,
+          "total_marine_GPP_Tmol_O2_per_year": 12000.0,
+          "accessible_fraction": 0.8844444444444445,
+          "surface_cap_delta17_prime_permil": -0.407
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 300.0,
+          "GPP_percent_of_Liu_modern_marine": 150.0,
+          "accessible_O2_exchange_Tmol_per_year": 15031.51260504202,
+          "total_marine_GPP_Tmol_O2_per_year": 18000.0,
+          "accessible_fraction": 0.8361344537815127,
+          "surface_cap_delta17_prime_permil": -0.288
+        }
+      ]
+    },
+    {
+      "pO2_PAL": 1.0,
+      "pCO2_ppm": 3000.0,
+      "dry_run": false,
+      "scenarios": [
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 3000.0,
+          "GPP_percent_of_Liu_modern_marine": 5.0,
+          "accessible_O2_exchange_Tmol_per_year": 595.3569645531702,
+          "total_marine_GPP_Tmol_O2_per_year": 600.0,
+          "accessible_fraction": 0.9935097353969046,
+          "surface_cap_delta17_prime_permil": -21.5
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 3000.0,
+          "GPP_percent_of_Liu_modern_marine": 10.0,
+          "accessible_O2_exchange_Tmol_per_year": 1183.0357142857144,
+          "total_marine_GPP_Tmol_O2_per_year": 1200.0,
+          "accessible_fraction": 0.9871031746031746,
+          "surface_cap_delta17_prime_permil": -14.2
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 3000.0,
+          "GPP_percent_of_Liu_modern_marine": 25.0,
+          "accessible_O2_exchange_Tmol_per_year": 2901.4598540145994,
+          "total_marine_GPP_Tmol_O2_per_year": 3000.0,
+          "accessible_fraction": 0.9683698296836984,
+          "surface_cap_delta17_prime_permil": -7.09
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 3000.0,
+          "GPP_percent_of_Liu_modern_marine": 50.0,
+          "accessible_O2_exchange_Tmol_per_year": 5625.000000000001,
+          "total_marine_GPP_Tmol_O2_per_year": 6000.0,
+          "accessible_fraction": 0.9386792452830188,
+          "surface_cap_delta17_prime_permil": -3.96
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 3000.0,
+          "GPP_percent_of_Liu_modern_marine": 100.0,
+          "accessible_O2_exchange_Tmol_per_year": 10600.0,
+          "total_marine_GPP_Tmol_O2_per_year": 12000.0,
+          "accessible_fraction": 0.8844444444444445,
+          "surface_cap_delta17_prime_permil": -2.19
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 3000.0,
+          "GPP_percent_of_Liu_modern_marine": 150.0,
+          "accessible_O2_exchange_Tmol_per_year": 15031.51260504202,
+          "total_marine_GPP_Tmol_O2_per_year": 18000.0,
+          "accessible_fraction": 0.8361344537815127,
+          "surface_cap_delta17_prime_permil": -1.57
+        }
+      ]
+    },
+    {
+      "pO2_PAL": 1.0,
+      "pCO2_ppm": 10000.0,
+      "dry_run": false,
+      "scenarios": [
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 10000.0,
+          "GPP_percent_of_Liu_modern_marine": 5.0,
+          "accessible_O2_exchange_Tmol_per_year": 595.3569645531702,
+          "total_marine_GPP_Tmol_O2_per_year": 600.0,
+          "accessible_fraction": 0.9935097353969046,
+          "surface_cap_delta17_prime_permil": -32.9
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 10000.0,
+          "GPP_percent_of_Liu_modern_marine": 10.0,
+          "accessible_O2_exchange_Tmol_per_year": 1183.0357142857144,
+          "total_marine_GPP_Tmol_O2_per_year": 1200.0,
+          "accessible_fraction": 0.9871031746031746,
+          "surface_cap_delta17_prime_permil": -26.2
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 10000.0,
+          "GPP_percent_of_Liu_modern_marine": 25.0,
+          "accessible_O2_exchange_Tmol_per_year": 2901.4598540145994,
+          "total_marine_GPP_Tmol_O2_per_year": 3000.0,
+          "accessible_fraction": 0.9683698296836984,
+          "surface_cap_delta17_prime_permil": -16.3
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 10000.0,
+          "GPP_percent_of_Liu_modern_marine": 50.0,
+          "accessible_O2_exchange_Tmol_per_year": 5625.000000000001,
+          "total_marine_GPP_Tmol_O2_per_year": 6000.0,
+          "accessible_fraction": 0.9386792452830188,
+          "surface_cap_delta17_prime_permil": -10.2
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 10000.0,
+          "GPP_percent_of_Liu_modern_marine": 100.0,
+          "accessible_O2_exchange_Tmol_per_year": 10600.0,
+          "total_marine_GPP_Tmol_O2_per_year": 12000.0,
+          "accessible_fraction": 0.8844444444444445,
+          "surface_cap_delta17_prime_permil": -6.09
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 10000.0,
+          "GPP_percent_of_Liu_modern_marine": 150.0,
+          "accessible_O2_exchange_Tmol_per_year": 15031.51260504202,
+          "total_marine_GPP_Tmol_O2_per_year": 18000.0,
+          "accessible_fraction": 0.8361344537815127,
+          "surface_cap_delta17_prime_permil": -4.48
+        }
+      ]
+    },
+    {
+      "pO2_PAL": 1.0,
+      "pCO2_ppm": 30000.0,
+      "dry_run": false,
+      "scenarios": [
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 30000.0,
+          "GPP_percent_of_Liu_modern_marine": 5.0,
+          "accessible_O2_exchange_Tmol_per_year": 595.3569645531702,
+          "total_marine_GPP_Tmol_O2_per_year": 600.0,
+          "accessible_fraction": 0.9935097353969046,
+          "surface_cap_delta17_prime_permil": -39.4
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 30000.0,
+          "GPP_percent_of_Liu_modern_marine": 10.0,
+          "accessible_O2_exchange_Tmol_per_year": 1183.0357142857144,
+          "total_marine_GPP_Tmol_O2_per_year": 1200.0,
+          "accessible_fraction": 0.9871031746031746,
+          "surface_cap_delta17_prime_permil": -35.5
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 30000.0,
+          "GPP_percent_of_Liu_modern_marine": 25.0,
+          "accessible_O2_exchange_Tmol_per_year": 2901.4598540145994,
+          "total_marine_GPP_Tmol_O2_per_year": 3000.0,
+          "accessible_fraction": 0.9683698296836984,
+          "surface_cap_delta17_prime_permil": -27.4
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 30000.0,
+          "GPP_percent_of_Liu_modern_marine": 50.0,
+          "accessible_O2_exchange_Tmol_per_year": 5625.000000000001,
+          "total_marine_GPP_Tmol_O2_per_year": 6000.0,
+          "accessible_fraction": 0.9386792452830188,
+          "surface_cap_delta17_prime_permil": -20.1
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 30000.0,
+          "GPP_percent_of_Liu_modern_marine": 100.0,
+          "accessible_O2_exchange_Tmol_per_year": 10600.0,
+          "total_marine_GPP_Tmol_O2_per_year": 12000.0,
+          "accessible_fraction": 0.8844444444444445,
+          "surface_cap_delta17_prime_permil": -13.6
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 30000.0,
+          "GPP_percent_of_Liu_modern_marine": 150.0,
+          "accessible_O2_exchange_Tmol_per_year": 15031.51260504202,
+          "total_marine_GPP_Tmol_O2_per_year": 18000.0,
+          "accessible_fraction": 0.8361344537815127,
+          "surface_cap_delta17_prime_permil": -10.5
+        }
+      ]
+    },
+    {
+      "pO2_PAL": 1.0,
+      "pCO2_ppm": 60000.0,
+      "dry_run": false,
+      "scenarios": [
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 60000.0,
+          "GPP_percent_of_Liu_modern_marine": 5.0,
+          "accessible_O2_exchange_Tmol_per_year": 595.3569645531702,
+          "total_marine_GPP_Tmol_O2_per_year": 600.0,
+          "accessible_fraction": 0.9935097353969046,
+          "surface_cap_delta17_prime_permil": -41.4
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 60000.0,
+          "GPP_percent_of_Liu_modern_marine": 10.0,
+          "accessible_O2_exchange_Tmol_per_year": 1183.0357142857144,
+          "total_marine_GPP_Tmol_O2_per_year": 1200.0,
+          "accessible_fraction": 0.9871031746031746,
+          "surface_cap_delta17_prime_permil": -38.9
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 60000.0,
+          "GPP_percent_of_Liu_modern_marine": 25.0,
+          "accessible_O2_exchange_Tmol_per_year": 2901.4598540145994,
+          "total_marine_GPP_Tmol_O2_per_year": 3000.0,
+          "accessible_fraction": 0.9683698296836984,
+          "surface_cap_delta17_prime_permil": -33.1
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 60000.0,
+          "GPP_percent_of_Liu_modern_marine": 50.0,
+          "accessible_O2_exchange_Tmol_per_year": 5625.000000000001,
+          "total_marine_GPP_Tmol_O2_per_year": 6000.0,
+          "accessible_fraction": 0.9386792452830188,
+          "surface_cap_delta17_prime_permil": -26.7
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 60000.0,
+          "GPP_percent_of_Liu_modern_marine": 100.0,
+          "accessible_O2_exchange_Tmol_per_year": 10600.0,
+          "total_marine_GPP_Tmol_O2_per_year": 12000.0,
+          "accessible_fraction": 0.8844444444444445,
+          "surface_cap_delta17_prime_permil": -19.7
+        },
+        {
+          "pO2_PAL": 1.0,
+          "pCO2_ppm": 60000.0,
+          "GPP_percent_of_Liu_modern_marine": 150.0,
+          "accessible_O2_exchange_Tmol_per_year": 15031.51260504202,
+          "total_marine_GPP_Tmol_O2_per_year": 18000.0,
+          "accessible_fraction": 0.8361344537815127,
+          "surface_cap_delta17_prime_permil": -16.0
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "role": "OXYTIB native atmospheric calculation outputs used as fixed validation inputs",
+  "files": [
+    {
+      "path": "validation/reference_data/climate/1pal_additive/po2_1pal_pco2_300ppm.npz",
+      "sha256": "7683b0f6912c9edbfbd8f8329d2fe016bf29bf3ad3b993d489361ef6c668a318",
+      "bytes": 151577
+    },
+    {
+      "path": "validation/reference_data/climate/1pal_additive/po2_1pal_pco2_1000ppm.npz",
+      "sha256": "136f7e12fcc5417ff6ac3b6051a8e29b36177760aa45e6fb936a486e5275b22f",
+      "bytes": 151239
+    },
+    {
+      "path": "validation/reference_data/climate/1pal_additive/po2_1pal_pco2_3000ppm.npz",
+      "sha256": "1bb46ba7646dd21bae981ea6731c34b1b205ade65cc3580f4d00c19437916374",
+      "bytes": 149819
+    },
+    {
+      "path": "validation/reference_data/climate/1pal_additive/po2_1pal_pco2_10000ppm.npz",
+      "sha256": "f647bcf65872525f5e56fc63572e8372352a89e13d42ca25e127d37c689cca1c",
+      "bytes": 150390
+    },
+    {
+      "path": "validation/reference_data/climate/1pal_additive/po2_1pal_pco2_30000ppm.npz",
+      "sha256": "ee272d0e8db2b5a6c43bf243c3192ec8679a7684070572a0de3f98d9d43cc243",
+      "bytes": 146961
+    },
+    {
+      "path": "validation/reference_data/climate/1pal_additive/po2_1pal_pco2_60000ppm.npz",
+      "sha256": "b288b909d79fb05ae830c4ec5d5cc7eb8bfa3df3d977d4e745c352f188ec348e",
+      "bytes": 145671
+    },
+    {
+      "path": "validation/reference_data/climate/1pal_fixed_total/po2_1pal_pco2_300ppm_fixed-total.npz",
+      "sha256": "4259196710af44e2ae86390335d376d6097516085f9a440627d2b6b965b440c6",
+      "bytes": 151369
+    },
+    {
+      "path": "validation/reference_data/climate/1pal_fixed_total/po2_1pal_pco2_1000ppm_fixed-total.npz",
+      "sha256": "3b188fa2f9a3327ba43ed79cb8514a1823426f11bb9ffc24ab12877513dec210",
+      "bytes": 151741
+    },
+    {
+      "path": "validation/reference_data/climate/1pal_fixed_total/po2_1pal_pco2_3000ppm_fixed-total.npz",
+      "sha256": "c5332da386be55d41bdfc2168f3c5365288ec43ac85bd0ad6a166eac70ce5ccf",
+      "bytes": 149814
+    },
+    {
+      "path": "validation/reference_data/climate/1pal_fixed_total/po2_1pal_pco2_10000ppm_fixed-total.npz",
+      "sha256": "1bee47f00ae8a24dc452210dfd42e1342fc605a727a65b030c5ddfa6e7094175",
+      "bytes": 150691
+    },
+    {
+      "path": "validation/reference_data/climate/1pal_fixed_total/po2_1pal_pco2_30000ppm_fixed-total.npz",
+      "sha256": "d25da2cdc81d7e310adfa1ff133c1d97b1200e9191ca8ba133245f84e98825c0",
+      "bytes": 149912
+    },
+    {
+      "path": "validation/reference_data/climate/1pal_fixed_total/po2_1pal_pco2_60000ppm_fixed-total.npz",
+      "sha256": "5d4fd8789c0eff8fbe5a27c43b1aa2692ee945add8eec41bfd8f512c6fd5e2bc",
+      "bytes": 146349
+    },
+    {
+      "path": "validation/reference_data/climate/0p1pal_additive/po2_0p1pal_pco2_300ppm.npz",
+      "sha256": "3b09c4d561eedb37da413e5a101dfcfcd09cf18014b2851d689f8370a37fd761",
+      "bytes": 153142
+    },
+    {
+      "path": "validation/reference_data/climate/0p1pal_additive/po2_0p1pal_pco2_10000ppm.npz",
+      "sha256": "31de8dfef4fca328748b29465d4425950faef2f5eb22e9c7a54cd5caa317739f",
+      "bytes": 152218
+    },
+    {
+      "path": "validation/reference_data/climate/0p1pal_additive/po2_0p1pal_pco2_30000ppm.npz",
+      "sha256": "6ff3af021f900caa0e886fcd69e5ea153ba0e16cd912da0367cc0054a8ae66a1",
+      "bytes": 146444
+    },
+    {
+      "path": "validation/reference_data/climate/0p1pal_additive/po2_0p1pal_pco2_60000ppm.npz",
+      "sha256": "2c75f11526d44533297207951a94da5b1bd2e6fc7c15967c4f6e3b00c477a317",
+      "bytes": 145585
+    },
+    {
+      "path": "validation/reference_data/climate/2pal_additive/po2_2pal_pco2_300ppm.npz",
+      "sha256": "f34088d217d26d396a129263a1541f9318bf9ef2ffdf2e969f8a963a89c6e791",
+      "bytes": 150596
+    },
+    {
+      "path": "validation/reference_data/climate/2pal_additive/po2_2pal_pco2_10000ppm.npz",
+      "sha256": "ef3af5d699e46e4f4fc937af232e38a7ab4244f6c6d17945b658f912e409c5f7",
+      "bytes": 148300
+    },
+    {
+      "path": "validation/reference_data/climate/2pal_additive/po2_2pal_pco2_30000ppm.npz",
+      "sha256": "312df458dd9de9451738b8f330e4c55ffaedb249b21f4a0dd64e78c91a9ab41f",
+      "bytes": 147661
+    },
+    {
+      "path": "validation/reference_data/climate/2pal_additive/po2_2pal_pco2_60000ppm.npz",
+      "sha256": "5ad349773e1ee7abd91548fdd26cad65994a2008da65d75fe41030cbe2d9964d",
+      "bytes": 148677
+    }
+  ]
+}

@@ -1,0 +1,190 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r code/requirements-dev.txt -c code/requirements-api-lock.txt
+          pip check
+
+      - name: Public package smoke test
+        run: python run_model.py smoke
+
+      - name: Publication contract and integrated acceptance
+        run: |
+          python -m pytest \
+            validation/test_publication_package_smoke.py \
+            validation/test_release_artifacts.py \
+            validation/test_reproduction_packaging.py \
+            validation/test_public_deployment.py \
+            validation/test_validation_evidence_bundle.py \
+            validation/test_publication_model_contract.py \
+            validation/test_publication_model_acceptance.py -q
+          python run_model.py acceptance
+
+      - name: Public HTTP API contract
+        run: |
+          python -m pytest \
+            validation/test_api_launcher.py \
+            validation/test_web_api.py \
+            validation/test_model_result_workbook.py \
+            validation/test_public_cli.py \
+            validation/test_isotope_field_contours.py \
+            validation/test_constrained_coordinate_resolution.py \
+            validation/test_spherule_inversion_acceptance.py -q
+
+      - name: Publication model forward, inverse, posterior, and uncertainty tests
+        run: |
+          python -m pytest \
+            validation/test_updated_molecular_forward_model.py \
+            validation/test_updated_forward_surface.py \
+            validation/test_updated_output_surface.py \
+            validation/test_updated_output_surface_release.py \
+            validation/test_updated_output_surface_inverse.py \
+            validation/test_updated_output_surface_posterior.py \
+            validation/test_updated_output_surface_joint_posterior.py \
+            validation/test_updated_uncertainty_layers.py \
+            validation/test_uncertainty_contract.py -q
+
+      - name: Numerical inference and completed-result reuse
+        run: |
+          python -m pytest \
+            validation/test_posterior_coordinate_quadrature.py \
+            validation/test_posterior_field_refinement.py \
+            validation/test_posterior_surface_slice.py \
+            validation/test_completed_result_cache.py -q
+
+      - name: Sulfate transfer and uncertainty accuracy
+        run: |
+          python -m pytest \
+            validation/test_oxygen_source_mixing.py \
+            validation/test_sulfate_to_air.py \
+            validation/test_sulfate_transfer_audit.py \
+            validation/test_sulfate_fractionation_audit.py \
+            validation/test_sulfate_uncertainty.py \
+            validation/test_sulfate_likelihood_table.py \
+            validation/test_sulfate_web_api.py -q
+
+      - name: Declared transient behavior tests
+        run: |
+          python -m pytest \
+            validation/test_updated_molecular_transient.py \
+            validation/test_updated_photosynthesis_transient.py \
+            validation/test_updated_pco2_trajectory_transient.py -q
+
+      - name: Core regression tests
+        run: python -m pytest validation/test_core.py -q
+
+      - name: Historical Young-reproduction anchor (expects 26/26)
+        run: |
+          python validation/audit_young_acceptance_gate.py | tee gate.log
+          grep -q "passed 26/26" gate.log
+
+  container:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate production Compose and Caddy configuration
+        run: |
+          docker compose \
+            --env-file deploy/.env.production.example \
+            -f deploy/compose.production.yaml config --quiet
+          docker compose \
+            --env-file deploy/.env.traefik.example \
+            -f deploy/compose.traefik.yaml config --quiet
+          docker run --rm \
+            -e OXYTIB_DOMAIN=model.example.org \
+            -e ACME_EMAIL=researcher@example.org \
+            -v "$PWD/deploy/caddy:/etc/caddy:ro" \
+            caddy:2.11.4-alpine caddy validate --config /etc/caddy/Caddyfile
+
+      - name: Build production application image
+        run: docker build --tag oxytib:ci .
+
+      - name: Start hardened application container
+        run: |
+          docker run --detach --name oxytib-ci \
+            --publish 127.0.0.1:8000:8000 \
+            --read-only --tmpfs /tmp:rw,noexec,nosuid,size=256m \
+            --memory 768m --memory-swap 768m --pids-limit 128 --cpus 0.75 \
+            --env OXYTIB_MAX_COMPUTE_REQUESTS=1 \
+            --cap-drop ALL --security-opt no-new-privileges \
+            oxytib:ci
+          docker exec oxytib-ci python -c \
+            'from openpyxl.xml import LXML; from lxml import etree; assert LXML, "Streaming XLSX backend is unavailable"; print("Streaming XML backend:", etree.LXML_VERSION)'
+
+      - name: Verify deployed model identity and known answer
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8000/api/v1/health >/dev/null; then
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              docker logs oxytib-ci
+              exit 1
+            fi
+            sleep 2
+          done
+          python validation/verify_public_deployment.py \
+            --base-url http://127.0.0.1:8000
+
+      - name: Verify dense posterior export within shared-server limits
+        timeout-minutes: 12
+        run: |
+          python validation/verify_public_deployment.py \
+            --base-url http://127.0.0.1:8000 --check-dense-export
+
+      - name: Report container memory and exit state
+        if: always()
+        run: |
+          docker inspect --format '{{json .State}}' oxytib-ci
+          docker stats --no-stream oxytib-ci
+          if [ "$(docker inspect --format '{{.State.Running}}' oxytib-ci)" = "true" ]; then
+            docker exec oxytib-ci python -c \
+              'from pathlib import Path; root = Path("/sys/fs/cgroup"); [(print(name + ":", (root / name).read_text().strip() if (root / name).exists() else "unavailable")) for name in ("memory.max", "memory.peak", "memory.events")]'
+          fi
+
+      - name: Verify graceful container shutdown
+        run: |
+          docker stop --time 10 oxytib-ci
+          python - <<'PY'
+          import json
+          import subprocess
+          state = json.loads(subprocess.check_output([
+              "docker", "inspect", "--format", "{{json .State}}", "oxytib-ci"
+          ], text=True))
+          logs = subprocess.check_output(["docker", "logs", "oxytib-ci"], stderr=subprocess.STDOUT, text=True)
+          assert not state["Running"] and not state["OOMKilled"], state
+          assert state["ExitCode"] in (0, 143), state
+          assert "Application shutdown complete." in logs, logs
+          assert "Finished server process" in logs, logs
+          print("Graceful shutdown verified:", state["ExitCode"])
+          PY
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker logs oxytib-ci
+
+      - name: Stop application container
+        if: always()
+        run: docker rm --force oxytib-ci || true
