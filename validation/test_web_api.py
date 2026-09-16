@@ -37,7 +37,7 @@ def test_frontend_assets_and_api_work_when_mounted_below_prefix() -> None:
     swagger_initializer = prefixed_client.get("/oxytib/assets/swagger-init.js")
 
     assert root.status_code == 200
-    assert 'href="assets/styles.css?v=1.25.2"' in root.text
+    assert 'href="assets/styles.css?v=1.25.3"' in root.text
     assert 'src="assets/app.js?v=1.25.2"' in root.text
     assert 'src="assets/mathjax-config.js?v=1.0.0"' in root.text
     assert 'src="assets/vendor/mathjax/tex-svg.js?v=3.2.2"' in root.text
@@ -206,12 +206,13 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert 'id="transient-progress-elapsed"' in root.text
     assert 'id="solver-progress"' in root.text
     assert 'id="solver-progress-elapsed"' in root.text
-    assert 'href="assets/styles.css?v=1.25.2"' in root.text
+    assert 'href="assets/styles.css?v=1.25.3"' in root.text
     assert 'src="assets/app.js?v=1.25.2"' in root.text
     assert 'id="reset-surface"' in root.text
     assert 'id="reset-transient"' in root.text
     assert '>Download XLSX</button>' in root.text
     assert 'class="brand-lockup"' in root.text
+    assert 'class="brand-home" href="./" aria-label="OXYTIB home" title="Home"' in root.text
     assert '<span>OXY</span><strong>TIB</strong>' in root.text
     assert (
         "O<sub>2</sub> · Δ′<sup>17</sup>O · pCO<sub>2</sub> · "

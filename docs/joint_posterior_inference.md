@@ -26,9 +26,10 @@ an axis was evaluated on a linear or geometric grid.
 
 Analytical measurement uncertainty is required. A Gaussian model-discrepancy
 term is optional, but a positive value is rejected unless its provenance is
-provided. The source-isoflux, biological-process, and interpolation intervals
-stored in the output surface remain non-probabilistic guardrails. They are not
-silently interpreted as one-sigma ranges or assigned arbitrary distributions.
+provided. Sensitivity intervals for the CO2 isotope-anomaly flux (isoflux),
+biological processes and interpolation are stored in the precomputed model
+grid as bounds, with their distinct physical and numerical interpretations.
+Assigning probability distributions to these bounds requires separate justification.
 
 The release scorecard uses a synthetic discrepancy value only to test numerical
 propagation and generated-target recovery. It is not an empirical calibration.

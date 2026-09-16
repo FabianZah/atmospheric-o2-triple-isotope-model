@@ -41,6 +41,23 @@ framework-neutral service functions and versioned model data.
 | pCO₂ | 50 ppm | 60,000 ppm |
 | GPP | 18.256 Pg C yr⁻¹ | 850 Pg C yr⁻¹ |
 
+## Terms used in technical reports
+
+- **PAL:** present atmospheric level. The model defines 1 PAL O₂ as 21.2%.
+- **GPP:** gross primary production; 100% modern in the interface is 290 Pg C yr⁻¹.
+- **Physical kernel:** the direct calculation of the physical model.
+- **Output surface or accelerator:** a precomputed model grid used for faster
+  evaluation by interpolation. Its error is tested against direct calculations.
+- **Holdout:** a calculation or observation withheld from construction or
+  calibration and used to test the resulting model or interpolation.
+- **Isoflux:** a flux weighted by its isotope composition; here, the CO₂ flux
+  weighted by its oxygen-isotope anomaly.
+- **R1-R7 and R7:** reaction labels following Young et al. (2014), retained in
+  technical identifiers. R7 describes CO₂ oxygen-isotope exchange with excited
+  atomic oxygen, O(1D).
+- **Young anchor:** a comparison with the published model of Young et al. (2014).
+- **RCE:** radiative-convective equilibrium, used in the climate sensitivity tests.
+
 ## Evidence structure
 
 Validation records modern observations, analytical benchmarks, conservation,

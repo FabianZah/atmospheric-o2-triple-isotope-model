@@ -18,8 +18,8 @@ The model identity, implementation paths and data checksums are defined in
 [the model contract](../model_data/publication_model_contract_v1.json).
 
 - `public_model_service.py` connects the console, API and model.
-- `updated_molecular_forward_model.py` defines the physical kernel.
-- `updated_output_surface.py` provides accelerated numerical evaluation.
+- `updated_molecular_forward_model.py` defines the direct physical-model calculation.
+- `updated_output_surface.py` provides faster evaluation by interpolation in a precomputed model grid.
 - The inverse, posterior and transient modules implement the corresponding
   calculations using the same physical model.
 - `spherule_to_air_d17o.py`, `sulfate_to_air.py` and the sulfate uncertainty

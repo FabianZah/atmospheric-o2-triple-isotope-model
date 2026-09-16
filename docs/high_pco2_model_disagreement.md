@@ -6,10 +6,12 @@ model disagreement alongside Liu et al. (2021) and Cao and Bao (2013).
 
 ## Mechanistic interpretation
 
-The photochemical response includes converged parent atmospheres through
-60,000 ppm. As CO2 increases, R7 competes with other O(1D) sinks. Its
-forcing elasticity decreases smoothly as the available O(1D) is shared
-among those sinks. This provides a physical source of curvature.
+The photochemical response uses converged altitude-resolved atmospheric
+calculations through 60,000 ppm. As CO2 increases, its reaction with excited
+atomic oxygen, O(1D), competes with other sinks of O(1D). The fractional change
+in isotope forcing per fractional increase in CO2 decreases smoothly as the
+available O(1D) is shared among those sinks. This provides a physical source
+of curvature.
 
 Atmospheric temperature, vertical transport, pressure convention and
 oxygen-accessible biological production can also alter the response.

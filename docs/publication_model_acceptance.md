@@ -4,6 +4,8 @@
 
 This audit evaluates the single OXYTIB publication model against its declared evidence and scope.
 
+Report terminology is defined in the [documentation glossary](README.md#terms-used-in-technical-reports).
+
 | Section | Gate | Status | Result |
 |---|---|---|---|
 | core | Formal numerical and physical release gates | pass | 20 passed; 0 failed |

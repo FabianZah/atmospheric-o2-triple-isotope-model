@@ -20,7 +20,7 @@ On Linux or macOS, use `python3.12 -m venv .venv` to create the environment
 and `source .venv/bin/activate` to activate it. Then run the same installation
 and calculation commands shown here.
 
-For release validation and the historical response anchor, install:
+For release validation and comparison with Young et al. (2014), install:
 
 ```powershell
 python -m pip install -r code/requirements-dev.txt -c code/requirements-api-lock.txt
@@ -94,7 +94,7 @@ python -m pytest `
   validation/test_public_deployment.py -q
 ```
 
-The historical Young et al. (2014) response anchor can be regenerated
+The source-derived Young et al. (2014) comparison calculation can be regenerated
 separately:
 
 ```powershell

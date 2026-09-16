@@ -3,11 +3,13 @@
 OXYTIB includes altitude-dependent O/O(1D)/O2/O3/CO2 photochemistry,
 pO2- and pCO2-dependent chemical columns, a globally mixed oxygen inventory,
 absolute GPP and source-backed biological alternatives. Its forcing
-normalization uses molecular oxygen balance and the Adnew CO2 isoflux.
+normalization uses molecular oxygen balance and the Adnew et al. (2025)
+CO2 isoflux (CO2 flux weighted by its isotope anomaly). O(1D) denotes excited
+atomic oxygen.
 
 ## Central assumptions
 
-The native column uses prescribed temperature and vertical-mixing profiles.
+The altitude-resolved atmospheric calculation uses prescribed temperature and vertical-mixing profiles.
 The atmosphere responds chemically to pO2 and pCO2 while those structural
 profiles remain specified. The biological budget is expressed in total
 global GPP. The published domain is 0.1-2 PAL pO2, 50-60,000 ppm pCO2 and
@@ -18,7 +20,7 @@ global GPP. The published domain is 0.1-2 PAL pO2, 50-60,000 ppm pCO2 and
 - Paired Clima/chemistry calculations quantify thermal and ozone sensitivity.
 - Fixed-total-dry-gas and additive-CO2 experiments isolate pressure convention.
 - End members at 0.1 and 2 PAL test the oxygen-climate interaction.
-- Ozone-heated RCE experiments test the modern climate-profile boundary.
+- Ozone-heated radiative-convective equilibrium (RCE) experiments test the modern climate-profile boundary.
 - Marine-accessibility calculations test the mapping from marine production
   to atmospheric oxygen throughput.
 - ERA5 latitude-height transport provides modern transport evidence.

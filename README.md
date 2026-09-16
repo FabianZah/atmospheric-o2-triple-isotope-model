@@ -12,10 +12,10 @@ The hosted application is available at
 
 ## Scientific model
 
-The deterministic model couples altitude-resolved R1-R7 photochemistry to a
-conservative global atmospheric-O₂ and biological-turnover budget. A versioned
-output surface accelerates repeated evaluation while preserving the validated
-central calculation.
+The deterministic model couples altitude-resolved oxygen, ozone and
+carbon-dioxide photochemistry to a conservative global atmospheric-O₂ and
+biological-turnover budget. A precomputed model grid makes repeated evaluations
+faster by interpolation, with accuracy checked against direct model calculations.
 
 OXYTIB predicts atmospheric O₂ Δ′¹⁷O and δ′¹⁸O for specified pCO₂, pO₂, and
 GPP. Inference solves one coordinate from an isotope observation and
@@ -26,6 +26,9 @@ independent constraints on the other two. The accepted operational domain is:
 | pO₂ | 0.10 PAL | 2.00 PAL |
 | pCO₂ | 50 ppm | 60,000 ppm |
 | GPP | 18.256 Pg C yr⁻¹ | 850 Pg C yr⁻¹ |
+
+PAL means present atmospheric level; 1 PAL corresponds to the model's modern
+O₂ reference of 21.2%. In the interface, 100% modern GPP is 290 Pg C yr⁻¹.
 
 The machine-readable definition in
 [`model_data/publication_model_contract_v1.json`](model_data/publication_model_contract_v1.json)
@@ -124,7 +127,7 @@ the isolated local verification environment.
 ## Evidence
 
 Validation combines modern atmospheric O₂ observations, ice-core behavior,
-published productivity constraints, numerical holdouts, conservation checks,
+published productivity constraints, independent interpolation tests, conservation checks,
 and comparisons with published atmospheric-isotope models. Young et al. (2014)
 provides the foundational atmospheric O₂ budget architecture and published
 response curves; later literature constrains photochemistry, biological
@@ -147,7 +150,7 @@ and the scientific model is defined in
 - `docs/`: model definition, methods, uncertainty, validation, and deployment.
 - `deploy/`: Docker and reverse-proxy configuration for an independent server.
 
-The release contains the operational dependency closure and validation
+The release contains the code, dependencies, model data and validation
 evidence needed to reproduce the published calculations. Large third-party
 datasets, copyrighted literature, exploratory downloads, and generated local
 outputs remain outside the release runtime.

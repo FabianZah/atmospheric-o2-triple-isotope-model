@@ -10,7 +10,7 @@ The criteria are implemented in
 - Runtime data identity and file integrity.
 - Finite solutions, isotope and oxygen budget consistency.
 - Monotonic response to pCO2, GPP and pO2 within the declared domain.
-- Interpolation residuals against independent physical-kernel holdouts.
+- Interpolation errors against direct model calculations at points withheld from the grid.
 - Forward-to-inverse closure and synthetic-target recovery.
 - Normalized posterior mass and converged uncertainty integration.
 - Continuous isotope response after prescribed perturbations, with agreement

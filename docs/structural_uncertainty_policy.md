@@ -9,8 +9,9 @@ The model-comparison classification is
 ## Statistical interpretation
 
 Measurement uncertainty and explicitly specified coordinate constraints enter
-the likelihood and priors. Source-isoflux and biological alternatives define
-parameter sensitivities. Independent holdouts quantify numerical error.
+the likelihood and priors. Alternatives for the CO2 isotope-anomaly flux
+(isoflux) and biological processes define parameter sensitivities. Direct
+model calculations withheld from the interpolation grid quantify numerical error.
 
 Differences between atmospheric models quantify structural sensitivity.
 They are not repeated measurements of model error and do not define a
@@ -35,7 +36,7 @@ Clima difference reaches several per mil.
 Exact end-member calculations at 0.1, 1 and 2 PAL demonstrate a material
 pO2-climate-ozone interaction. These scenarios retain their own physical
 assumptions and are reported as non-probabilistic sensitivity evidence.
-The ozone-heated RCE modern gate and the high-pCO2 comparisons are summarized
+The modern ozone-heated radiative-convective equilibrium (RCE) check and the high-pCO2 comparisons are summarized
 in [the validation assessment](publication_model_acceptance.md).
 
 Liu et al. (2021)'s atmosphere-accessible marine oxygen convention is another

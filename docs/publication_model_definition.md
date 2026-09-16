@@ -3,10 +3,10 @@
 ## Architecture
 
 OXYTIB is one atmospheric O₂ triple-isotope model. Its deterministic core
-couples a resolved Photochem R1-R7 atmospheric column to a conservative global
-atmospheric-O₂ and biological-turnover budget. The validated output surface is
-a numerical accelerator for this model and preserves its defining equations
-and versioned node values.
+couples an altitude-resolved oxygen, ozone and carbon-dioxide photochemical
+column to a conservative global atmospheric-O₂ and biological-turnover budget.
+A precomputed model grid provides faster evaluation by interpolation, checked
+against direct calculations using the same physical formulation.
 
 The machine-readable authority is
 `model_data/publication_model_contract_v1.json`. It pins the model and surface
@@ -25,7 +25,8 @@ state, and modern structural residual.
 
 Measurement/proxy, parameter, numerical, and structural uncertainty are
 reported as separate layers. Literature ranges define the parameter layer,
-and numerical holdouts constrain interpolation error. Comparisons with Young
+and direct calculations withheld from the interpolation grid constrain its
+numerical error. Comparisons with Young
 et al. (2014), Liu et al. (2021), Cao and Bao (2013), Luz et al. (1999), the
 Yang-Banerjee ice-core record, Brandon et al. (2020), and Pack (2021) provide
 validation evidence with source-specific scopes.

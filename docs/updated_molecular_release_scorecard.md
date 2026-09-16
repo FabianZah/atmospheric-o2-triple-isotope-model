@@ -2,6 +2,8 @@
 
 This scorecard evaluates the molecular engine used by the public UI. Young comparisons are diagnostics, not fitted constraints. The accepted modern-reference discrepancy is reported but is not applied inside the model.
 
+Report terminology is defined in the [documentation glossary](README.md#terms-used-in-technical-reports).
+
 | Category | Metric | Value | Status | Criterion |
 |---|---|---:|---|---|
 | modern | Pack Delta-prime-17O residual | 0.00564962 permil | pass | absolute residual <= 0.015 permil |

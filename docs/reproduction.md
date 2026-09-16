@@ -48,7 +48,7 @@ remain fixed. The Banerjee comparison uses measured CO2 and preserves the
 authors' sample exclusions; its proxy-reconstructed CO2 column is not a
 validation observation.
 
-## Full numerical tests and Young anchor
+## Full numerical tests and Young comparison
 
 ```powershell
 python -m pytest validation -q
@@ -56,8 +56,8 @@ python validation/audit_young_acceptance_gate.py
 ```
 
 The tests cover conservation, inversion, isotope conversion, uncertainty
-integration, transients, API contracts and exports. The Young anchor is a
-separate source-derived validation calculation. Some POSIX process tests run
+integration, transients, API contracts and exports. The comparison with
+Young et al. (2014) uses a separate source-derived validation calculation. Some POSIX process tests run
 on Linux rather than Windows.
 
 ## Climate and chemistry inputs
@@ -72,7 +72,8 @@ build. Their archived SHA-256 hashes are checked before use. Run:
 python run_model.py reproduce climate
 ```
 
-This reconstructs local R7 operators and solves the global O2 isotope budget
+This calculates local oxygen-isotope exchange responses for CO2 and excited
+atomic oxygen, O(1D), and solves the global O2 isotope budget
 for the four oxygen/pressure experiments. It is optional in the default
 sequence because it takes longer than the surface-based comparisons.
 
@@ -82,8 +83,8 @@ Lower-level entry points are also supplied:
   native Liu `column.json` results or the bundled fixed-reference grid and
   recalculates the OXYTIB comparisons.
 - `validation/audit_clima_global_o2_response.py --manifest MANIFEST
-  --artifact-directory DIRECTORY` constructs R7 operators from native
-  Photochem arrays and solves the global isotope budget. `--po2-pal` selects
+  --artifact-directory DIRECTORY` constructs these isotope-exchange responses
+  from Photochem atmospheric profiles and solves the global isotope budget. `--po2-pal` selects
   the oxygen level; run `--help` for output and bundle options.
 - `validation/audit_clima_pressure_conventions.py` and
   `validation/audit_clima_po2_cross.py` compare the resulting climate reports.
@@ -104,7 +105,7 @@ to rerun Liu's model. Input metadata preserves this distinction.
 the acceptance decision against the hash-verified evidence bundle. Its generated
 reports go to `outputs/`, leaving tracked documentation intact.
 
-The full scorecard and its upstream numerical surface holdout, ice-core
+The full scorecard and its supporting independent grid-interpolation, ice-core
 tracking and transient reports can be regenerated explicitly:
 
 ```powershell
