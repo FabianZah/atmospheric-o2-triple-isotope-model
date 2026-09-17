@@ -61,3 +61,14 @@ def test_release_nodes_reproduce_live_delta17_and_expand_guardrail(inputs) -> No
         )
     )
     assert accelerated.central_delta18_acceleration_validated is True
+
+
+@pytest.mark.parametrize('inputs', [
+    (0.2, 8000.0, 58.0), (0.5, 30000.0, 72.5),
+    (1.7, 52000.0, 675.0), (0.35, 17250.0, 113.0),
+])
+def test_off_grid_predictions_match_direct_calculations_within_declared_tolerances(inputs):
+    accelerated = load_updated_output_surface().evaluate(UpdatedOutputSurfaceInput(*inputs))
+    direct = run_updated_forward(UpdatedForwardInput(*inputs))
+    assert abs(accelerated.central_cap_delta17_prime_permil - direct.central_cap_delta17_prime_permil) <= accelerated.output_surface_interpolation_guardrail_permil
+    assert accelerated.central_delta18_prime_permil == pytest.approx(direct.central_delta18_prime_permil, abs=0.05)

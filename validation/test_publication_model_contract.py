@@ -13,6 +13,24 @@ if str(ROOT / "validation") not in sys.path:
     sys.path.insert(0, str(ROOT / "validation"))
 
 from export_publication_model_contract import run  # noqa: E402
+from export_publication_model_contract import _sha256  # noqa: E402
+
+
+def test_stored_contract_hashes_match_supplied_sources():
+    contract = json.loads((ROOT / "model_data/publication_model_contract_v1.json").read_text())
+    assert contract['source_hash_convention'] == 'SHA-256; Python and JSON text normalized from CRLF to LF'
+    for record in contract['source_files'].values():
+        assert _sha256(ROOT / record['path']) == record['sha256'], record['path']
+
+
+def test_source_hashes_are_portable_but_detect_content_changes(tmp_path):
+    source = tmp_path / 'example.py'
+    source.write_bytes(b'x = 1\ny = 2\n')
+    expected = _sha256(source)
+    source.write_bytes(b'x = 1\r\ny = 2\r\n')
+    assert _sha256(source) == expected
+    source.write_bytes(b'x = 1\ny = 3\n')
+    assert _sha256(source) != expected
 
 
 def test_publication_contract_has_one_consistent_model() -> None:
@@ -50,9 +68,11 @@ def test_publication_contract_has_one_consistent_model() -> None:
         assert contract["modern_reference_state"]["raw_model_reporting"] == (
             "unadjusted mechanistic state"
         )
-        assert contract["reporting_policy"][
-            "observation_referenced_output_is_same_model"
-        ]
+        assert contract["reporting_policy"]["observation_reference_offset_applied"] is False
+        assert "observation_referenced_definition" not in contract["reporting_policy"]
+        from public_model_service import result_envelope
+        assert set(contract["reporting_policy"]["required_api_envelope_fields"]) == set(
+            result_envelope({}, calculation="contract_test"))
 
         uncertainty = contract["uncertainty"]
         assert uncertainty["layers_remain_separate"]
@@ -78,6 +98,8 @@ def test_publication_contract_has_one_consistent_model() -> None:
             "state_step_transient_implementation",
             "photosynthesis_step_transient_implementation",
             "pco2_trajectory_transient_implementation",
+            "forward_constraints_implementation",
+            "public_service_implementation",
         } <= set(contract["source_files"])
         assert all(
             item["path"].startswith("model_data/validation_evidence/")

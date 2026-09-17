@@ -74,6 +74,32 @@ def test_three_uncertainties_have_analytic_mean_and_variance():
     np.testing.assert_allclose(isotope["interval95"], exact, atol=.0001 + .0002 * (exact[1] - exact[0]))
 
 
+@pytest.mark.parametrize('coordinate,coefficient,bounds,center,sigma', [
+    ('pco2_constraint', -.001, (100, 500), 80, 60),
+    ('gpp_constraint', .01, (100, 500), 40, 30),
+    ('po2_constraint', -1., (.3, 1.3), .2, .2),
+])
+@pytest.mark.parametrize('kind', ['range', 'normal'])
+def test_each_input_uncertainty_matches_analytic_marginal(coordinate, coefficient, bounds, center, sigma, kind):
+    from dataclasses import replace
+    constraint = C('range', lower=bounds[0], upper=bounds[1]) if kind == 'range' else C('normal', center=center, sigma=sigma)
+    request = replace(ForwardIsotopeConstraints(), **{coordinate: constraint})
+    actual = predict_isotopes(request, surface=LinearSurface())
+    name = {'pco2_constraint':'pCO2', 'gpp_constraint':'GPP', 'po2_constraint':'pO2'}[coordinate]
+    low, high = actual['effective_bounds'][name]
+    q = np.array([.025, .5, .975])
+    if kind == 'range':
+        values = low + q * (high-low)
+    else:
+        a, b = ndtr((np.array([low,high])-center)/sigma)
+        values = center + sigma * ndtri(a + q*(b-a))
+    default = {'pco2_constraint':294., 'gpp_constraint':290., 'po2_constraint':1.}[coordinate]
+    default_isotope = -.001 * 294. + .01 * 290. - 1.
+    expected = np.sort(default_isotope + coefficient*(values-default))
+    isotope = actual['isotopes']['cap_delta17_prime_permil']
+    np.testing.assert_allclose([isotope['interval95'][0], isotope['median'], isotope['interval95'][1]], expected, atol=.0001)
+
+
 def test_sorted_replicate_statistics_match_concatenated_numpy():
     rng = np.random.default_rng(7)
     for size in (2, 10, 321):

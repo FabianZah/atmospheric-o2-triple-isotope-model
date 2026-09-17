@@ -32,8 +32,8 @@ At 1 PAL O2, 294 ppm CO2 and 290 Pg C per year GPP, the contract records:
 | Atmospheric O2 conventional δ¹⁸O, per mil | 23.680359 | 23.9 ± 0.3 |
 
 Scenario values are calculated using their specified boundary conditions.
-An observation-referenced differential is a separate reporting convention;
-the raw calculation and its modern residual are retained.
+The modern residual quantifies the comparison with independent observations;
+scenario outputs retain the raw model prediction.
 
 ## Numerical surface
 

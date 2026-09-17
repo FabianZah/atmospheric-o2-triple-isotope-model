@@ -1,5 +1,6 @@
 {
   "schema_version": 1,
+  "source_hash_convention": "SHA-256; Python and JSON text normalized from CRLF to LF",
   "publication_model_id": "oxytib_publication_model_v1",
   "status": "active_publication_model",
   "single_model_policy": {
@@ -12,7 +13,7 @@
   },
   "deterministic_model": {
     "model_data_id": "updated_r7_response_surface_v1",
-    "model_class": "resolved Photochem R1-R7 atmospheric column coupled to a conservative global atmospheric-O2 and biological-turnover budget",
+    "model_class": "altitude-resolved oxygen, ozone and carbon-dioxide photochemistry coupled to a conservative global atmospheric-O2 and biological-turnover budget",
     "central_kernel": "code/updated_molecular_forward_model.py",
     "numerical_accelerator": {
       "surface_data_id": "updated_molecular_output_surface_v1",
@@ -59,7 +60,7 @@
       "GPP_PgC_per_year": 290.0
     },
     "raw_model": {
-      "Delta_prime_17O_permil": -0.42635313046373885,
+      "Delta_prime_17O_permil": -0.4263531304637385,
       "delta_prime_18O_permil": 23.404328779226688,
       "conventional_delta_18O_permil": 23.6803593119586
     },
@@ -74,14 +75,18 @@
   },
   "reporting_policy": {
     "primary_forward_output": "raw mechanistic model state",
-    "observation_referenced_output_is_same_model": true,
-    "observation_referenced_definition": "Pack (2021) modern value plus the unchanged mechanistic scenario-minus-modern differential",
-    "required_export_fields": [
-      "raw_modern",
-      "raw_scenario",
-      "mechanistic_differential",
-      "observation_referenced_scenario",
-      "structural_baseline_residual"
+    "observation_reference_offset_applied": false,
+    "forward_isotope_reporting": {
+      "Delta_prime_17O": "per mil; lambda = 0.528",
+      "delta18O": "conventional per mil VSMOW in the isotope-composition solver",
+      "delta_prime_18O": "logarithmic per mil in the core forward endpoint"
+    },
+    "required_api_envelope_fields": [
+      "api_version",
+      "publication_model_id",
+      "calculation",
+      "result",
+      "provenance"
     ]
   },
   "uncertainty": {
@@ -173,11 +178,11 @@
   "source_files": {
     "central_forward_implementation": {
       "path": "code/updated_molecular_forward_model.py",
-      "sha256": "5cf6eac3c22241d0b55f461edc7dc6a21db089960fa866b6219072763ff5ccfc"
+      "sha256": "5260385ff615121f393a964abba19b2cf4b0d2c7faead072d43147e2433ee24c"
     },
     "accelerator_implementation": {
       "path": "code/updated_output_surface.py",
-      "sha256": "915d9609e07a60733a58c25de596327efacaf9d0c07ebad94d2997104b65c617"
+      "sha256": "8975191d0a992529e1db48e03776d9ebfc5df404cfc992b85f78837a98ffdbde"
     },
     "inverse_implementation": {
       "path": "code/updated_output_surface_inverse.py",
@@ -185,11 +190,11 @@
     },
     "conditional_posterior_implementation": {
       "path": "code/updated_output_surface_posterior.py",
-      "sha256": "f94ed7f68cfca7659552b8021982104c1a87a0d2f0d96ce26acf6551678465bd"
+      "sha256": "a44e861671d8923ba638ef2e392463415a986cccb665e5cac5f819f4b5d7f3d6"
     },
     "joint_posterior_implementation": {
       "path": "code/updated_output_surface_joint_posterior.py",
-      "sha256": "83861cc386252bb8e1c05101c8feb9bf0463bc904577d902fa62e9dbb5ff9923"
+      "sha256": "a34c2dfbebcbdeb889b2815aeeb7f3a795a865030f208b1ec00199193a3316db"
     },
     "state_step_transient_implementation": {
       "path": "code/updated_molecular_transient.py",
@@ -201,27 +206,31 @@
     },
     "pco2_trajectory_transient_implementation": {
       "path": "code/updated_pco2_trajectory_transient.py",
-      "sha256": "6973edfb1865d019529b71ec50a813278a99e2bb55b33c4ed9ca50ba842e7cdb"
+      "sha256": "3d7bed78bf0d1112b939a6a1c8b8295d062f9208023784b10448a45f6eb382f4"
     },
     "uncertainty_implementation": {
       "path": "code/updated_uncertainty_layers.py",
       "sha256": "a78b76f7ed45c7fc4c7bb6d0c07cccb2cf16356a7ca3207c746a5f0e66ac1adf"
     },
-    "observation_reference_implementation": {
-      "path": "code/observation_referenced_isotope.py",
-      "sha256": "c874ed661e8718c874a9e649a06abb0a71c02c43b04fa0dbda281b5242ae53d1"
+    "forward_constraints_implementation": {
+      "path": "code/forward_isotope_constraints.py",
+      "sha256": "5037ac0f46599d44855154f2accd15dc6e7ae87674278dc062197cdb8f9356dc"
+    },
+    "public_service_implementation": {
+      "path": "code/public_model_service.py",
+      "sha256": "fc75eb820170bc513b6886ec9db65ff497cde45e6fdc44b643a2d58dc3deb3d7"
     },
     "central_response_surface": {
       "path": "model_data/updated_r7_response_surface_v1.json",
-      "sha256": "35fdf540ebe73264772fbe96892458a81f7e9f92313cdeb5f23e0392f2870c73"
+      "sha256": "b876e86f20b34dec8fb9598bb32061c3feada65f16d56b9055832776b94cf916"
     },
     "accelerated_output_surface": {
       "path": "model_data/updated_molecular_output_surface_v1.json",
-      "sha256": "7f2e596ef44f3bc8e33c9fe1915e5b28bc9a00faf55ba91612628e48e9992951"
+      "sha256": "04eabd38e29bd3c403b6143e8c4f9789992366a765743a951f8ba2fe56e3ada0"
     },
     "uncertainty_contract": {
       "path": "model_data/uncertainty/updated_o2_uncertainty_layers_v1.json",
-      "sha256": "75e52a788bf6f3b0e5de50af025aea707fa649d0ccfcb5b6c7c0ec5a79b3013c"
+      "sha256": "967596a2ba40fe17792815b5e4e7e37139c279b4acaecdbab869726c991cd017"
     },
     "validation_evidence_matrix": {
       "path": "model_data/literature/multimodel_evidence_matrix_v1.json",
@@ -269,7 +278,7 @@
     },
     "integrated_acceptance_implementation": {
       "path": "validation/audit_publication_model_acceptance.py",
-      "sha256": "ae85a5af66de936ebea391f3445414c00cd81c68fc7dc05be7b00a23b04946b2"
+      "sha256": "7f00be665a8992e4ffefbe2ff4195b0ef17269aff8e2f78022ab5e7c95a21905"
     }
   }
 }

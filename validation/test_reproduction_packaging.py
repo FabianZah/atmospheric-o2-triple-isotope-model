@@ -23,6 +23,8 @@ def test_reference_extraction_preserves_compositions_and_excludes_unused_port():
     assert carbon.delta18_prime_permil == pytest.approx(1000 * math.log1p(41.78933333333333 / 1000), abs=1e-12)
     assert not (ROOT / "code/photochem_two_stream.py").exists()
     assert not (ROOT / "code/modern_isotope_column.py").exists()
+    assert not (ROOT / "code/modern_photolysis.py").exists()
+    assert not (ROOT / "code/observation_referenced_isotope.py").exists()
 
 
 def test_every_evidence_generator_is_supplied_and_importable():

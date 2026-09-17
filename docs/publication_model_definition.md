@@ -11,15 +11,18 @@ against direct calculations using the same physical formulation.
 The machine-readable authority is
 `model_data/publication_model_contract_v1.json`. It pins the model and surface
 identifiers, operating domain, entry points, uncertainty contract, validation
-evidence, and checksums of the defining scientific files.
+evidence, and checksums of the defining scientific files. Python and JSON
+source checksums use LF-normalized text for consistent verification across
+Windows and Linux checkouts.
 
 ## Reporting
 
-The raw mechanistic state is the primary forward result. An optional Pack
-(2021)-referenced result expresses the unchanged modelled scenario-minus-modern
-differential relative to the observed modern value. Exports retain the raw
-modern and scenario states, mechanistic differential, observation-referenced
-state, and modern structural residual.
+Forward results report the raw mechanistic state. Modern observations,
+including Pack (2021), provide independent validation targets. The isotope
+composition solver reports Δ′¹⁷O at a reference slope of 0.528 and conventional
+δ¹⁸O on VSMOW; the core forward endpoint also exposes logarithmic δ′¹⁸O.
+Input uncertainties propagate to isotope intervals with their numerical
+convergence diagnostics and input constraints retained in the export.
 
 ## Uncertainty
 

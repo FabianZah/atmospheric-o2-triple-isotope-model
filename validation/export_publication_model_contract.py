@@ -51,11 +51,10 @@ def _project_path(path: Path) -> str:
 
 
 def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with Path(path).open("rb") as handle:
-        for block in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
+    data = Path(path).read_bytes()
+    if Path(path).suffix in {".py", ".json"}:
+        data = data.replace(b"\r\n", b"\n")
+    return hashlib.sha256(data).hexdigest()
 
 
 def _axis_summary(values: list[float]) -> dict[str, float | int]:
@@ -124,9 +123,8 @@ def run(
         / "code"
         / "updated_pco2_trajectory_transient.py",
         "uncertainty_implementation": ROOT / "code" / "updated_uncertainty_layers.py",
-        "observation_reference_implementation": ROOT
-        / "code"
-        / "observation_referenced_isotope.py",
+        "forward_constraints_implementation": ROOT / "code" / "forward_isotope_constraints.py",
+        "public_service_implementation": ROOT / "code" / "public_model_service.py",
         "central_response_surface": Path(response_path),
         "accelerated_output_surface": Path(output_surface_path),
         "uncertainty_contract": Path(uncertainty_path),
@@ -158,6 +156,7 @@ def run(
 
     contract: dict[str, Any] = {
         "schema_version": 1,
+        "source_hash_convention": "SHA-256; Python and JSON text normalized from CRLF to LF",
         "publication_model_id": "oxytib_publication_model_v1",
         "status": "active_publication_model",
         "single_model_policy": {
@@ -173,7 +172,7 @@ def run(
         "deterministic_model": {
             "model_data_id": model_id,
             "model_class": (
-                "resolved Photochem R1-R7 atmospheric column coupled to a "
+                "altitude-resolved oxygen, ozone and carbon-dioxide photochemistry coupled to a "
                 "conservative global atmospheric-O2 and biological-turnover budget"
             ),
             "central_kernel": "code/updated_molecular_forward_model.py",
@@ -233,17 +232,14 @@ def run(
         },
         "reporting_policy": {
             "primary_forward_output": "raw mechanistic model state",
-            "observation_referenced_output_is_same_model": True,
-            "observation_referenced_definition": (
-                "Pack (2021) modern value plus the unchanged mechanistic "
-                "scenario-minus-modern differential"
-            ),
-            "required_export_fields": [
-                "raw_modern",
-                "raw_scenario",
-                "mechanistic_differential",
-                "observation_referenced_scenario",
-                "structural_baseline_residual",
+            "observation_reference_offset_applied": False,
+            "forward_isotope_reporting": {
+                "Delta_prime_17O": "per mil; lambda = 0.528",
+                "delta18O": "conventional per mil VSMOW in the isotope-composition solver",
+                "delta_prime_18O": "logarithmic per mil in the core forward endpoint",
+            },
+            "required_api_envelope_fields": [
+                "api_version", "publication_model_id", "calculation", "result", "provenance",
             ],
         },
         "uncertainty": {
