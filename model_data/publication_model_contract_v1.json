@@ -218,7 +218,7 @@
     },
     "public_service_implementation": {
       "path": "code/public_model_service.py",
-      "sha256": "fc75eb820170bc513b6886ec9db65ff497cde45e6fdc44b643a2d58dc3deb3d7"
+      "sha256": "cd4c8192962675c682620e730b7882121eb19ceb17e1f4b29094a130cdb76d76"
     },
     "central_response_surface": {
       "path": "model_data/updated_r7_response_surface_v1.json",
