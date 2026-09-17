@@ -162,9 +162,13 @@ outputs remain outside the release runtime.
 
 ## Citation and license
 
-Citation records are supplied as [`CITATION.cff`](CITATION.cff),
-[`CITATION.bib`](CITATION.bib), and [`CITATION.ris`](CITATION.ris). The DOI will
-be added to these records when the v0.1.0 archive is deposited.
+Zahnow, F. (2026). *OXYTIB: Atmospheric oxygen triple-isotope budget and inference
+model* (v0.1.0) [Software]. Zenodo.
+[doi:10.5281/zenodo.22819964](https://doi.org/10.5281/zenodo.22819964).
+
+This DOI identifies the archived v0.1.0 release. Downloadable citation records
+are supplied as [`CITATION.cff`](CITATION.cff), [`CITATION.bib`](CITATION.bib),
+and [`CITATION.ris`](CITATION.ris).
 
 Source code is MIT licensed. Project documentation and original model data are
 CC BY 4.0. Third-party scientific inputs retain their original licenses; see

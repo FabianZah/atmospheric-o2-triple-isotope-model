@@ -103,12 +103,15 @@ def model_metadata() -> dict[str, Any]:
                 "inference model"
             ),
             "version": "0.1.0",
+            "doi": "10.5281/zenodo.22819964",
+            "url": "https://doi.org/10.5281/zenodo.22819964",
             "citation_file": "CITATION.cff",
             "citation_files": ("CITATION.cff", "CITATION.bib", "CITATION.ris"),
             "recommended_text": (
                 "Zahnow, F. (2026). OXYTIB: Atmospheric Oxygen "
                 "Triple-Isotope Budget and Inference Model (Version 0.1.0) "
-                "[Computer software]. GitHub."
+                "[Computer software]. Zenodo. "
+                "https://doi.org/10.5281/zenodo.22819964"
             ),
             "repository": (
                 "https://github.com/FabianZah/"

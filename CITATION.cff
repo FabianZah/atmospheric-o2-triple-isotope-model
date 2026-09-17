@@ -9,6 +9,9 @@ abstract: >-
   surfaces, transient experiments, and separated uncertainty layers.
 type: software
 version: "0.1.0"
+doi: "10.5281/zenodo.22819964"
+date-released: "2026-09-17"
+url: "https://doi.org/10.5281/zenodo.22819964"
 license: MIT  # code; data/docs are CC-BY-4.0 (see LICENSING.md)
 authors:
   - family-names: "Zahnow"

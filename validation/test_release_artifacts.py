@@ -56,6 +56,21 @@ def test_author_orcid_is_valid_and_in_citation_downloads() -> None:
         assert f"Author ORCID: {orcid}" in (ROOT / filename).read_text(encoding="utf-8")
 
 
+def test_release_doi_matches_citations_and_public_metadata() -> None:
+    doi = "10.5281/zenodo.22819964"
+    citation = yaml.safe_load((ROOT / "CITATION.cff").read_text(encoding="utf-8"))
+    metadata = model_metadata()["citation"]
+    assert citation["doi"] == metadata["doi"] == doi
+    assert citation["url"] == metadata["url"] == f"https://doi.org/{doi}"
+    assert citation["date-released"] == "2026-09-17"
+    assert doi in metadata["recommended_text"]
+    assert "Zenodo" in metadata["recommended_text"]
+    for filename in ("CITATION.bib", "CITATION.ris", "README.md", "web/index.html"):
+        assert f"https://doi.org/{doi}" in (ROOT / filename).read_text(encoding="utf-8")
+    assert f"doi       = {{{doi}}}" in (ROOT / "CITATION.bib").read_text(encoding="utf-8")
+    assert f"DO  - {doi}" in (ROOT / "CITATION.ris").read_text(encoding="utf-8")
+
+
 def test_public_documents_use_current_entry_points_and_portable_paths() -> None:
     combined = "\n".join(path.read_text(encoding="utf-8") for path in PUBLIC_MARKDOWN)
     assert "run_model.py app" not in combined
