@@ -18,6 +18,91 @@ ROOT = next(
 )
 
 
+def _image_archive_steps():
+    workflow = yaml.safe_load((ROOT / '.github/workflows/ci.yml').read_text(encoding='utf-8'))
+    steps = workflow['jobs']['container']['steps']
+    return steps, {step['name']: step for step in steps if 'name' in step}
+
+
+def test_ci_archives_only_the_verified_image_after_container_checks() -> None:
+    steps, named = _image_archive_steps()
+    names = [step.get('name') for step in steps]
+    archive = named['Archive tested application image']
+    upload = named['Save tested application image']
+    assert names.index('Verify dense posterior export within shared-server limits') < names.index(archive['name'])
+    assert names.index('Verify graceful container shutdown') < names.index(archive['name'])
+    assert names.index(archive['name']) < names.index(upload['name']) < names.index('Stop application container')
+    for step in (archive, upload):
+        assert step['if'] == "github.ref == 'refs/heads/main' && github.event_name != 'pull_request'"
+    assert 'always()' not in archive['if']
+    assert 'set -euo pipefail' in archive['run']
+    assert 'docker save "oxytib:$GITHUB_SHA" | gzip -1' in archive['run']
+    assert 'sha256sum image.tar.gz image.json > SHA256SUMS' in archive['run']
+    assert 'org.opencontainers.image.revision=$GITHUB_SHA' in named['Build production application image']['run']
+    assert upload['with']['retention-days'] == 7
+    assert upload['with']['compression-level'] == 0
+    assert upload['with']['if-no-files-found'] == 'error'
+    assert upload['with']['path'].splitlines() == [
+        'outputs/container-image/image.tar.gz',
+        'outputs/container-image/image.json',
+        'outputs/container-image/SHA256SUMS',
+    ]
+
+
+@pytest.mark.parametrize('failure', [None, 'wrong_image', 'wrong_revision', 'running', 'oom', 'exit_code'])
+def test_image_archive_metadata_checks_tested_container_identity(monkeypatch, tmp_path, failure) -> None:
+    import subprocess
+
+    _, named = _image_archive_steps()
+    script = named['Archive tested application image']['run'].split("python - <<'PY'\n", 1)[1].split('\nPY\n', 1)[0]
+    revision = 'a' * 40
+    image_id = 'sha256:' + 'b' * 64
+    image = {
+        'Id': image_id, 'Os': 'linux', 'Architecture': 'amd64', 'Size': 123456,
+        'Config': {'Labels': {'org.opencontainers.image.revision': revision}},
+    }
+    container = {'Image': image_id, 'State': {'Running': False, 'OOMKilled': False, 'ExitCode': 0}}
+    if failure == 'wrong_image':
+        container['Image'] = 'sha256:' + 'c' * 64
+    elif failure == 'wrong_revision':
+        image['Config']['Labels']['org.opencontainers.image.revision'] = 'd' * 40
+    elif failure == 'running':
+        container['State']['Running'] = True
+    elif failure == 'oom':
+        container['State']['OOMKilled'] = True
+    elif failure == 'exit_code':
+        container['State']['ExitCode'] = 137
+
+    monkeypatch.chdir(tmp_path)
+    for name, value in {'GITHUB_SHA': revision, 'GITHUB_REPOSITORY': 'example/oxytib',
+                        'GITHUB_RUN_ID': '123', 'GITHUB_RUN_ATTEMPT': '1'}.items():
+        monkeypatch.setenv(name, value)
+
+    def inspect(command, **kwargs):
+        if command == ['docker', 'image', 'inspect', 'oxytib:ci']:
+            return json.dumps([image])
+        assert command == ['docker', 'inspect', 'oxytib-ci']
+        return json.dumps([container])
+
+    tagged = []
+    monkeypatch.setattr(subprocess, 'check_output', inspect)
+    monkeypatch.setattr(subprocess, 'run', lambda command, **kwargs: tagged.append(command))
+    if failure:
+        with pytest.raises(AssertionError):
+            exec(compile(script, '<image-archive>', 'exec'), {})
+        assert not tagged
+        assert not (tmp_path / 'outputs/container-image').exists()
+    else:
+        exec(compile(script, '<image-archive>', 'exec'), {})
+        metadata = json.loads((tmp_path / 'outputs/container-image/image.json').read_text())
+        assert metadata['commit'] == revision
+        assert metadata['image_id'] == image_id
+        assert metadata['image_tag'] == 'oxytib:' + revision
+        assert metadata['workflow_run_id'] == '123'
+        assert metadata['architecture'] == 'amd64'
+        assert tagged == [['docker', 'tag', image_id, 'oxytib:' + revision]]
+
+
 def test_production_compose_is_private_bounded_and_read_only() -> None:
     compose = yaml.safe_load(
         (ROOT / "deploy" / "compose.production.yaml").read_text(encoding="utf-8")

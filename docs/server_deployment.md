@@ -82,6 +82,40 @@ python validation/verify_public_deployment.py \
   --base-url https://example.org/oxytib
 ```
 
+## Prebuilt image for memory-constrained hosts
+
+Successful CI runs on `main` retain the tested Linux image for seven days as
+`oxytib-image-<full-commit-SHA>`. This is a deployment artifact, separate from
+versioned scientific releases. The bundle contains `image.tar.gz`, `image.json`
+and `SHA256SUMS`. The image is tagged with the full source commit; the metadata
+records its image ID, platform and workflow run. Container checks, including
+graceful shutdown, precede artifact creation.
+
+Download the artifact from a successful run in the trusted OXYTIB repository
+and confirm the run's commit matches the intended revision. A checksum detects
+transfer corruption; trusted repository/run provenance establishes its source.
+Check free disk space for the archive and loaded layers, available host RAM,
+and host/image architecture before importing. In the downloaded directory:
+
+```bash
+sha256sum --check SHA256SUMS
+docker load --input image.tar.gz
+```
+
+Compare `docker image inspect oxytib:<full-commit-SHA>` with `image.json`,
+including its image ID and `org.opencontainers.image.revision` label. Keep a
+source checkout at that same commit for Compose files and verification tools.
+Set `OXYTIB_VERSION` to the full commit in the private deployment environment.
+Use `up --no-build --pull never -d` instead of `up --build -d` when starting
+that image with the chosen Compose configuration. This avoids installing
+dependencies and building layers on the application server.
+
+Use an isolated staging project and an available loopback-only port; keep the
+public route disabled until staging checks pass. Image loading and staging
+still need RAM and disk headroom, particularly alongside a live instance.
+Retain the previous image and private configuration for rollback. CI artifact
+expiry does not remove images already loaded onto the server.
+
 ## Standalone Caddy deployment
 
 For a dedicated host without Traefik, copy

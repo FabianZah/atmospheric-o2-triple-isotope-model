@@ -154,7 +154,10 @@ jobs:
           PY
 
       - name: Build production application image
-        run: docker build --tag oxytib:ci .
+        run: >-
+          docker build --tag oxytib:ci
+          --label "org.opencontainers.image.revision=$GITHUB_SHA"
+          --label "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" .
 
       - name: Verify build excludes local secrets and environments
         run: |
@@ -264,6 +267,60 @@ jobs:
           assert "Finished server process" in logs, logs
           print("Graceful shutdown verified:", state["ExitCode"])
           PY
+
+      - name: Archive tested application image
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        timeout-minutes: 5
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+
+          revision = os.environ['GITHUB_SHA']
+          assert re.fullmatch(r'[0-9a-f]{40}', revision), revision
+          image = json.loads(subprocess.check_output(
+              ['docker', 'image', 'inspect', 'oxytib:ci'], text=True))[0]
+          container = json.loads(subprocess.check_output(
+              ['docker', 'inspect', 'oxytib-ci'], text=True))[0]
+          assert container['Image'] == image['Id'], 'Tested image identity changed'
+          state = container['State']
+          assert not state['Running'] and not state['OOMKilled'], state
+          assert state['ExitCode'] in (0, 143), state
+          assert image['Config']['Labels']['org.opencontainers.image.revision'] == revision
+          tag = 'oxytib:' + revision
+          subprocess.run(['docker', 'tag', image['Id'], tag], check=True)
+          output = Path('outputs/container-image')
+          output.mkdir(parents=True, exist_ok=False)
+          metadata = {
+              'commit': revision, 'image_tag': tag, 'image_id': image['Id'],
+              'repository': os.environ['GITHUB_REPOSITORY'],
+              'workflow_run_id': os.environ['GITHUB_RUN_ID'],
+              'workflow_run_attempt': os.environ['GITHUB_RUN_ATTEMPT'],
+              'os': image['Os'], 'architecture': image['Architecture'],
+              'image_size_bytes': image['Size'],
+          }
+          (output / 'image.json').write_text(json.dumps(metadata, indent=2) + '\n')
+          PY
+          docker save "oxytib:$GITHUB_SHA" | gzip -1 > outputs/container-image/image.tar.gz
+          cd outputs/container-image
+          sha256sum image.tar.gz image.json > SHA256SUMS
+
+      - name: Save tested application image
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: oxytib-image-${{ github.sha }}
+          path: |
+            outputs/container-image/image.tar.gz
+            outputs/container-image/image.json
+            outputs/container-image/SHA256SUMS
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
 
       - name: Show container logs on failure
         if: failure()
