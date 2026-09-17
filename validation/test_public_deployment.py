@@ -71,7 +71,8 @@ def test_environment_template_and_ignore_policy_are_safe() -> None:
         encoding="utf-8"
     )
     assert "OXYTIB_ROOT_PATH=" in traefik_template
-    assert "OXYTIB_ROOT_PATH=/oxytib" not in traefik_template
+    assert "OXYTIB_ROOT_PATH=/oxytib" in traefik_template
+    assert "OXYTIB_TRUSTED_PROXIES=" in traefik_template
     assert "PASSWORD=" not in template
     assert "TOKEN=" not in template
     ignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
@@ -190,6 +191,31 @@ def test_production_image_uses_pinned_python_and_api_dependencies() -> None:
     assert "lxml==6.1.3" in lock.splitlines()
     assert ">=" not in lock
     assert "~=" not in lock
+
+
+def test_container_excludes_local_secrets_and_environments():
+    dockerfile = (ROOT / "Dockerfile").read_text()
+    assert "COPY . /app" not in dockerfile
+    for directory in ("code", "model_data", "web"):
+        assert f"COPY {directory} /app/{directory}" in dockerfile
+    ignore = set((ROOT / ".dockerignore").read_text().splitlines())
+    assert {"**/.env", "**/.env.*", "**/.venv", "**/venv", "**/.tmp",
+            "**/tmp", "**/*.log", "**/*.pem", "**/*.key", "**/.ssh", "**/.aws"} <= ignore
+    workflow = yaml.safe_load((ROOT / ".github/workflows/ci.yml").read_text())
+    steps = {s.get("name"): s for s in workflow["jobs"]["container"]["steps"]}
+    assert "Prepare harmless build-exclusion sentinels" in steps
+    assert "Verify build excludes local secrets and environments" in steps
+
+
+def test_proxy_trust_is_explicit_and_limited():
+    traefik = yaml.safe_load((ROOT / "deploy/compose.traefik.yaml").read_text())
+    setting = traefik["services"]["model-api"]["environment"]["FORWARDED_ALLOW_IPS"]
+    assert setting.startswith("${OXYTIB_TRUSTED_PROXIES:?")
+    production = yaml.safe_load((ROOT / "deploy/compose.production.yaml").read_text())
+    subnet = production["networks"]["backend"]["ipam"]["config"][0]["subnet"]
+    assert production["networks"]["backend"]["internal"] is True
+    assert production["services"]["model-api"]["environment"]["FORWARDED_ALLOW_IPS"] == subnet
+    assert subnet == "${OXYTIB_BACKEND_SUBNET:-172.30.241.0/29}"
 
 
 def test_container_ci_exercises_shared_server_limits_and_dense_export() -> None:

@@ -36,14 +36,20 @@ BENCHMARKS = {
 
 
 def input_inventory() -> list[dict[str, object]]:
-    roots = (ROOT / "model_data", ROOT / "validation/reference_data")
+    roots = (ROOT / "model_data", ROOT / "validation/reference_data", ROOT / "code/data")
     paths = [p for folder in roots for p in sorted(folder.rglob("*")) if p.is_file()]
     paths.extend(p for folder in (ROOT / "code", ROOT / "validation")
                  for p in sorted(folder.glob("*.py")))
+    paths.extend(ROOT / name for name in (
+        "outputs/young_fig7_digitized_contours.csv",
+        "outputs/young_fig8_digitized_curves.csv",
+        "run_model.py", "pyproject.toml",
+    ))
+    paths.extend(sorted((ROOT / "code").glob("requirements*.txt")))
     return [
         {"path": p.relative_to(ROOT).as_posix(), "bytes": p.stat().st_size,
          "sha256": hashlib.sha256(p.read_bytes()).hexdigest()}
-        for p in paths
+        for p in sorted(set(paths))
     ]
 
 

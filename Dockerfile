@@ -8,7 +8,10 @@ WORKDIR /app
 COPY code/requirements-api-lock.txt /app/code/requirements-api-lock.txt
 RUN python -m pip install --no-cache-dir -r /app/code/requirements-api-lock.txt
 
-COPY . /app
+COPY .project-root run_model.py LICENSE LICENSING.md CITATION.cff CITATION.bib CITATION.ris /app/
+COPY code /app/code
+COPY model_data /app/model_data
+COPY web /app/web
 
 RUN useradd --create-home --uid 10001 modelapi \
     && chown -R modelapi:modelapi /app

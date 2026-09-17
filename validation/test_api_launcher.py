@@ -10,7 +10,7 @@ import subprocess
 import sys
 import time
 from types import SimpleNamespace
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 import pytest
 
@@ -56,6 +56,84 @@ def test_api_command_uses_signal_safe_launcher(monkeypatch):
     monkeypatch.setattr(launcher, "_run_api", lambda argv: calls.append(argv) or 0)
     assert launcher.main() == 0
     assert calls == [[sys.executable, str(ROOT / "code/web_api.py"), "--host", "127.0.0.1", "--port", "8123"]]
+
+
+@pytest.mark.parametrize("root_path", ["", "/oxytib"])
+def test_real_http_prefix_stripping_assets_and_model(root_path, tmp_path):
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+    env = dict(os.environ, OXYTIB_ROOT_PATH=root_path, FORWARDED_ALLOW_IPS="127.0.0.1")
+    with (tmp_path / "http.log").open("w") as log:
+        # Launch the server directly so Windows cleanup owns the server process.
+        process = subprocess.Popen(
+            [sys.executable, str(ROOT / "code/web_api.py"), "--port", str(port)],
+            cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT,
+            creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+        )
+        base = f"http://127.0.0.1:{port}"
+        try:
+            deadline = time.monotonic() + 30
+            while time.monotonic() < deadline:
+                assert process.poll() is None
+                try:
+                    with urlopen(base + "/api/v1/health", timeout=1) as response:
+                        assert json.load(response)["status"] == "ok"
+                    break
+                except OSError:
+                    time.sleep(.1)
+            else:
+                pytest.fail("API startup timed out")
+            # These paths are what a prefix-stripping proxy actually forwards.
+            for path in ("/", "/assets/styles.css", "/assets/app.js", "/docs"):
+                with urlopen(base + path, timeout=5) as response:
+                    assert response.status == 200
+            with urlopen(base + "/openapi.json", timeout=5) as response:
+                schema = json.load(response)
+                assert "/api/v1/forward" in schema["paths"]
+                if root_path:
+                    assert {"url": root_path} in schema["servers"]
+            request = Request(base + "/api/v1/model", headers={
+                "X-Forwarded-Proto": "https", "X-Forwarded-For": "198.51.100.25",
+            })
+            with urlopen(request, timeout=5) as response:
+                cookie = response.headers["Set-Cookie"]
+                assert "Secure" in cookie
+                assert f"Path={root_path or '/'};" in cookie
+            request = Request(base + "/api/v1/forward", data=b"{}",
+                              headers={"Content-Type": "application/json"})
+            with urlopen(request, timeout=15) as response:
+                assert json.load(response)["calculation"] == "steady_forward"
+        finally:
+            process.terminate()
+            try:
+                process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=5)
+
+
+@pytest.mark.parametrize("trusted,peer,accepted", [
+    ("192.0.2.10", "192.0.2.10", True),
+    ("192.0.2.10", "192.0.2.11", False),
+    ("172.30.241.0/29", "172.30.241.2", True),
+    ("172.30.241.0/29", "172.30.242.2", False),
+])
+def test_uvicorn_only_accepts_headers_from_configured_proxies(monkeypatch, trusted, peer, accepted):
+    import asyncio
+    import uvicorn
+    seen = {}
+    async def endpoint(scope, receive, send):
+        seen.update(client=scope["client"][0], scheme=scope["scheme"])
+    monkeypatch.setenv("FORWARDED_ALLOW_IPS", trusted)
+    config = uvicorn.Config(endpoint, log_config=None)
+    config.load()
+    scope = {"type": "http", "client": (peer, 4321), "scheme": "http",
+             "headers": [(b"x-forwarded-for", b"198.51.100.25"),
+                         (b"x-forwarded-proto", b"https")]}
+    asyncio.run(config.loaded_app(scope, None, None))
+    assert seen == {"client": "198.51.100.25" if accepted else peer,
+                    "scheme": "https" if accepted else "http"}
 
 
 @pytest.mark.skipif(os.name != "posix", reason="SIGTERM/exec regression requires POSIX")

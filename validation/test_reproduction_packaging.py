@@ -78,6 +78,35 @@ def test_reproduction_records_success_and_failure(monkeypatch, tmp_path):
     assert saved["runs"][0]["returncode"] == 2
 
 
+def test_reproduction_inventory_includes_comparison_data_and_environment():
+    records = {row["path"]: row for row in reproduction.input_inventory()}
+    required = {
+        "outputs/young_fig7_digitized_contours.csv",
+        "outputs/young_fig8_digitized_curves.csv",
+        "code/data/era5_l137_hybrid_coefficients.csv",
+        "run_model.py", "pyproject.toml", "code/requirements-api-lock.txt",
+        "code/requirements-dev.txt",
+    }
+    assert required <= records.keys()
+    for name in required:
+        assert records[name]["sha256"] == hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
+
+
+def test_reproduction_fingerprints_comparison_input_changes(monkeypatch, tmp_path):
+    monkeypatch.setattr(reproduction, "ROOT", tmp_path)
+    names = ["outputs/young_fig7_digitized_contours.csv",
+             "outputs/young_fig8_digitized_curves.csv", "run_model.py", "pyproject.toml"]
+    for name in names:
+        path = tmp_path / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("initial\n")
+    before = {row["path"]: row["sha256"] for row in reproduction.input_inventory()}
+    (tmp_path / names[1]).write_text("altered\n")
+    after = {row["path"]: row["sha256"] for row in reproduction.input_inventory()}
+    assert before[names[1]] != after[names[1]]
+    assert all(before[name] == after[name] for name in names if name != names[1])
+
+
 @pytest.mark.parametrize("timeout", [0, -1])
 def test_reproduction_rejects_invalid_timeout(timeout):
     with pytest.raises(ValueError, match="must be positive"):

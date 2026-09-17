@@ -20,7 +20,7 @@ The application container:
 - validates API fields and bounds model grid sizes before calculation.
 
 The Traefik route adds HTTPS, browser security headers, 30 requests per minute
-per client with a burst of 10, and at most four in-flight requests. These are
+per client with a burst of 10, and at most eight in-flight requests. These are
 conservative defaults for a small scientific service and can be changed in the
 untracked deployment environment file.
 
@@ -45,10 +45,20 @@ Create the untracked configuration:
 cp deploy/.env.traefik.example deploy/.env.traefik
 ```
 
-Set `OXYTIB_HOST` and retain an empty `OXYTIB_ROOT_PATH` because the declared
-Traefik middleware strips `/oxytib` before forwarding requests. The browser
-interface and API documentation derive the public prefix from their loaded
-URLs. Keep `OXYTIB_TRAEFIK_ENABLE=false` during staging. Build and verify the
+Set `OXYTIB_HOST` and retain `OXYTIB_ROOT_PATH=/oxytib`. Traefik strips that
+prefix from incoming paths; the launcher passes it to both Uvicorn and FastAPI
+to reconstruct the public request path, static-asset routes and OpenAPI servers.
+An empty root path remains supported for applications hosted at `/`.
+
+Set `OXYTIB_TRUSTED_PROXIES` to the actual Traefik container address on
+`traefik-global-proxy`, obtained with `docker network inspect traefik-global-proxy`.
+For multiple proxies, use comma-separated addresses. Compose requires this
+setting. Trust only the proxy peers, not `*` or the whole shared Docker network.
+Recheck the address after recreating Traefik; a stable proxy address avoids
+configuration drift. This enables forwarded HTTPS and client-IP handling,
+including Secure cookies and separate allowances for cookie-less API clients.
+
+Keep `OXYTIB_TRAEFIK_ENABLE=false` during staging. Build and verify the
 loopback service first:
 
 ```bash
@@ -85,6 +95,13 @@ docker compose \
   up --build -d
 ```
 
+Caddy and the application share a private backend subnet, default
+`172.30.241.0/29`. Set `OXYTIB_BACKEND_SUBNET` to a free private subnet if that
+range overlaps an existing host or Docker network. The application trusts
+forwarded headers only from this backend, which must contain only Caddy and
+OXYTIB. Keep unrelated containers off it. Changing the subnet of an existing
+deployment requires planned network recreation and a rollback backup.
+
 Caddy terminates TLS, applies the same browser security policy, limits request
 bodies, and proxies to the private application network. The application-level
 compute limit remains active. Standard Caddy does not provide the Traefik rate
@@ -92,6 +109,11 @@ limiter, so a provider firewall or upstream rate limiter is recommended before
 advertising a high-volume public service.
 
 ## Operations
+
+The image copies only the runtime entry points, code, data, browser assets and
+license/citation files. Docker exclusions also remove local environments,
+environment files, keys, logs and scratch directories from those paths. Supply
+deployment settings at runtime through the untracked Compose environment file.
 
 The shared-server template defaults to 1536 MiB and
 allows one compute request at a time. The dedicated-server profile uses 2 GiB

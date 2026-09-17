@@ -16,6 +16,7 @@ services:
       OXYTIB_MAX_WAITING_PER_CLIENT: "${OXYTIB_MAX_WAITING_PER_CLIENT:-2}"
       OXYTIB_CLIENT_BUDGET_SECONDS: "${OXYTIB_CLIENT_BUDGET_SECONDS:-360}"
       OXYTIB_CLIENT_WINDOW_SECONDS: "${OXYTIB_CLIENT_WINDOW_SECONDS:-600}"
+      FORWARDED_ALLOW_IPS: "${OXYTIB_BACKEND_SUBNET:-172.30.241.0/29}"
     expose:
       - "8000"
     read_only: true
@@ -75,6 +76,9 @@ networks:
   frontend:
   backend:
     internal: true
+    ipam:
+      config:
+        - subnet: "${OXYTIB_BACKEND_SUBNET:-172.30.241.0/29}"
 
 volumes:
   caddy_data:

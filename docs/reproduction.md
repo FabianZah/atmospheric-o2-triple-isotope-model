@@ -32,7 +32,9 @@ individually after `reproduce`:
 
 JSON, CSV and PNG files are written under `outputs/`. The reproduction manifest
 records input and source-code hashes, package versions, command logs, durations
-and completion status. Each run has its own timestamped directory;
+and completion status. Input fingerprints include both Young digitization CSVs,
+supporting code data, the root launcher, tooling configuration, and dependency
+specifications including the production lock. Each run has its own timestamped directory;
 `outputs/reproduction/manifest.json` describes the most recently completed run.
 A failed calculation or numerical acceptance gate stops the sequence and
 records an incomplete run. Rerunning an individual comparison replaces its

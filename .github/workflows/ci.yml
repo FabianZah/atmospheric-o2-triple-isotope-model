@@ -130,7 +130,7 @@ jobs:
           docker compose \
             --env-file deploy/.env.production.example \
             -f deploy/compose.production.yaml config --quiet
-          docker compose \
+          env OXYTIB_TRUSTED_PROXIES=127.0.0.1 docker compose \
             --env-file deploy/.env.traefik.example \
             -f deploy/compose.traefik.yaml config --quiet
           docker run --rm \
@@ -139,8 +139,33 @@ jobs:
             -v "$PWD/deploy/caddy:/etc/caddy:ro" \
             caddy:2.11.4-alpine caddy validate --config /etc/caddy/Caddyfile
 
+      - name: Prepare harmless build-exclusion sentinels
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for name in (".env", ".env.local", ".venv/sentinel.txt", "venv/sentinel.txt",
+                       ".tmp/sentinel.txt", "private-build-note.txt", "code/.env",
+                       "code/.venv/sentinel.txt", "model_data/.env.local", "web/.env",
+                       "web/test-private.key", "code/test-private.pem", "code/test-debug.log"):
+              path = Path(name)
+              assert not path.exists(), name
+              path.parent.mkdir(parents=True, exist_ok=True)
+              path.write_text("OXYTIB_BUILD_SENTINEL=harmless\n")
+          PY
+
       - name: Build production application image
         run: docker build --tag oxytib:ci .
+
+      - name: Verify build excludes local secrets and environments
+        run: |
+          docker run --rm --entrypoint python oxytib:ci -c '
+          from pathlib import Path
+          root = Path("/app")
+          for name in (".env", ".env.local", ".venv", "venv", ".tmp", "private-build-note.txt",
+                       "code/.env", "code/.venv", "model_data/.env.local", "web/.env",
+                       "web/test-private.key", "code/test-private.pem", "code/test-debug.log"):
+              assert not (root / name).exists(), name
+          print("Build-exclusion sentinels are absent")'
 
       - name: Start hardened application container
         run: |

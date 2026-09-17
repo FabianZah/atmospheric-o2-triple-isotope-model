@@ -14,3 +14,20 @@ docs
 code/streamlit_app.py
 _pytest_*
 deploy
+
+# Local secrets and environments are never build inputs, including nested ones.
+**/.env
+**/.env.*
+**/.venv
+**/venv
+**/.tmp
+**/tmp
+**/__pycache__
+**/.pytest_cache
+**/pytest-cache-files-*
+**/*.log
+**/*.pem
+**/*.key
+**/.ssh
+**/.aws
+**/.codex
