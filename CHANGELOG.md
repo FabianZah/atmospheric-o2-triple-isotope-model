@@ -2,7 +2,21 @@
 
 All notable changes to the released software are documented here.
 
-## 0.1.0 - Release candidate
+## 0.2.0 - Release candidate
+
+- Correct overlapping CO2 quenching contributions in the oxygen photochemistry
+  and refine the response coefficients and interpolation grids.
+- Add a fixed marine biological configuration for forward, inverse, uncertainty
+  and time-response calculations.
+- Correct grid-based posterior quantiles and validate their convergence.
+- Integrate the photosynthesis experiment with shared carbon and oxygen fluxes,
+  carbon uptake multiplier 1.00 and a separate initial-state balancing flux.
+- Package current scientific evidence separately from the preserved v0.1.0
+  evidence and qualify the application on Windows and Linux.
+- Reduce container packaging overhead and verify one-slot operation with a
+  768-MiB memory limit, spreadsheet export and graceful shutdown.
+
+## 0.1.0 - 2026-09-17
 
 - Name the public model OXYTIB: Atmospheric oxygen triple-isotope budget and
   inference model.

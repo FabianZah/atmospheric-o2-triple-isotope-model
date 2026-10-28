@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "This record cites archived OXYTIB v0.1.0. The corrected model awaits its own software release and version-specific citation. Cite this record for calculations made with v0.1.0, together with the scientific sources relevant to your application."
+message: "Cite OXYTIB v0.2.0 and the scientific sources relevant to your application. This candidate record uses the version-specific GitHub URL; the Zenodo DOI will be added after archiving."
 title: "OXYTIB: Atmospheric oxygen triple-isotope budget and inference model"
 abstract: >-
   A transparent, reproducible atmospheric oxygen triple-isotope budget and
@@ -8,10 +8,8 @@ abstract: >-
   forward calculations, constrained one-coordinate inversions, solution
   surfaces, transient experiments, and separated uncertainty layers.
 type: software
-version: "0.1.0"
-doi: "10.5281/zenodo.22819964"
-date-released: "2026-09-17"
-url: "https://doi.org/10.5281/zenodo.22819964"
+version: "0.2.0"
+url: "https://github.com/FabianZah/atmospheric-o2-triple-isotope-model/releases/tag/v0.2.0"
 license: MIT  # code; data/docs are CC-BY-4.0 (see LICENSING.md)
 authors:
   - family-names: "Zahnow"

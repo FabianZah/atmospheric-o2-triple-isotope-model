@@ -1,9 +1,9 @@
 # OXYTIB model definition
 
-Local integration status: `unreleased-20261021`. The corrected chemistry and
-fixed marine configuration have passed local integrated scientific and application
-validation on Windows/Anaconda. Linux/container qualification remains a separate
-software-release gate. The archived
+Software release candidate: v0.2.0. The corrected chemistry, fixed marine
+configuration and shared carbon/oxygen budget have passed scientific and
+application tests on Windows and Linux, including container qualification.
+The archived
 v0.1.0 release remains reproducible at its Git tag and DOI
 `10.5281/zenodo.22819964`. The current working tree is not that archived release.
 

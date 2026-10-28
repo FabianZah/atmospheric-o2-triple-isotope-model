@@ -24,7 +24,7 @@ HEADER_FILL = PatternFill("solid", fgColor="006F71")
 TITLE_FONT = Font(color="FFFFFF", bold=True, size=14)
 HEADER_FONT = Font(color="FFFFFF", bold=True)
 SOFTWARE_NAME = "OXYTIB"
-SOFTWARE_VERSION = "unreleased-20261021"
+SOFTWARE_VERSION = "0.2.0"
 REPOSITORY_URL = "https://github.com/FabianZah/atmospheric-o2-triple-isotope-model"
 DATA_ALIGNMENT = Alignment(vertical="top", wrap_text=True)
 

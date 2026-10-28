@@ -56,19 +56,20 @@ def test_author_orcid_is_valid_and_in_citation_downloads() -> None:
         assert f"Author ORCID: {orcid}" in (ROOT / filename).read_text(encoding="utf-8")
 
 
-def test_release_doi_matches_citations_and_public_metadata() -> None:
-    doi = "10.5281/zenodo.22819964"
+def test_release_citations_match_public_metadata() -> None:
+    url = "https://github.com/FabianZah/atmospheric-o2-triple-isotope-model/releases/tag/v0.2.0"
     citation = yaml.safe_load((ROOT / "CITATION.cff").read_text(encoding="utf-8"))
     metadata = model_metadata()["citation"]
-    assert citation["doi"] == metadata["doi"] == doi
-    assert citation["url"] == metadata["url"] == f"https://doi.org/{doi}"
-    assert citation["date-released"] == "2026-09-17"
-    assert doi in metadata["recommended_text"]
-    assert "Zenodo" in metadata["recommended_text"]
+    assert citation["version"] == metadata["version"] == "0.2.0"
+    assert citation.get("doi") == metadata["doi"] is None
+    assert "date-released" not in citation
+    assert citation["url"] == metadata["url"] == url
+    assert url in metadata["recommended_text"]
+    assert "GitHub" in metadata["recommended_text"]
     for filename in ("CITATION.bib", "CITATION.ris", "README.md", "web/index.html"):
-        assert f"https://doi.org/{doi}" in (ROOT / filename).read_text(encoding="utf-8")
-    assert f"doi       = {{{doi}}}" in (ROOT / "CITATION.bib").read_text(encoding="utf-8")
-    assert f"DO  - {doi}" in (ROOT / "CITATION.ris").read_text(encoding="utf-8")
+        assert url in (ROOT / filename).read_text(encoding="utf-8")
+    for filename in ("CITATION.cff", "CITATION.bib", "CITATION.ris", "web/index.html"):
+        assert "10.5281/zenodo.22819964" not in (ROOT / filename).read_text(encoding="utf-8")
 
 
 def test_api_and_workbook_identify_the_same_software_version() -> None:
@@ -81,15 +82,16 @@ def test_api_and_workbook_identify_the_same_software_version() -> None:
     assert envelope["provenance"]["software_version"] == SOFTWARE_VERSION
 
 
-def test_unreleased_software_distinguishes_its_archived_citation() -> None:
+def test_candidate_citation_matches_software_and_preserves_archive() -> None:
+    import json
     metadata = model_metadata()
-    if not metadata["status"].startswith("local_"):
-        return
     citation = yaml.safe_load((ROOT / "CITATION.cff").read_text(encoding="utf-8"))
-    assert metadata["software_version"] != citation["version"]
-    assert f'archived v{citation["version"]}' in metadata["citation"]["scope"]
-    assert f'archived OXYTIB v{citation["version"]}' in citation["message"]
-    assert "awaits its own software release" in citation["message"]
+    assert metadata["status"] == "release_candidate"
+    assert metadata["software_version"] == citation["version"]
+    assert "candidate record" in citation["message"]
+    contract = json.loads((ROOT / "model_data/publication_model_contract_v1.json").read_text())
+    assert contract["archived_release"]["doi"] == "10.5281/zenodo.22819964"
+    assert contract["archived_release"]["version"] == "0.1.0"
 
 
 def test_public_documents_use_current_entry_points_and_portable_paths() -> None:

@@ -33,6 +33,21 @@ def test_stored_contract_hashes_match_supplied_sources():
         assert _sha256(ROOT / record['path']) == record['sha256'], record['path']
 
 
+def test_release_candidate_requires_current_evidence(monkeypatch, tmp_path):
+    import export_current_model_evidence
+    output = tmp_path / "candidate.json"
+    candidate = run(output_path=output, release_candidate=True)
+    assert candidate["status"] == "release_candidate"
+    assert candidate["software_version"] == "0.2.0"
+    stored = json.loads((ROOT / "model_data/publication_model_contract_v1.json").read_text())
+    assert candidate == stored
+    with pytest.raises(ValueError, match="either"):
+        run(output_path=output, release_candidate=True, manuscript_freeze=True)
+    monkeypatch.setattr(export_current_model_evidence, "evidence_matches_current_core", lambda: False)
+    with pytest.raises(ValueError, match="hash-bound evidence"):
+        run(output_path=output, release_candidate=True)
+
+
 def test_source_hashes_are_portable_but_detect_content_changes(tmp_path):
     source = tmp_path / 'example.py'
     source.write_bytes(b'x = 1\ny = 2\n')

@@ -2,7 +2,7 @@
 
 **Atmospheric oxygen triple-isotope budget and inference model**
 
-Software release pending: `unreleased-20261021`. This source implements model
+Software release candidate: **v0.2.0**. This source implements model
 `oxytib_r5_r7_shared_budget_20261021`, served by the hosted application since
 28 October 2026. Windows and Linux/container qualification is complete.
 The source includes corrected CO2 reaction accounting and optional fixed marine
@@ -179,14 +179,17 @@ outputs remain outside the release runtime.
 ## Citation and license
 
 Zahnow, F. (2026). *OXYTIB: Atmospheric oxygen triple-isotope budget and inference
-model* (v0.1.0) [Software]. Zenodo.
-[doi:10.5281/zenodo.22819964](https://doi.org/10.5281/zenodo.22819964).
+model* (v0.2.0) [Software]. GitHub.
+[Version-specific source release](https://github.com/FabianZah/atmospheric-o2-triple-isotope-model/releases/tag/v0.2.0).
 
-This DOI identifies the archived v0.1.0 release. The downloadable records
+The release is being prepared; its version-specific URL becomes available on
+publication. The downloadable records
 [`CITATION.cff`](CITATION.cff), [`CITATION.bib`](CITATION.bib), and
-[`CITATION.ris`](CITATION.ris) currently cite that archive. A matching citation
-for the corrected model above will accompany its software release. Until then,
-record the model ID and software version supplied with each calculation.
+[`CITATION.ris`](CITATION.ris) identify v0.2.0. Its Zenodo DOI will be added after
+automatic archiving of the GitHub release. The previous
+[v0.1.0 archive](https://doi.org/10.5281/zenodo.22819964) remains available for
+earlier calculations. Record the model ID and software version supplied with
+each calculation.
 
 Source code is MIT licensed. Project documentation and original model data are
 CC BY 4.0. Third-party scientific inputs retain their original licenses; see

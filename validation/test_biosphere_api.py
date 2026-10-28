@@ -25,7 +25,7 @@ def test_configuration_forward_cache_and_workbook(name):
     book = load_workbook(BytesIO(response.content),read_only=True,data_only=True)
     summary = {row[0]:row[1] for row in book["Summary"].iter_rows(min_row=4,values_only=True)}
     assert summary["biological_configuration"] == name
-    assert summary["software_version"] == "unreleased-20261021"
+    assert summary["software_version"] == "0.2.0"
     book.close()
 
 

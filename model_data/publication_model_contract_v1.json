@@ -2,8 +2,8 @@
   "schema_version": 1,
   "source_hash_convention": "SHA-256; Python and JSON text normalized from CRLF to LF",
   "publication_model_id": "oxytib_r5_r7_shared_budget_20261021",
-  "status": "local_manuscript_freeze",
-  "software_version": "unreleased-20261021",
+  "status": "release_candidate",
+  "software_version": "0.2.0",
   "archived_release": {
     "version": "0.1.0",
     "git_tag": "v0.1.0",
@@ -346,7 +346,7 @@
     },
     "public_service_implementation": {
       "path": "code/public_model_service.py",
-      "sha256": "70d8c25744fd7f3a71133998a249e5aee5cda93bc3d80bbc3c9784872539e6e4"
+      "sha256": "6686991b5a7ae64fd5bdd86452c0ebd590ed89d3d3aa21176c4c08d053c00caa"
     },
     "central_response_surface": {
       "path": "model_data/updated_r7_response_surface_v1.json",
@@ -366,7 +366,7 @@
     },
     "validation_evidence_manifest": {
       "path": "model_data/validation_evidence/corrected_core_20261019/manifest.json",
-      "sha256": "8a8e0ff5f0f270d0c3b7817a00413fda753b8202d0e7d78e323ba24d37625f5a"
+      "sha256": "b7af3e2cc4f0f0d7d5455aa7d16fd23b7c0f412ccd638ac77c5a1a61f6edb549"
     },
     "validation_release_scorecard": {
       "path": "model_data/validation_evidence/corrected_core_20261019/updated_molecular_release_scorecard.json",

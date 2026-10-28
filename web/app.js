@@ -1959,10 +1959,9 @@ async function initialize() {
     $("model-state").classList.add("ready");
     $("model-state").innerHTML = "<span></span> Model ready";
     $("footer-model").textContent = `OXYTIB ${state.metadata.software_version || state.metadata.citation.version}`;
-    if (state.metadata.status?.startsWith("local_")) {
-      $("model-state").innerHTML = "<span></span> Local revision";
-      document.querySelector(".header-citation strong").textContent = "Archive: v0.1.0";
-      document.querySelector(".header-citation").title = "These citation records describe archived v0.1.0; this local revision is unreleased.";
+    if (state.metadata.status === "release_candidate" || state.metadata.status?.startsWith("local_")) {
+      $("model-state").innerHTML = "<span></span> Release candidate";
+      document.querySelector(".header-citation").title = "Software release preparation; the version-specific archive is pending.";
     }
   } catch (error) {
     $("model-state").classList.add("error");

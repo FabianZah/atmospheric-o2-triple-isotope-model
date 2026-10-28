@@ -101,21 +101,21 @@ def model_metadata() -> dict[str, Any]:
         "uncertainty": contract["uncertainty"],
         "source_contract": "model_data/publication_model_contract_v1.json",
         "citation": {
-            "scope": "archived v0.1.0; the local integration has no release DOI",
+            "scope": "OXYTIB v0.2.0; version-specific GitHub source",
             "title": (
                 "OXYTIB: Atmospheric oxygen triple-isotope budget and "
                 "inference model"
             ),
-            "version": "0.1.0",
-            "doi": "10.5281/zenodo.22819964",
-            "url": "https://doi.org/10.5281/zenodo.22819964",
+            "version": "0.2.0",
+            "doi": None,
+            "url": "https://github.com/FabianZah/atmospheric-o2-triple-isotope-model/releases/tag/v0.2.0",
             "citation_file": "CITATION.cff",
             "citation_files": ("CITATION.cff", "CITATION.bib", "CITATION.ris"),
             "recommended_text": (
                 "Zahnow, F. (2026). OXYTIB: Atmospheric Oxygen "
-                "Triple-Isotope Budget and Inference Model (Version 0.1.0) "
-                "[Computer software]. Zenodo. "
-                "https://doi.org/10.5281/zenodo.22819964"
+                "Triple-Isotope Budget and Inference Model (Version 0.2.0) "
+                "[Computer software]. GitHub. "
+                "https://github.com/FabianZah/atmospheric-o2-triple-isotope-model/releases/tag/v0.2.0"
             ),
             "repository": (
                 "https://github.com/FabianZah/"

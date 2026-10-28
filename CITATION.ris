@@ -2,10 +2,9 @@ TY  - COMP
 AU  - Zahnow, Fabian
 TI  - OXYTIB: Atmospheric Oxygen Triple-Isotope Budget and Inference Model
 PY  - 2026
-ET  - 0.1.0
-PB  - Zenodo
-DO  - 10.5281/zenodo.22819964
-UR  - https://doi.org/10.5281/zenodo.22819964
+ET  - 0.2.0
+PB  - GitHub
+UR  - https://github.com/FabianZah/atmospheric-o2-triple-isotope-model/releases/tag/v0.2.0
 N1  - Software; MIT license
 N1  - Author ORCID: https://orcid.org/0009-0006-4557-7155
 ER  -
