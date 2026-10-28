@@ -1,11 +1,11 @@
 # OXYTIB model definition
 
-Software release candidate: v0.2.0. The corrected chemistry, fixed marine
+Software version: v0.2.0. The corrected chemistry, fixed marine
 configuration and shared carbon/oxygen budget have passed scientific and
 application tests on Windows and Linux, including container qualification.
 The archived
 v0.1.0 release remains reproducible at its Git tag and DOI
-`10.5281/zenodo.22819964`. The current working tree is not that archived release.
+`10.5281/zenodo.22819964`.
 
 ## Architecture
 
@@ -81,11 +81,12 @@ consistently normalized calculation; it remains outside this integration.
 
 ## Validation status
 
-The current contract marks acceptance evidence as pending regeneration. The
-existing `docs/publication_model_acceptance.md` and bundled literature reports
-describe the archived release and do not establish acceptance of this revision.
-The integration gate remains closed until applicable current-model evidence
-and full workflow checks have been reconciled.
+The contract binds the defining scientific files to the validation evidence
+through source checksums. The [acceptance report](publication_model_acceptance.md)
+records the passed numerical and physical gates, literature comparisons, and
+scope qualifications for steady forward/inverse calculations and the declared
+time responses. Windows and Linux tests cover both biological configurations;
+container tests check known answers, exports, resource limits and shutdown.
 
 Independent pCO₂, pO₂, or GPP constraints select the coordinate family used in
 an inversion. Precision varies across the domain and is lowest in the extreme

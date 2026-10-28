@@ -2,7 +2,7 @@
 
 **Atmospheric oxygen triple-isotope budget and inference model**
 
-Software release candidate: **v0.2.0**. This source implements model
+Software version: **v0.2.0**. This source implements model
 `oxytib_r5_r7_shared_budget_20261021`, served by the hosted application since
 28 October 2026. Windows and Linux/container qualification is complete.
 The source includes corrected CO2 reaction accounting and optional fixed marine
@@ -11,8 +11,7 @@ budgets with the published carbon uptake coefficients and multiplier 1.00.
 Its initial-state balancing flux is calculated separately; slow geological
 fluxes retain their balanced background. See [the budget definition](docs/photosynthesis_carbon_budget.md).
 The preserved `v0.1.0` archive has its own
-[DOI](https://doi.org/10.5281/zenodo.22819964); the next software release will
-receive a separate version-specific citation.
+[DOI](https://doi.org/10.5281/zenodo.22819964) for reproducing earlier calculations.
 
 OXYTIB links atmospheric O₂ triple-isotope composition to pCO₂, pO₂, and
 gross primary production (GPP). It provides steady forward calculations,
@@ -182,11 +181,9 @@ Zahnow, F. (2026). *OXYTIB: Atmospheric oxygen triple-isotope budget and inferen
 model* (v0.2.0) [Software]. GitHub.
 [Version-specific source release](https://github.com/FabianZah/atmospheric-o2-triple-isotope-model/releases/tag/v0.2.0).
 
-The release is being prepared; its version-specific URL becomes available on
-publication. The downloadable records
+Downloadable citation records:
 [`CITATION.cff`](CITATION.cff), [`CITATION.bib`](CITATION.bib), and
-[`CITATION.ris`](CITATION.ris) identify v0.2.0. Its Zenodo DOI will be added after
-automatic archiving of the GitHub release. The previous
+[`CITATION.ris`](CITATION.ris). The previous
 [v0.1.0 archive](https://doi.org/10.5281/zenodo.22819964) remains available for
 earlier calculations. Record the model ID and software version supplied with
 each calculation.

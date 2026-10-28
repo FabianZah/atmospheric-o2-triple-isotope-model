@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "Cite OXYTIB v0.2.0 and the scientific sources relevant to your application. This candidate record uses the version-specific GitHub URL; the Zenodo DOI will be added after archiving."
+message: "Cite this version of OXYTIB together with the scientific sources relevant to your application."
 title: "OXYTIB: Atmospheric oxygen triple-isotope budget and inference model"
 abstract: >-
   A transparent, reproducible atmospheric oxygen triple-isotope budget and

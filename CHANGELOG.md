@@ -2,7 +2,7 @@
 
 All notable changes to the released software are documented here.
 
-## 0.2.0 - Release candidate
+## 0.2.0
 
 - Correct overlapping CO2 quenching contributions in the oxygen photochemistry
   and refine the response coefficients and interpolation grids.

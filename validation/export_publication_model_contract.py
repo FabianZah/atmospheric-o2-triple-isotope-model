@@ -72,6 +72,7 @@ def run(
     evidence_path: Path = DEFAULT_EVIDENCE,
     output_path: Path = DEFAULT_OUTPUT,
     *, manuscript_freeze: bool = False, release_candidate: bool = False,
+    validated: bool = False,
 ) -> dict[str, Any]:
     response = _load(response_path)
     output_surface = _load(output_surface_path)
@@ -81,10 +82,10 @@ def run(
     from updated_photosynthesis_transient import DEFAULT_CARBON_SINK_MULTIPLIER
     from shared_carbon_oxygen_budget import SharedCarbonBudget, REFERENCE_PCO2_PPM
     evidence_current = evidence_matches_current_core()
-    if manuscript_freeze and release_candidate:
-        raise ValueError("Select either a manuscript freeze or a release candidate")
-    if (manuscript_freeze or release_candidate) and not evidence_current:
-        raise ValueError("A freeze or release candidate requires current hash-bound evidence")
+    if sum((manuscript_freeze, release_candidate, validated)) > 1:
+        raise ValueError("Select only one validation status")
+    if (manuscript_freeze or release_candidate or validated) and not evidence_current:
+        raise ValueError("A validated status requires current hash-bound evidence")
 
     model_id = response["model_data_id"]
     surface_id = output_surface["surface_data_id"]
@@ -180,7 +181,7 @@ def run(
         "schema_version": 1,
         "source_hash_convention": "SHA-256; Python and JSON text normalized from CRLF to LF",
         "publication_model_id": "oxytib_r5_r7_shared_budget_20261021",
-        "status": ("release_candidate" if release_candidate else
+        "status": ("validated" if validated else "release_candidate" if release_candidate else
                    "local_manuscript_freeze" if manuscript_freeze else "local_integration_under_validation"),
         "software_version": "0.2.0",
         "archived_release": {"version": "0.1.0", "git_tag": "v0.1.0",
@@ -360,6 +361,8 @@ def main() -> None:
                         help="Mark a locally validated manuscript snapshot after completing its tests; no publication action.")
     parser.add_argument("--release-candidate", action="store_true",
                         help="Prepare validated release metadata without publishing a release.")
+    parser.add_argument("--validated", action="store_true",
+                        help="Record completed validation; does not publish, tag or archive software.")
     args = parser.parse_args()
     contract = run(
         args.response,
@@ -369,6 +372,7 @@ def main() -> None:
         args.output,
         manuscript_freeze=args.manuscript_freeze,
         release_candidate=args.release_candidate,
+        validated=args.validated,
     )
     print(
         f"Wrote {args.output} for {contract['publication_model_id']} "

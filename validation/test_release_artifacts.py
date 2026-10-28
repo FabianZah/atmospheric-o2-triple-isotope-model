@@ -82,13 +82,14 @@ def test_api_and_workbook_identify_the_same_software_version() -> None:
     assert envelope["provenance"]["software_version"] == SOFTWARE_VERSION
 
 
-def test_candidate_citation_matches_software_and_preserves_archive() -> None:
+def test_validated_citation_matches_software_and_preserves_archive() -> None:
     import json
     metadata = model_metadata()
     citation = yaml.safe_load((ROOT / "CITATION.cff").read_text(encoding="utf-8"))
-    assert metadata["status"] == "release_candidate"
+    assert metadata["status"] == "validated"
     assert metadata["software_version"] == citation["version"]
-    assert "candidate record" in citation["message"]
+    assert "Cite this version" in citation["message"]
+    assert "pending regeneration" not in (ROOT / "docs/publication_model_definition.md").read_text(encoding="utf-8")
     contract = json.loads((ROOT / "model_data/publication_model_contract_v1.json").read_text())
     assert contract["archived_release"]["doi"] == "10.5281/zenodo.22819964"
     assert contract["archived_release"]["version"] == "0.1.0"

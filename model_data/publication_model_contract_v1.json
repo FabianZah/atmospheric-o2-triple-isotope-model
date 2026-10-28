@@ -2,7 +2,7 @@
   "schema_version": 1,
   "source_hash_convention": "SHA-256; Python and JSON text normalized from CRLF to LF",
   "publication_model_id": "oxytib_r5_r7_shared_budget_20261021",
-  "status": "release_candidate",
+  "status": "validated",
   "software_version": "0.2.0",
   "archived_release": {
     "version": "0.1.0",

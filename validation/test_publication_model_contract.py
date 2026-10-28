@@ -33,23 +33,31 @@ def test_stored_contract_hashes_match_supplied_sources():
         assert _sha256(ROOT / record['path']) == record['sha256'], record['path']
 
 
-def test_release_candidate_requires_current_evidence(monkeypatch, tmp_path):
+@pytest.mark.parametrize("status", ["release_candidate", "validated"])
+def test_release_status_requires_current_evidence(monkeypatch, tmp_path, status):
     import export_current_model_evidence
     output = tmp_path / "candidate.json"
-    candidate = run(output_path=output, release_candidate=True)
-    assert candidate["status"] == "release_candidate"
+    candidate = run(output_path=output, **{status: True})
+    assert candidate["status"] == status
     assert candidate["software_version"] == "0.2.0"
     stored = json.loads((ROOT / "model_data/publication_model_contract_v1.json").read_text())
+    assert stored["status"] == "validated"
+    stored["status"] = status
     # Recomputed isotopes may differ at floating-point round-off across platforms.
     calculated = candidate["modern_reference_state"].pop("raw_model")
     reference = stored["modern_reference_state"].pop("raw_model")
     assert calculated == pytest.approx(reference, rel=0.0, abs=1e-12)
     assert candidate == stored
-    with pytest.raises(ValueError, match="either"):
-        run(output_path=output, release_candidate=True, manuscript_freeze=True)
+    with pytest.raises(ValueError, match="only one"):
+        run(output_path=output, **{status: True}, manuscript_freeze=True)
     monkeypatch.setattr(export_current_model_evidence, "evidence_matches_current_core", lambda: False)
     with pytest.raises(ValueError, match="hash-bound evidence"):
-        run(output_path=output, release_candidate=True)
+        run(output_path=output, **{status: True})
+
+
+def test_release_statuses_are_mutually_exclusive(tmp_path):
+    with pytest.raises(ValueError, match="only one"):
+        run(output_path=tmp_path / "invalid.json", validated=True, release_candidate=True)
 
 
 def test_source_hashes_are_portable_but_detect_content_changes(tmp_path):
