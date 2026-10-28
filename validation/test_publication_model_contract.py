@@ -40,6 +40,10 @@ def test_release_candidate_requires_current_evidence(monkeypatch, tmp_path):
     assert candidate["status"] == "release_candidate"
     assert candidate["software_version"] == "0.2.0"
     stored = json.loads((ROOT / "model_data/publication_model_contract_v1.json").read_text())
+    # Recomputed isotopes may differ at floating-point round-off across platforms.
+    calculated = candidate["modern_reference_state"].pop("raw_model")
+    reference = stored["modern_reference_state"].pop("raw_model")
+    assert calculated == pytest.approx(reference, rel=0.0, abs=1e-12)
     assert candidate == stored
     with pytest.raises(ValueError, match="either"):
         run(output_path=output, release_candidate=True, manuscript_freeze=True)
