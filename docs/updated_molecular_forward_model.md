@@ -23,13 +23,14 @@ files and literature roles.
 
 ## Reference state
 
-At 1 PAL O2, 294 ppm CO2 and 290 Pg C per year GPP, the contract records:
+At 1 PAL O2, 294 ppm CO2 and 290 Pg C-equivalent per year gross O2 production,
+the contract records the modern-reference interpolated state:
 
 | Quantity | Model | Modern observational reference, Pack (2021) |
 |---|---:|---:|
-| Atmospheric O2 Δ′¹⁷O, per mil | -0.426353 | -0.432 ± 0.015 |
-| Atmospheric O2 δ′¹⁸O, per mil | 23.404329 | Compare after conversion to conventional notation |
-| Atmospheric O2 conventional δ¹⁸O, per mil | 23.680359 | 23.9 ± 0.3 |
+| Atmospheric O2 Δ′¹⁷O, per mil | -0.426188 | -0.432 ± 0.015 |
+| Atmospheric O2 δ′¹⁸O, per mil | 23.404299 | Compare after conversion to conventional notation |
+| Atmospheric O2 conventional δ¹⁸O, per mil | 23.680329 | 23.9 ± 0.3 |
 
 Scenario values are calculated using their specified boundary conditions.
 The modern residual quantifies the comparison with independent observations;
@@ -41,7 +42,10 @@ scenario outputs retain the raw model prediction.
 response operators. `model_data/updated_molecular_output_surface_v1.json`
 contains direct physical-model solutions used for faster evaluation by interpolation.
 The declared domain is 0.1-2 PAL pO2, 50-60,000 ppm pCO2 and
-18.256264-850 Pg C per year GPP.
+18.256264-850 Pg C-equivalent per year gross O2 production. The fixed optional
+marine configuration uses `model_data/marine_molecular_output_surface_v1.json`,
+calculated from its own live budget. Its biological parameters are fixed;
+source-isoflux sensitivity is propagated separately.
 
 The precomputed model grid (the output surface) uses separate interpolation representations for Δ′¹⁷O,
 δ′¹⁸O and the positive distances to uncertainty-envelope bounds. Independent
@@ -69,10 +73,13 @@ using DOP853. pCO2 and GPP changes alter forcing while isotope ratios remain
 continuous at the step. A pO2 step rescales isotopologue inventories together.
 Final equilibrium is evaluated independently.
 
-The photosynthesis-at-fixed-respiration experiment couples the carbon-box
-trajectory to the global molecular O2 budget through operator splitting.
-Its scope is a prescribed-forcing sensitivity experiment, rather than a
-fully simultaneous carbon-oxygen climate model. Gradual pCO2 trajectories
+The photosynthesis-at-fixed-respiration experiment integrates two atmospheric
+carbon boxes and three global O2 isotopologues simultaneously, using shared
+production and respiration fluxes. Slow geological O2 fluxes remain at their
+balanced initial background; the carbon source closure holds the entered
+pre-perturbation state. See the [budget equations](photosynthesis_carbon_budget.md).
+Its conditional equilibrium is solved independently of the display duration.
+Gradual pCO2 trajectories
 use user-specified endpoints, transition duration and interpolation.
 
 ## Reproduction

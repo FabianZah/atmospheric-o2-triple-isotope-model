@@ -36,9 +36,9 @@ DEFAULT_UNCERTAINTY = (
     ROOT / "model_data" / "uncertainty" / "updated_o2_uncertainty_layers_v1.json"
 )
 DEFAULT_EVIDENCE = (
-    ROOT / "model_data" / "literature" / "multimodel_evidence_matrix_v1.json"
+    ROOT / "model_data" / "literature" / "multimodel_evidence_matrix_20261019.json"
 )
-DEFAULT_EVIDENCE_BUNDLE = ROOT / "model_data" / "validation_evidence"
+DEFAULT_EVIDENCE_BUNDLE = ROOT / "model_data/validation_evidence/corrected_core_20261019"
 DEFAULT_OUTPUT = ROOT / "model_data" / "publication_model_contract_v1.json"
 
 
@@ -71,11 +71,18 @@ def run(
     uncertainty_path: Path = DEFAULT_UNCERTAINTY,
     evidence_path: Path = DEFAULT_EVIDENCE,
     output_path: Path = DEFAULT_OUTPUT,
+    *, manuscript_freeze: bool = False,
 ) -> dict[str, Any]:
     response = _load(response_path)
     output_surface = _load(output_surface_path)
     uncertainty = _load(uncertainty_path)
     evidence = _load(evidence_path)
+    from export_current_model_evidence import evidence_matches_current_core
+    from updated_photosynthesis_transient import DEFAULT_CARBON_SINK_MULTIPLIER
+    from shared_carbon_oxygen_budget import SharedCarbonBudget, REFERENCE_PCO2_PPM
+    evidence_current = evidence_matches_current_core()
+    if manuscript_freeze and not evidence_current:
+        raise ValueError("A manuscript freeze requires current hash-bound evidence")
 
     model_id = response["model_data_id"]
     surface_id = output_surface["surface_data_id"]
@@ -100,6 +107,13 @@ def run(
     axes = output_surface["axes"]
     gpp_axis = [float(value) for value in axes["gpp_pgC_per_year"]]
     source_paths = {
+        "input_provenance": ROOT / "model_data/model_input_provenance_v1.json",
+        "biosphere_registry": ROOT / "model_data/biosphere_configurations_v1.json",
+        "biosphere_implementation": ROOT / "code/biosphere_configurations.py",
+        "marine_output_surface": ROOT / "model_data/marine_molecular_output_surface_v1.json",
+        "chemistry_implementation": ROOT / "code/r1_r7_grid_chemistry.py",
+        "response_operator_implementation": ROOT / "code/local_r7_response_operator.py",
+        "root_solver_implementation": ROOT / "code/self_consistent_isotope_fixed_point.py",
         "central_forward_implementation": ROOT
         / "code"
         / "updated_molecular_forward_model.py",
@@ -119,6 +133,9 @@ def run(
         "photosynthesis_step_transient_implementation": ROOT
         / "code"
         / "updated_photosynthesis_transient.py",
+        "photosynthesis_carbon_driver_implementation": ROOT / "code/shared_carbon_oxygen_budget.py",
+        "carbon_source_sink_implementation": ROOT / "code/young_reactions.py",
+        "carbon_parameter_inventory": ROOT / "code/young_model_inventory.py",
         "pco2_trajectory_transient_implementation": ROOT
         / "code"
         / "updated_pco2_trajectory_transient.py",
@@ -148,6 +165,9 @@ def run(
         / "updated_uncertainty_layers_audit.json",
         "validation_evidence_exporter": ROOT
         / "validation"
+        / "export_current_model_evidence.py",
+        "archived_evidence_format_helper": ROOT
+        / "validation"
         / "export_validation_evidence_bundle.py",
         "integrated_acceptance_implementation": ROOT
         / "validation"
@@ -157,8 +177,12 @@ def run(
     contract: dict[str, Any] = {
         "schema_version": 1,
         "source_hash_convention": "SHA-256; Python and JSON text normalized from CRLF to LF",
-        "publication_model_id": "oxytib_publication_model_v1",
-        "status": "active_publication_model",
+        "publication_model_id": "oxytib_r5_r7_shared_budget_20261021",
+        "status": "local_manuscript_freeze" if manuscript_freeze else "local_integration_under_validation",
+        "software_version": "unreleased-20261021",
+        "archived_release": {"version": "0.1.0", "git_tag": "v0.1.0",
+                             "doi": "10.5281/zenodo.22819964"},
+        "biosphere_configurations": _load(ROOT / "model_data/biosphere_configurations_v1.json"),
         "single_model_policy": {
             "release_model_count": 1,
             "public_interface_model_count": 1,
@@ -199,8 +223,14 @@ def run(
                     "code/updated_pco2_trajectory_transient.py"
                 ),
             },
+            "photosynthesis_carbon_budget": {
+                **SharedCarbonBudget(REFERENCE_PCO2_PPM, 0., DEFAULT_CARBON_SINK_MULTIPLIER).metadata(),
+                "reference_example": "294.4 ppm with zero initial biological imbalance; each experiment records its actual initial-state balance",
+                "scope": "photosynthesis-at-fixed-respiration experiment; steady isotope calculations and prescribed trajectories unchanged",
+            },
         },
         "operational_domain": {
+            "production_definition": "Gross photosynthetic major-O2 flux expressed in PgC-equivalent/year: G * 1e15 / 12.0107 mol O2/year",
             "pO2_PAL": _axis_summary(axes["po2_pal"]),
             "pCO2_ppm": _axis_summary(axes["pco2_ppm"]),
             "GPP_PgC_per_year": _axis_summary(gpp_axis),
@@ -260,15 +290,17 @@ def run(
                 ]
             ),
             "clima_role": (
-                "non-probabilistic structural sensitivity end member used to "
-                "quantify climate-architecture response"
+                "archived structural comparisons; offsets require recalculation "
+                "with corrected chemistry before use for this model"
             ),
         },
         "validation": {
+            "current_model_evidence_status": "current_core_hash_bound" if evidence_current else "regeneration_pending",
+            "bundled_evidence_role": "current_comparisons_with_explicit_archived_structural_records",
             "evidence_matrix_id": evidence["matrix_id"],
-            "evidence_bundle_id": "publication_validation_evidence_v1",
+            "evidence_bundle_id": "corrected_core_evidence_20261019",
             "evidence_bundle_manifest": (
-                "model_data/validation_evidence/manifest.json"
+                "model_data/validation_evidence/corrected_core_20261019/manifest.json"
             ),
             "evidence": [
                 {
@@ -321,6 +353,8 @@ def main() -> None:
     parser.add_argument("--uncertainty", type=Path, default=DEFAULT_UNCERTAINTY)
     parser.add_argument("--evidence", type=Path, default=DEFAULT_EVIDENCE)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--manuscript-freeze", action="store_true",
+                        help="Mark a locally validated manuscript snapshot after completing its tests; no publication action.")
     args = parser.parse_args()
     contract = run(
         args.response,
@@ -328,6 +362,7 @@ def main() -> None:
         args.uncertainty,
         args.evidence,
         args.output,
+        manuscript_freeze=args.manuscript_freeze,
     )
     print(
         f"Wrote {args.output} for {contract['publication_model_id']} "

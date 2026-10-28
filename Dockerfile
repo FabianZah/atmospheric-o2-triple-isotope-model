@@ -5,16 +5,16 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY code/requirements-api-lock.txt /app/code/requirements-api-lock.txt
-RUN python -m pip install --no-cache-dir -r /app/code/requirements-api-lock.txt
+RUN useradd --create-home --uid 10001 modelapi
 
-COPY .project-root run_model.py LICENSE LICENSING.md CITATION.cff CITATION.bib CITATION.ris /app/
-COPY code /app/code
-COPY model_data /app/model_data
-COPY web /app/web
+COPY --chown=10001:10001 code/requirements-api-lock.txt /app/code/requirements-api-lock.txt
+RUN python -m pip install --no-cache-dir --no-compile -r /app/code/requirements-api-lock.txt
 
-RUN useradd --create-home --uid 10001 modelapi \
-    && chown -R modelapi:modelapi /app
+COPY --chown=10001:10001 .project-root run_model.py LICENSE LICENSING.md CITATION.cff CITATION.bib CITATION.ris /app/
+COPY --chown=10001:10001 code /app/code
+COPY --chown=10001:10001 model_data /app/model_data
+COPY --chown=10001:10001 web /app/web
+
 USER modelapi
 
 EXPOSE 8000

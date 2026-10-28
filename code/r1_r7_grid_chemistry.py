@@ -71,7 +71,7 @@ def r5_o1d_n2_cm3_per_molecule_s(temperature_k: np.ndarray | float) -> np.ndarra
 
 
 def r5_o1d_co2_cm3_per_molecule_s(temperature_k: np.ndarray | float) -> np.ndarray:
-    """O(1D)+CO2 total physical quenching rate, also used for R7."""
+    """O(1D)+CO2 removal coefficient, assigned exclusively to R7."""
     temperature = _temperature(temperature_k)
     return 7.5e-11 * np.exp(115.0 / temperature)
 
@@ -99,13 +99,12 @@ def modern_r1_r7_rate_fields(
     r5 = air * (
         r5_o1d_o2_cm3_per_molecule_s(temperature) * o2
         + r5_o1d_n2_cm3_per_molecule_s(temperature) * n2
-        + r5_o1d_co2_cm3_per_molecule_s(temperature) * co2
     )
     return {
         "R2": RateField("R2", r2, "cm3 molecule-1 s-1", "Sander et al. (2006) k0(T) times local [M]", "source-derived"),
         "R4a": RateField("R4a", r4_o_o3_cm3_per_molecule_s(temperature), "cm3 molecule-1 s-1", "Sander et al. (2006), Table 1-1", "source-derived; differs from Young Table 2 at 220 K"),
         "R4f": RateField("R4f", r4_o1d_o3_channel_cm3_per_molecule_s(temperature), "cm3 molecule-1 s-1 per channel", "Sander et al. (2006), Table 1-1", "same value as Young R4f and R4k"),
-        "R5": RateField("R5", r5, "s-1", "Sander et al. (2006) O2, N2, and CO2 quenching sum", "source-derived pseudo-first-order field"),
+        "R5": RateField("R5", r5, "s-1", "Sander et al. (2006) O2 and N2 quenching; CO2 is exclusively in R7", "private R5/R7 correction; Young Table 2 footnote d and Eq. 26"),
         "R6": RateField("R6", np.full_like(temperature, 2.0e-16), "cm3 molecule-1 s-1", "Young et al. (2014), Table 2", "compatibility convention; source reconciliation pending"),
         "R7": RateField("R7", r5_o1d_co2_cm3_per_molecule_s(temperature), "cm3 molecule-1 s-1", "Sander et al. (2006), O(1D)+CO2", "source-derived; Young-compatible isotope branching pending"),
     }

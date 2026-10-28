@@ -73,11 +73,22 @@ jobs:
 
       - name: Numerical inference and completed-result reuse
         run: |
+          node validation/test_browser_quantiles.cjs
           python -m pytest \
+            validation/test_posterior_quantiles.py \
             validation/test_posterior_coordinate_quadrature.py \
             validation/test_posterior_field_refinement.py \
             validation/test_posterior_surface_slice.py \
             validation/test_completed_result_cache.py -q
+
+      - name: Corrected chemistry and biological configuration isolation
+        run: |
+          python -m pytest \
+            validation/test_corrected_chemistry.py \
+            validation/test_current_model_provenance.py \
+            validation/test_lowco2_audit_metadata.py \
+            validation/test_biosphere_modes.py \
+            validation/test_biosphere_api.py -q
 
       - name: Sulfate transfer and uncertainty accuracy
         run: |
@@ -95,6 +106,8 @@ jobs:
           python -m pytest \
             validation/test_updated_molecular_transient.py \
             validation/test_updated_photosynthesis_transient.py \
+            validation/test_shared_carbon_oxygen_budget.py \
+            validation/test_carbon_sink_multiplier.py \
             validation/test_updated_pco2_trajectory_transient.py -q
 
       - name: Core regression tests

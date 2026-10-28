@@ -24,7 +24,7 @@ HEADER_FILL = PatternFill("solid", fgColor="006F71")
 TITLE_FONT = Font(color="FFFFFF", bold=True, size=14)
 HEADER_FONT = Font(color="FFFFFF", bold=True)
 SOFTWARE_NAME = "OXYTIB"
-SOFTWARE_VERSION = "0.1.0"
+SOFTWARE_VERSION = "unreleased-20261021"
 REPOSITORY_URL = "https://github.com/FabianZah/atmospheric-o2-triple-isotope-model"
 DATA_ALIGNMENT = Alignment(vertical="top", wrap_text=True)
 
@@ -114,6 +114,7 @@ def build_forward_isotope_workbook(envelope: dict[str, Any]) -> bytes:
             ("generated_utc", datetime.now(timezone.utc).isoformat(), ""),
             ("software", SOFTWARE_NAME, ""), ("software_version", SOFTWARE_VERSION, ""),
             ("repository", REPOSITORY_URL, ""), ("calculation", envelope["calculation"], ""),
+            ("biological_configuration", result["inputs"].get("biosphere_configuration", "modern_reference"), ""),
             ("isotope_convention", result["isotope_convention"], ""),
             ("constraint_convention", result["constraint_convention"], ""),
             ("interval_convention", result["interval_convention"], ""),
@@ -199,6 +200,7 @@ def _append_summary_rows(
         ("software_version", SOFTWARE_VERSION, ""),
         ("repository", REPOSITORY_URL, ""),
         ("calculation", envelope["calculation"], ""),
+        ("biological_configuration", inputs.get("biosphere_configuration", "modern_reference"), ""),
         ("isotope_source", context["isotope_source"], ""),
         (
             "target_air_Delta_prime_17O_0.528",
@@ -450,6 +452,7 @@ def build_transient_workbook(
         ("repository", REPOSITORY_URL, ""),
         ("calculation", envelope["calculation"], ""),
         ("experiment_type", experiment_type, ""),
+        ("biological_configuration", request["initial"].get("biosphere_configuration", "modern_reference"), ""),
         ("display_duration", request["duration_years"], "years"),
         ("sample_count", request["sample_count"], ""),
         (
@@ -513,9 +516,12 @@ def build_transient_workbook(
         "O16O16_mol",
         "O16O17_mol",
         "O16O18_mol",
+        "CO2_trop_mol",
+        "CO2_strat_mol",
     )
     _prepare_sheet(timeseries, title="Model time series", headers=headers)
     states = result["states"]
+    carbon_inventories = result.get("carbon_inventories_mol", [[None, None]] * len(states))
     is_photosynthesis = experiment_type == "photosynthesis"
     is_trajectory = experiment_type == "pCO2_trajectory"
     if is_photosynthesis:
@@ -549,6 +555,8 @@ def build_transient_workbook(
                 state["o16o16_mol"],
                 state["o16o17_mol"],
                 state["o16o18_mol"],
+                carbon_inventories[index][0],
+                carbon_inventories[index][1],
             )
         )
     for row in timeseries.iter_rows(min_row=4, max_col=len(headers)):
@@ -557,7 +565,7 @@ def build_transient_workbook(
                 cell.number_format = "0.0000000000E+00"
     _finish_table(
         timeseries,
-        (16, 16, 18, 22, 28, 22, 30, 27, 22, 22, 22),
+        (16, 16, 18, 22, 28, 22, 30, 27, 22, 22, 22, 22, 22),
     )
 
     provenance = workbook.create_sheet("Provenance")

@@ -62,22 +62,26 @@ integration, transients, API contracts and exports. The comparison with
 Young et al. (2014) uses a separate source-derived validation calculation. Some POSIX process tests run
 on Linux rather than Windows.
 
-## Climate and chemistry inputs
+## Archived climate and chemistry inputs
 
 The evidence manifest names the generator for each of its 15 reports; all
 those generators and their local Python dependencies are supplied. The 20
 native atmospheric arrays for the climate comparison are bundled under
 `validation/reference_data/climate/` (about 3 MB), outside the web-container
-build. Their archived SHA-256 hashes are checked before use. Run:
+build. Their archived SHA-256 hashes are checked before use. To reproduce the
+archived climate workflow, use the archived v0.1.0 checkout:
 
 ```powershell
 python run_model.py reproduce climate
 ```
 
-This calculates local oxygen-isotope exchange responses for CO2 and excited
+In that checkout, this calculates local oxygen-isotope exchange responses for CO2 and excited
 atomic oxygen, O(1D), and solves the global O2 isotope budget
 for the four oxygen/pressure experiments. It is optional in the default
 sequence because it takes longer than the surface-based comparisons.
+The corrected core does not reuse its numerical offsets. Running these scripts
+against changed chemistry creates a new experiment, requiring consistent
+normalization and validation before any adoption.
 
 Lower-level entry points are also supplied:
 
@@ -123,6 +127,8 @@ validation thresholds and write reports under `outputs/`. They are separate
 from the fast API/runtime installation check.
 
 Regenerate the required comparisons before assembling an evidence bundle with
-`validation/export_validation_evidence_bundle.py`. An aggregate report and a
+`validation/export_current_model_evidence.py`, followed by
+`validation/export_publication_model_contract.py`. The archived evidence in the
+parent directory remains unchanged. An aggregate report and a
 fresh observational comparison have distinct provenance and should be cited
 accordingly.

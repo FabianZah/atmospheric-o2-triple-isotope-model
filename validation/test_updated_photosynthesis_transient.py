@@ -54,6 +54,14 @@ def test_half_photosynthesis_evolves_o2_and_co2_inventories(
     assert min(row["pO2_pal"] for row in rows) < 0.9
     assert max(row["pCO2_ppm"] for row in rows) > 500.0
     assert half_photosynthesis_result.solver["carbon_success"] is True
+    assert half_photosynthesis_result.request.carbon_sink_multiplier == 1.0
+    budget = half_photosynthesis_result.solver["carbon_budget"]
+    assert budget["sink_multiplier"] == 1.0
+    assert budget["weathering_per_year"] == .000208
+    assert budget["ocean_uptake_per_year"] == .1172
+    assert budget["constant_balancing_flux_mol_per_year"] == pytest.approx(
+        (.000208+.1172)*budget['balancing_reference_CO2_mol']-5.884e15
+        +budget['initial_biological_o2_tendency_mol_per_year'])
     assert np.isfinite(
         half_photosynthesis_result.solver[
             "carbon_minimum_unclipped_inventory_mol"
@@ -79,10 +87,10 @@ def test_half_photosynthesis_reproduces_all_fig9_panel_directions(
     )
 
 
-def test_operator_split_p_o2_trajectories_close(half_photosynthesis_result) -> None:
+def test_carbon_and_oxygen_share_one_inventory(half_photosynthesis_result) -> None:
     molecular_po2 = np.asarray(
         [row["pO2_pal"] for row in half_photosynthesis_result.rows()]
     )
     carbon_po2 = np.asarray(half_photosynthesis_result.carbon_driver_po2_pal)
 
-    assert np.max(np.abs(molecular_po2 - carbon_po2)) <= 0.01
+    np.testing.assert_array_equal(molecular_po2, carbon_po2)

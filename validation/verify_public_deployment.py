@@ -6,6 +6,7 @@ import argparse
 from io import BytesIO
 import json
 from math import isclose
+from pathlib import Path
 from time import monotonic
 from typing import Any
 from urllib.error import HTTPError, URLError
@@ -15,8 +16,14 @@ from xml.etree import ElementTree
 from zipfile import ZipFile
 
 
-EXPECTED_MODEL_ID = "oxytib_publication_model_v1"
-EXPECTED_MODERN_DELTA17_PERMIL = -0.42635313046373885
+ROOT = Path(__file__).resolve().parents[1]
+LOCAL_CONTRACT = json.loads(
+    (ROOT / "model_data/publication_model_contract_v1.json").read_text(encoding="utf-8")
+)
+EXPECTED_MODEL_ID = LOCAL_CONTRACT["publication_model_id"]
+EXPECTED_MODERN_DELTA17_PERMIL = LOCAL_CONTRACT["modern_reference_state"]["raw_model"][
+    "Delta_prime_17O_permil"
+]
 
 
 def _request_bytes(
@@ -49,10 +56,13 @@ def verify_dense_export(base_url: str) -> dict[str, Any]:
     """Opt-in staging load check using a genuinely refined posterior field."""
     payload = {
         "solve_for": "pCO2",
-        "target_air_cap_delta17_permil": -8.0,
+        # Same resolved high-CO2 ridge covered by the dense-quadrature regression.
+        "target_air_cap_delta17_permil": -10.0,
         "measurement_sigma_permil": 0.015,
-        "gpp_constraint": {"kind": "normal", "center": 58.0, "sigma": 29.0},
-        "po2_constraint": {"kind": "normal", "center": 0.2, "sigma": 0.2},
+        "target_air_delta18_conventional_permil": 23.9,
+        "delta18_measurement_sigma_permil": 0.3,
+        "gpp_constraint": {"kind": "normal", "center": 290.0, "sigma": 29.0},
+        "po2_constraint": {"kind": "fixed", "center": 1.0},
     }
     start = monotonic()
     envelope = _request_json(
@@ -97,10 +107,12 @@ def verify_dense_export(base_url: str) -> dict[str, Any]:
 def verify_deployment(base_url: str) -> dict[str, Any]:
     health = _request_json(base_url, "/api/v1/health")
     metadata = _request_json(base_url, "/api/v1/model")
+    reference = LOCAL_CONTRACT["modern_reference_state"]["inputs"]
     forward = _request_json(
         base_url,
         "/api/v1/forward",
-        {"p_o2_pal": 1.0, "p_co2_ppm": 294.0, "gpp_pgC_per_year": 290.0},
+        {"p_o2_pal": reference["pO2_PAL"], "p_co2_ppm": reference["pCO2_ppm"],
+         "gpp_pgC_per_year": reference["GPP_PgC_per_year"]},
     )
     model_ids = {
         health.get("publication_model_id"),

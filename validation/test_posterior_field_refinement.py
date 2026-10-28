@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 from scipy.ndimage import label
+from scipy.special import ndtr, ndtri
 
 import posterior_field_refinement as refinement
 from updated_constrained_pco2_posterior import (
@@ -91,7 +92,8 @@ def test_streamed_marginals_preserve_real_separate_regions(monkeypatch, solve_fo
     assert np.array_equal(mask,density>=updated.field_hpd_density_threshold)
     expected=mass.sum(axis=1 if solve_for=="pCO2" else 0)
     assert np.asarray(updated.solve_marginal_probability_mass) == pytest.approx(expected)
-    assert updated.constraint_posterior_medians[joint.inputs.integrate_coordinate] == pytest.approx(.94,abs=.015)
+    expected_median = 1. + .2*ndtri((ndtr((.1-1.)/.2)+ndtr((2.-1.)/.2))/2)
+    assert updated.constraint_posterior_medians[joint.inputs.integrate_coordinate] == pytest.approx(expected_median,abs=.001)
     assert updated.field_refinement_diagnostics["refined_components"] == 2
     assert updated.field_x_axis[0] == 1 and updated.field_x_axis[-1] == 10
     monkeypatch.setattr(refinement, "integrated_coordinate_log_likelihood",

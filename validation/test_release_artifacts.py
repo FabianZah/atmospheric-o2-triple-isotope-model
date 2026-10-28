@@ -71,6 +71,27 @@ def test_release_doi_matches_citations_and_public_metadata() -> None:
     assert f"DO  - {doi}" in (ROOT / "CITATION.ris").read_text(encoding="utf-8")
 
 
+def test_api_and_workbook_identify_the_same_software_version() -> None:
+    from model_result_workbook import SOFTWARE_VERSION
+    from public_model_service import result_envelope
+
+    metadata = model_metadata()
+    envelope = result_envelope({}, calculation="release_metadata_test")
+    assert metadata["software_version"] == SOFTWARE_VERSION
+    assert envelope["provenance"]["software_version"] == SOFTWARE_VERSION
+
+
+def test_unreleased_software_distinguishes_its_archived_citation() -> None:
+    metadata = model_metadata()
+    if not metadata["status"].startswith("local_"):
+        return
+    citation = yaml.safe_load((ROOT / "CITATION.cff").read_text(encoding="utf-8"))
+    assert metadata["software_version"] != citation["version"]
+    assert f'archived v{citation["version"]}' in metadata["citation"]["scope"]
+    assert f'archived OXYTIB v{citation["version"]}' in citation["message"]
+    assert "awaits its own software release" in citation["message"]
+
+
 def test_public_documents_use_current_entry_points_and_portable_paths() -> None:
     combined = "\n".join(path.read_text(encoding="utf-8") for path in PUBLIC_MARKDOWN)
     assert "run_model.py app" not in combined

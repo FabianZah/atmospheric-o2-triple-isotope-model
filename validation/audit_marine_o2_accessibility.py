@@ -543,10 +543,12 @@ def run(benchmark_path: Path, output_path: Path) -> dict[str, Any]:
         "promotion_gate": {
             "status": "not_promoted_structural_sensitivity",
             "decision": (
-                "Retain atmosphere-accessible marine production as a structural "
-                "uncertainty experiment. It improves the modern Pack closure and "
-                "the Liu shared-grid RMSE, but degrades the Young Fig. 7/Fig. 8 "
-                "guardrails and the Yang low-CO2 tracking score."
+                "Retain partial atmospheric accessibility as a separate structural "
+                "experiment. The current-core effects on Pack, Liu, Young and Yang "
+                "are reported above; a source-backed mapping over the full public "
+                "domain remains required before adoption. This experiment is "
+                "distinct from the fixed marine-biology configuration, which "
+                "retains full atmospheric accessibility."
             ),
             "requirements": [
                 "preserve modern Pack Delta-prime-17O and delta18O gates",

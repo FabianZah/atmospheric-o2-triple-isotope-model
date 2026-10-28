@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "model_id": "oxytib_r5_r7_carbon1_20261021",
+  "carbon_driver_revision": {
+    "date": "2026-10-21",
+    "previous_model_id": "oxytib_r5_r7_20261019",
+    "default_sink_multiplier": 1.0,
+    "previous_sink_multiplier": 0.94,
+    "rationale": "Use Young (2014) published weathering and ocean-uptake coefficients without the inherited uncalibrated diagnostic reduction.",
+    "balancing_flux": "Calculated separately at the fixed reference carbon inventory for the chosen coefficients.",
+    "unchanged": "Photochemical response, original 400 ppm isoflux normalization, GPP convention, biology, steady outputs and archived v0.1.0.",
+    "definition": "docs/photosynthesis_carbon_budget.md"
+  },
+  "input_identity_policy": "Input dataset IDs retain their original build identity. The word private in an imported ID describes its source build and is not a runtime location or a validation claim.",
+  "original_imports": [
+    {
+      "path": "model_data/updated_r7_response_surface_v1.json",
+      "sha256_bytes_at_import": "6d2d34fc801617adc07ee29f27b3451fe7f2047c8105f09ede22e4ecc9cf0221",
+      "sha256_lf_normalized_at_import": "052c387958757d87744f58807b59e190df651615edc6a2699091d8d50597fdd1",
+      "role": "136-parent corrected atmospheric response bundle; adopted without numerical modifications"
+    },
+    {
+      "path": "model_data/updated_molecular_output_surface_v1.json",
+      "sha256_bytes_at_import": "cebc5276dd3cb22a183c5d27fd904cc3a20672c90824e9f16cbe39a7ec166a89",
+      "sha256_lf_normalized_at_import": "41632195b3c46a08490f894c16d4a79a16d5024da66918335f5079c82ea7e77f",
+      "role": "Modern-reference output interpolation bundle; adopted without numerical modifications"
+    },
+    {
+      "path": "model_data/uncertainty/updated_o2_uncertainty_layers_v1.json",
+      "sha256_bytes_at_import": "ddf2c5bc9ab9f78e900f414d78aafe94bf2d205e09b6dd5e36b0c30ecdb596fb",
+      "metadata_revision": "Replaced external candidate paths with portable provenance, model-definition and archived-release references; numerical contents unchanged"
+    },
+    {
+      "path": "model_data/biosphere_configurations_v1.json",
+      "sha256_bytes_at_import": "05edc21542ebb057d04a6277a47b400c342bf00c9770be04c3edc934ef8223ce",
+      "metadata_revision": "Added numerical validation scope and portable configuration status; scientific parameters unchanged"
+    }
+  ],
+  "marine_output": {
+    "path": "model_data/marine_molecular_output_surface_v1.json",
+    "generator": "validation/build_marine_output_surface.py",
+    "validator": "validation/validate_marine_output_surface.py",
+    "method": "Live configured isotope budgets, followed by independent cell holdouts; no transformation of modern-reference output values"
+  },
+  "current_file_hash_authority": "model_data/publication_model_contract_v1.json",
+  "archive": {
+    "git_tag": "v0.1.0",
+    "commit": "cdea18588b341429199ad9a433ab6e54daa0dc34",
+    "integration_base_commit": "e8267f502b1903bc4200e33adcc3c3a19652766f",
+    "doi": "10.5281/zenodo.22819964"
+  },
+  "scope": "Fixed modern-reference atmospheric construction, 10-73 km isotope column, corrected CO2 accounting, original 400 ppm normalization; deferred climate and upper-column experiments remain separate"
+}

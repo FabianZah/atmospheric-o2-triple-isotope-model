@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite this record and the scientific sources relevant to your application."
+message: "This record cites archived OXYTIB v0.1.0. The corrected model awaits its own software release and version-specific citation. Cite this record for calculations made with v0.1.0, together with the scientific sources relevant to your application."
 title: "OXYTIB: Atmospheric oxygen triple-isotope budget and inference model"
 abstract: >-
   A transparent, reproducible atmospheric oxygen triple-isotope budget and

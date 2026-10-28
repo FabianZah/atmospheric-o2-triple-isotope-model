@@ -39,10 +39,10 @@ def _plot(rows: list[dict[str, object]], path: Path) -> None:
         pco2 = np.asarray([float(row["pCO2_ppm"]) for row in selected])
         central = np.asarray([float(row["central_D17O_permil"]) for row in selected])
         additive = np.asarray(
-            [float(row["additive_climate_D17O_permil"]) for row in selected]
+            [float(row["additive_climate_D17O_permil"]) if row["additive_climate_D17O_permil"] is not None else np.nan for row in selected]
         )
         fixed_total = np.asarray(
-            [float(row["fixed_total_climate_D17O_permil"]) for row in selected]
+            [float(row["fixed_total_climate_D17O_permil"]) if row["fixed_total_climate_D17O_permil"] is not None else np.nan for row in selected]
         )
         axes[0].plot(
             pco2,
@@ -51,20 +51,12 @@ def _plot(rows: list[dict[str, object]], path: Path) -> None:
             color=colors[percent],
             label=f"{percent:g}% central",
         )
-        axes[0].plot(
-            pco2,
-            additive,
-            "s--",
-            color=colors[percent],
-            label=f"{percent:g}% Clima, additive CO$_2$",
-        )
-        axes[0].plot(
-            pco2,
-            fixed_total,
-            "^:",
-            color=colors[percent],
-            label=f"{percent:g}% Clima, fixed total dry gas",
-        )
+        if np.all(np.isfinite(additive)):
+            axes[0].plot(pco2, additive, "s--", color=colors[percent],
+                         label=f"{percent:g}% Clima, additive CO$_2$")
+        if np.all(np.isfinite(fixed_total)):
+            axes[0].plot(pco2, fixed_total, "^:", color=colors[percent],
+                         label=f"{percent:g}% Clima, fixed total dry gas")
 
         axis = axes[1 if percent == 50.0 else 2]
         for key, label, marker in (
@@ -73,6 +65,8 @@ def _plot(rows: list[dict[str, object]], path: Path) -> None:
             ("numerical_width_permil", "Numerical guardrail", "^"),
             ("structural_envelope_magnitude_permil", "Clima structural envelope", "D"),
         ):
+            if any(row[key] is None for row in selected):
+                continue
             axis.plot(
                 pco2,
                 [float(row[key]) for row in selected],
@@ -102,7 +96,7 @@ def run(output_path: Path) -> dict[str, object]:
             result = decompose_updated_uncertainty(
                 UpdatedOutputSurfaceInput(1.0, pco2, absolute_gpp)
             )
-            if len(result.structural_endmember_points) != 2:
+            if len(result.structural_endmember_points) not in (0, 2):
                 raise ValueError(
                     f"expected two exact Clima pressure end members at {pco2:g} ppm, "
                     f"{percent:g}% GPP"
@@ -111,13 +105,13 @@ def run(output_path: Path) -> dict[str, object]:
                 point.pressure_convention: point
                 for point in result.structural_endmember_points
             }
-            if set(structural) != {"additive_co2", "fixed_total_dry_major"}:
+            if structural and set(structural) != {"additive_co2", "fixed_total_dry_major"}:
                 raise ValueError(
                     f"unexpected Clima pressure conventions at {pco2:g} ppm, "
                     f"{percent:g}% GPP: {sorted(structural)}"
                 )
-            additive = structural["additive_co2"]
-            fixed_total = structural["fixed_total_dry_major"]
+            additive = structural.get("additive_co2")
+            fixed_total = structural.get("fixed_total_dry_major")
             source_width = _maximum_width(result.source_isoflux_parameter)
             biological_width = _maximum_width(result.biological_parameter)
             numerical_width = max(
@@ -127,13 +121,14 @@ def run(output_path: Path) -> dict[str, object]:
             structural_width = max(
                 abs(additive.offset_from_central_permil),
                 abs(fixed_total.offset_from_central_permil),
-            )
+            ) if structural else None
             magnitudes = {
                 "source_isoflux_parameter": source_width,
                 "biological_parameter": biological_width,
                 "numerical": numerical_width,
-                "Clima_structural_envelope": structural_width,
             }
+            if structural:
+                magnitudes["Clima_structural_envelope"] = structural_width
             rows.append(
                 {
                     "pO2_PAL": 1.0,
@@ -147,13 +142,14 @@ def run(output_path: Path) -> dict[str, object]:
                         result.crossed_parameter_envelope
                     ),
                     "numerical_width_permil": numerical_width,
-                    "additive_climate_D17O_permil": additive.cap_delta17_prime_permil,
+                    "structural_status": "quantified_exact_endmembers" if structural else "unquantified_for_current_core",
+                    "additive_climate_D17O_permil": additive.cap_delta17_prime_permil if additive else None,
                     "fixed_total_climate_D17O_permil": (
-                        fixed_total.cap_delta17_prime_permil
+                        fixed_total.cap_delta17_prime_permil if fixed_total else None
                     ),
                     "pressure_convention_difference_permil": (
                         fixed_total.cap_delta17_prime_permil
-                        - additive.cap_delta17_prime_permil
+                        - additive.cap_delta17_prime_permil if structural else None
                     ),
                     "structural_envelope_magnitude_permil": structural_width,
                     "largest_nonmeasurement_component": max(
@@ -187,8 +183,9 @@ def run(output_path: Path) -> dict[str, object]:
         ),
         "numerical_layer": "deterministic response-surface and accelerator margins",
         "structural_layer": (
-            "exact, non-interpolated 1 PAL Clima end-member values for additive-CO2 "
-            "and fixed-total-dry-gas pressure conventions at the calculated nodes"
+            "Quantified only where the current uncertainty contract provides exact "
+            "endmembers. Null values mean unquantified, not zero; archived climate "
+            "offsets are excluded from the corrected core."
         ),
         "scenario_count": len(rows),
         "all_combined_confidence_intervals_disabled": all(

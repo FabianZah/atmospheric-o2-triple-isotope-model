@@ -67,8 +67,9 @@ def test_browser_nonair_normal_uncertainty_converges_and_exports_diagnostics():
     diagnostics = result["sulfate_likelihood_diagnostics"]
     assert diagnostics["status"] == "converged"
     assert diagnostics["maximum_inner_compatibility_error_estimate"] >= 0.
-    assert result["posterior_median"] == pytest.approx(1715.15, abs=0.1)
-    assert result["equal_tailed_credible_interval"] == pytest.approx((844.42, 2860.07), abs=0.1)
+    # R5/R7-corrected core and continuous marginal-density quantiles, 181 nodes.
+    assert result["posterior_median"] == pytest.approx(1752.60, abs=0.1)
+    assert result["equal_tailed_credible_interval"] == pytest.approx((862.54, 2923.47), abs=0.1)
     assert result["inputs"]["sulfate"]["background"]["sigma"] == 0.05
     assert diagnostics["settings"]["relative_tolerance"] <= 2e-4
 

@@ -52,10 +52,10 @@ def test_modern_central_gpp_overlaps_pack_without_output_offset() -> None:
     assert result.numerically_converged is True
     assert result.numerical_solver_methods_used == ("undamped_newton",)
     assert result.central_cap_delta17_prime_permil == pytest.approx(
-        -0.42635037513013607, abs=2.0e-9
+        -0.42618592943807654, abs=2.0e-9
     )
     assert result.central_residual_to_pack_permil == pytest.approx(
-        0.005649624869863923, abs=2.0e-9
+        0.00581407056192346, abs=2.0e-9
     )
     assert result.model_guardrail_overlaps_pack_observation is True
     assert result.pack_observed_uncertainty_permil == 0.015
@@ -71,7 +71,7 @@ def test_modern_conventional_delta18_overlaps_pack_measurement() -> None:
         result.central_delta18_prime_permil
     )
 
-    assert conventional_delta18 == pytest.approx(23.680359312, abs=2.0e-9)
+    assert conventional_delta18 == pytest.approx(23.68032878096949, abs=2.0e-9)
     assert abs(conventional_delta18 - 23.9) <= 0.3
     assert result.biological_pathway_uncertainty_included is True
     assert result.biological_full_ensemble_member_count == 54
@@ -96,7 +96,7 @@ def test_adnew_uncertainty_changes_forcing_monotonically() -> None:
     )
     scales = result.forcing_scale_samples
     assert scales["mean"] == pytest.approx(
-        2.0 * 1.2539582757549723 * 1.306298723719676
+        3.2726126929006267
     )
 
 
@@ -162,7 +162,7 @@ def test_crossed_holdout_surface_value_is_preserved_without_normalization() -> N
         maximum_iterations=10,
     )
     assert solved.converged
-    assert solved.state[1] == pytest.approx(-5.935216904289571, abs=2.0e-9)
+    assert solved.state[1] == pytest.approx(-5.924741618238488, abs=2.0e-9)
 
 
 def test_slow_newton_node_converges_without_relaxation() -> None:
@@ -177,7 +177,7 @@ def test_slow_newton_node_converges_without_relaxation() -> None:
     assert result.numerically_converged is True
     assert result.maximum_fixed_point_residual_permil <= 1.0e-8
     assert result.central_cap_delta17_prime_permil == pytest.approx(
-        -12.45578252, abs=1.0e-8
+        -12.36355033448192, abs=1.0e-8
     )
 
 
@@ -193,11 +193,11 @@ def test_low_po2_low_gpp_envelope_slow_node_converges() -> None:
     assert result.numerically_converged is True
     assert result.maximum_fixed_point_residual_permil <= 1.0e-8
     assert result.central_cap_delta17_prime_permil == pytest.approx(
-        -20.99777789, abs=1.0e-8
+        -20.70357459810898, abs=1.0e-8
     )
 
 
-def test_hybr_fallback_solves_same_mechanistic_fixed_point() -> None:
+def test_refined_low_production_root_converges() -> None:
     result = run_updated_forward(
         UpdatedForwardInput(
             p_o2_pal=0.31622776601683794,
@@ -208,7 +208,7 @@ def test_hybr_fallback_solves_same_mechanistic_fixed_point() -> None:
     )
     assert result.numerically_converged is True
     assert result.maximum_fixed_point_residual_permil <= 1.0e-8
-    assert "undamped_newton_then_scipy_hybr" in result.numerical_solver_methods_used
+    assert result.numerical_solver_methods_used == ("undamped_newton",)
     assert result.central_cap_delta17_prime_permil == pytest.approx(
-        -23.93423794016048, abs=1.0e-8
+        -23.770031729052725, abs=1.0e-8
     )

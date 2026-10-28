@@ -141,5 +141,6 @@ def test_fig10_type_pco2_step_has_young_like_monotonic_shape() -> None:
     ]
 
     assert all(later <= earlier + 1.0e-10 for earlier, later in zip(shifts, shifts[1:]))
-    assert shifts[30] == pytest.approx(-0.00433192, abs=2.0e-5)
-    assert shifts[-1] == pytest.approx(-0.04940769, abs=2.0e-5)
+    # Corrected chemistry, independently checked with Radau inventory integration.
+    assert shifts[30] == pytest.approx(-0.004325507347239466, abs=2.0e-5)
+    assert shifts[-1] == pytest.approx(-0.04933502150989888, abs=2.0e-5)

@@ -1,0 +1,309 @@
+{
+  "audit": "Clima pressure-convention robustness",
+  "status": "pressure_robust_structural_endmember_not_promoted",
+  "central_model_changed": false,
+  "pO2_PAL": 1.0,
+  "pressure_conventions": [
+    "additive_co2",
+    "fixed_total_dry_major"
+  ],
+  "local_R7": {
+    "maximum_absolute_forcing_ratio_difference_high_pCO2": 0.01519416925039252,
+    "rows": [
+      {
+        "pCO2_ppm": 300.0,
+        "additive_climate_over_fixed_D17O_forcing": 0.999489390886722,
+        "fixed_total_climate_over_fixed_D17O_forcing": 0.9994434782563267,
+        "fixed_total_minus_additive_forcing_ratio": -4.591263039521731e-05
+      },
+      {
+        "pCO2_ppm": 1000.0,
+        "additive_climate_over_fixed_D17O_forcing": 1.0048709282706298,
+        "fixed_total_climate_over_fixed_D17O_forcing": 1.0053722239762126,
+        "fixed_total_minus_additive_forcing_ratio": 0.0005012957055827716
+      },
+      {
+        "pCO2_ppm": 3000.0,
+        "additive_climate_over_fixed_D17O_forcing": 1.0225698070103748,
+        "fixed_total_climate_over_fixed_D17O_forcing": 1.024569249124905,
+        "fixed_total_minus_additive_forcing_ratio": 0.001999442114530181
+      },
+      {
+        "pCO2_ppm": 10000.0,
+        "additive_climate_over_fixed_D17O_forcing": 0.9811781431839154,
+        "fixed_total_climate_over_fixed_D17O_forcing": 0.9871118805469191,
+        "fixed_total_minus_additive_forcing_ratio": 0.005933737363003733
+      },
+      {
+        "pCO2_ppm": 30000.0,
+        "additive_climate_over_fixed_D17O_forcing": 0.5707306865996161,
+        "fixed_total_climate_over_fixed_D17O_forcing": 0.573158249819482,
+        "fixed_total_minus_additive_forcing_ratio": 0.0024275632198659247
+      },
+      {
+        "pCO2_ppm": 60000.0,
+        "additive_climate_over_fixed_D17O_forcing": 0.4506204155623819,
+        "fixed_total_climate_over_fixed_D17O_forcing": 0.46581458481277443,
+        "fixed_total_minus_additive_forcing_ratio": 0.01519416925039252
+      }
+    ]
+  },
+  "global_O2": {
+    "maximum_absolute_D17O_difference_through_30000ppm": 0.04040939910269614,
+    "maximum_absolute_D17O_difference_full_domain": 0.22699006474431016,
+    "RMSE_between_pressure_conventions_permil": 0.08244653310579075,
+    "rows": [
+      {
+        "pCO2_ppm": 300.0,
+        "GPP_percent": 25.0,
+        "central_D17O_permil": -0.8698716398090309,
+        "additive_climate_D17O_permil": -0.8695764267602915,
+        "fixed_total_climate_D17O_permil": -0.8695498917098089,
+        "fixed_total_minus_additive_D17O_permil": 2.6535050482556777e-05,
+        "additive_climate_shift_permil": 0.0002952130487394733,
+        "fixed_total_climate_shift_permil": 0.00032174809922203007
+      },
+      {
+        "pCO2_ppm": 300.0,
+        "GPP_percent": 50.0,
+        "central_D17O_permil": -0.5777592365663311,
+        "additive_climate_D17O_permil": -0.5776084821008713,
+        "fixed_total_climate_D17O_permil": -0.5775949252977627,
+        "fixed_total_minus_additive_D17O_permil": 1.3556803108660809e-05,
+        "additive_climate_shift_permil": 0.00015075446545975701,
+        "fixed_total_climate_shift_permil": 0.00016431126856841782
+      },
+      {
+        "pCO2_ppm": 300.0,
+        "GPP_percent": 100.0,
+        "central_D17O_permil": -0.4293184465478482,
+        "additive_climate_D17O_permil": -0.42924226312168745,
+        "fixed_total_climate_D17O_permil": -0.4292354106228915,
+        "fixed_total_minus_additive_D17O_permil": 6.852498795950623e-06,
+        "additive_climate_shift_permil": 7.618342616072526e-05,
+        "fixed_total_climate_shift_permil": 8.303592495667589e-05
+      },
+      {
+        "pCO2_ppm": 300.0,
+        "GPP_percent": 150.0,
+        "central_D17O_permil": -0.37947849042867476,
+        "additive_climate_D17O_permil": -0.3794275203818515,
+        "fixed_total_climate_D17O_permil": -0.3794229354031965,
+        "fixed_total_minus_additive_D17O_permil": 4.5849786550200555e-06,
+        "additive_climate_shift_permil": 5.0970046823251014e-05,
+        "fixed_total_climate_shift_permil": 5.555502547827107e-05
+      },
+      {
+        "pCO2_ppm": 1000.0,
+        "GPP_percent": 25.0,
+        "central_D17O_permil": -2.1447533000579315,
+        "additive_climate_D17O_permil": -2.153237762224139,
+        "fixed_total_climate_D17O_permil": -2.154108799098123,
+        "fixed_total_minus_additive_D17O_permil": -0.0008710368739839325,
+        "additive_climate_shift_permil": -0.008484462166207685,
+        "fixed_total_climate_shift_permil": -0.009355499040191617
+      },
+      {
+        "pCO2_ppm": 1000.0,
+        "GPP_percent": 50.0,
+        "central_D17O_permil": -1.244651531283519,
+        "additive_climate_D17O_permil": -1.249191601312502,
+        "fixed_total_climate_D17O_permil": -1.2496583734410251,
+        "fixed_total_minus_additive_D17O_permil": -0.00046677212852319627,
+        "additive_climate_shift_permil": -0.004540070028983045,
+        "fixed_total_climate_shift_permil": -0.005006842157506242
+      },
+      {
+        "pCO2_ppm": 1000.0,
+        "GPP_percent": 100.0,
+        "central_D17O_permil": -0.7705505955125311,
+        "additive_climate_D17O_permil": -0.7729011097541121,
+        "fixed_total_climate_D17O_permil": -0.7731429466131321,
+        "fixed_total_minus_additive_D17O_permil": -0.00024183685902001706,
+        "additive_climate_shift_permil": -0.0023505142415809477,
+        "fixed_total_climate_shift_permil": -0.0025923511006009647
+      },
+      {
+        "pCO2_ppm": 1000.0,
+        "GPP_percent": 150.0,
+        "central_D17O_permil": -0.608741153425429,
+        "additive_climate_D17O_permil": -0.6103266893897182,
+        "fixed_total_climate_D17O_permil": -0.6104898599450105,
+        "fixed_total_minus_additive_D17O_permil": -0.0001631705552922469,
+        "additive_climate_shift_permil": -0.0015855359642892308,
+        "fixed_total_climate_shift_permil": -0.0017487065195814777
+      },
+      {
+        "pCO2_ppm": 3000.0,
+        "GPP_percent": 25.0,
+        "central_D17O_permil": -5.182241586776616,
+        "additive_climate_D17O_permil": -5.273389694811303,
+        "fixed_total_climate_D17O_permil": -5.281382987793866,
+        "fixed_total_minus_additive_D17O_permil": -0.00799329298256346,
+        "additive_climate_shift_permil": -0.09114810803468654,
+        "fixed_total_climate_shift_permil": -0.09914140101725
+      },
+      {
+        "pCO2_ppm": 3000.0,
+        "GPP_percent": 50.0,
+        "central_D17O_permil": -2.9697195701528716,
+        "additive_climate_D17O_permil": -3.024546446408065,
+        "fixed_total_climate_D17O_permil": -3.0293786298077126,
+        "fixed_total_minus_additive_D17O_permil": -0.004832183399647416,
+        "additive_climate_shift_permil": -0.05482687625519356,
+        "fixed_total_climate_shift_permil": -0.059659059654840974
+      },
+      {
+        "pCO2_ppm": 3000.0,
+        "GPP_percent": 100.0,
+        "central_D17O_permil": -1.693412955082844,
+        "additive_climate_D17O_permil": -1.723693548518194,
+        "fixed_total_climate_D17O_permil": -1.7263694257179476,
+        "fixed_total_minus_additive_D17O_permil": -0.0026758771997537067,
+        "additive_climate_shift_permil": -0.030280593435349834,
+        "fixed_total_climate_shift_permil": -0.03295647063510354
+      },
+      {
+        "pCO2_ppm": 3000.0,
+        "GPP_percent": 150.0,
+        "central_D17O_permil": -1.238408001763824,
+        "additive_climate_D17O_permil": -1.2592999650173111,
+        "fixed_total_climate_D17O_permil": -1.261147856526515,
+        "fixed_total_minus_additive_D17O_permil": -0.0018478915092039472,
+        "additive_climate_shift_permil": -0.02089196325348719,
+        "fixed_total_climate_shift_permil": -0.022739854762691136
+      },
+      {
+        "pCO2_ppm": 10000.0,
+        "GPP_percent": 25.0,
+        "central_D17O_permil": -11.708444701124435,
+        "additive_climate_D17O_permil": -11.600900403797535,
+        "fixed_total_climate_D17O_permil": -11.641309802900231,
+        "fixed_total_minus_additive_D17O_permil": -0.04040939910269614,
+        "additive_climate_shift_permil": 0.10754429732689985,
+        "fixed_total_climate_shift_permil": 0.06713489822420371
+      },
+      {
+        "pCO2_ppm": 10000.0,
+        "GPP_percent": 50.0,
+        "central_D17O_permil": -7.481634007452961,
+        "additive_climate_D17O_permil": -7.388523461146906,
+        "fixed_total_climate_D17O_permil": -7.420437445324126,
+        "fixed_total_minus_additive_D17O_permil": -0.03191398417722002,
+        "additive_climate_shift_permil": 0.09311054630605486,
+        "fixed_total_climate_shift_permil": 0.06119656212883484
+      },
+      {
+        "pCO2_ppm": 10000.0,
+        "GPP_percent": 100.0,
+        "central_D17O_permil": -4.419386766227384,
+        "additive_climate_D17O_permil": -4.355376186139208,
+        "fixed_total_climate_D17O_permil": -4.376378278248865,
+        "fixed_total_minus_additive_D17O_permil": -0.021002092109656978,
+        "additive_climate_shift_permil": 0.06401058008817628,
+        "fixed_total_climate_shift_permil": 0.043008487978519305
+      },
+      {
+        "pCO2_ppm": 10000.0,
+        "GPP_percent": 150.0,
+        "central_D17O_permil": -3.1842613439057077,
+        "additive_climate_D17O_permil": -3.1363894853319736,
+        "fixed_total_climate_D17O_permil": -3.151873254546685,
+        "fixed_total_minus_additive_D17O_permil": -0.015483769214711618,
+        "additive_climate_shift_permil": 0.047871858573734105,
+        "fixed_total_climate_shift_permil": 0.03238808935902249
+      },
+      {
+        "pCO2_ppm": 30000.0,
+        "GPP_percent": 25.0,
+        "central_D17O_permil": -18.791401146647484,
+        "additive_climate_D17O_permil": -15.04456657323161,
+        "fixed_total_climate_D17O_permil": -15.06516822587498,
+        "fixed_total_minus_additive_D17O_permil": -0.020601652643371438,
+        "additive_climate_shift_permil": 3.7468345734158746,
+        "fixed_total_climate_shift_permil": 3.726232920772503
+      },
+      {
+        "pCO2_ppm": 30000.0,
+        "GPP_percent": 50.0,
+        "central_D17O_permil": -14.1482668041384,
+        "additive_climate_D17O_permil": -10.33891073259757,
+        "fixed_total_climate_D17O_permil": -10.362096243447155,
+        "fixed_total_minus_additive_D17O_permil": -0.023185510849584645,
+        "additive_climate_shift_permil": 3.8093560715408294,
+        "fixed_total_climate_shift_permil": 3.786170560691245
+      },
+      {
+        "pCO2_ppm": 30000.0,
+        "GPP_percent": 100.0,
+        "central_D17O_permil": -9.515256072459776,
+        "additive_climate_D17O_permil": -6.422972970930071,
+        "fixed_total_climate_D17O_permil": -6.441790980642837,
+        "fixed_total_minus_additive_D17O_permil": -0.01881800971276615,
+        "additive_climate_shift_permil": 3.0922831015297048,
+        "fixed_total_climate_shift_permil": 3.0734650918169386
+      },
+      {
+        "pCO2_ppm": 30000.0,
+        "GPP_percent": 150.0,
+        "central_D17O_permil": -7.202519451776899,
+        "additive_climate_D17O_permil": -4.701516799946558,
+        "fixed_total_climate_D17O_permil": -4.716537584395737,
+        "fixed_total_minus_additive_D17O_permil": -0.015020784449179203,
+        "additive_climate_shift_permil": 2.5010026518303414,
+        "fixed_total_climate_shift_permil": 2.4859818673811622
+      },
+      {
+        "pCO2_ppm": 60000.0,
+        "GPP_percent": 25.0,
+        "central_D17O_permil": -22.285163129514352,
+        "additive_climate_D17O_permil": -17.581350730313577,
+        "fixed_total_climate_D17O_permil": -17.794148325315362,
+        "fixed_total_minus_additive_D17O_permil": -0.21279759500178486,
+        "additive_climate_shift_permil": 4.703812399200775,
+        "fixed_total_climate_shift_permil": 4.49101480419899
+      },
+      {
+        "pCO2_ppm": 60000.0,
+        "GPP_percent": 50.0,
+        "central_D17O_permil": -18.39109685997893,
+        "additive_climate_D17O_permil": -12.863065625855443,
+        "fixed_total_climate_D17O_permil": -13.090055690599753,
+        "fixed_total_minus_additive_D17O_permil": -0.22699006474431016,
+        "additive_climate_shift_permil": 5.528031234123487,
+        "fixed_total_climate_shift_permil": 5.301041169379177
+      },
+      {
+        "pCO2_ppm": 60000.0,
+        "GPP_percent": 100.0,
+        "central_D17O_permil": -13.656752979956236,
+        "additive_climate_D17O_permil": -8.422041513679327,
+        "fixed_total_climate_D17O_permil": -8.613399506635062,
+        "fixed_total_minus_additive_D17O_permil": -0.1913579929557354,
+        "additive_climate_shift_permil": 5.234711466276909,
+        "fixed_total_climate_shift_permil": 5.043353473321174
+      },
+      {
+        "pCO2_ppm": 60000.0,
+        "GPP_percent": 150.0,
+        "central_D17O_permil": -10.884605409138908,
+        "additive_climate_D17O_permil": -6.297958617768956,
+        "fixed_total_climate_D17O_permil": -6.4552490419745405,
+        "fixed_total_minus_additive_D17O_permil": -0.15729042420558415,
+        "additive_climate_shift_permil": 4.586646791369952,
+        "fixed_total_climate_shift_permil": 4.429356367164368
+      }
+    ]
+  },
+  "interpretation": {
+    "supported": "The large high-pCO2 climate-ozone response persists under both surface-pressure conventions and is therefore not an artifact of adding CO2 to total dry pressure.",
+    "remaining_limit": "Both calculations retain the same simplified isothermal stratosphere and have been tested only at 1 PAL O2.",
+    "promotion_decision": false
+  },
+  "sources": {
+    "additive_attribution": "outputs/clima_high_pco2_attribution.json",
+    "fixed_total_attribution": "outputs/clima_high_pco2_attribution_fixed_total.json",
+    "additive_global": "outputs/clima_global_o2_response.json",
+    "fixed_total_global": "outputs/clima_global_o2_response_fixed_total.json"
+  }
+}

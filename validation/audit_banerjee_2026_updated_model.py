@@ -37,7 +37,9 @@ from updated_molecular_forward_model import (  # noqa: E402
 PO2_PAL = 1.0
 PI_GPP_PGC_PER_YEAR = 290.0
 OBSERVED_ONE_SIGMA_PPM = 4.0
-GPP_BOUNDS_PGC_PER_YEAR = (1.0, 850.0)
+GPP_BOUNDS_PGC_PER_YEAR = tuple(json.loads(
+    (ROOT / "model_data/updated_r7_response_surface_v1.json").read_text(encoding="utf-8")
+)["domain"]["gpp_pgC_per_year"])
 PACK_MODERN_CAP_DELTA17_PRIME_PERMIL = -0.432
 PACK_MODERN_DELTA18_CONVENTIONAL_PERMIL = 23.9
 

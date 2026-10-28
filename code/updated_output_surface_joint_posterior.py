@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
+from biosphere_configurations import select_surface_path
 
 from sulfate_uncertainty import SulfateLikelihoodInput
 from sulfate_likelihood_table import scalable_sulfate_likelihood as exact_sulfate_likelihood
@@ -62,6 +63,7 @@ class UpdatedJointPosteriorInput:
     po2_grid_size: int = 81
     sulfate: SulfateLikelihoodInput | None = None
     integrate_coordinate: Coordinate | None = None
+    biosphere_configuration: str = "modern_reference"
 
 
 @dataclass(frozen=True)
@@ -168,9 +170,32 @@ def _trapezoid_weights(axis: np.ndarray) -> np.ndarray:
 
 
 def _quantile(axis: np.ndarray, mass: np.ndarray, probability: float) -> float:
-    cdf = np.cumsum(mass)
-    cdf /= cdf[-1]
-    return float(np.interp(probability, cdf, axis))
+    """Invert the piecewise-linear density represented by nodal quadrature mass."""
+    axis, mass = np.asarray(axis, dtype=float), np.asarray(mass, dtype=float)
+    if (axis.ndim != 1 or len(axis) < 2 or mass.shape != axis.shape
+            or not np.all(np.isfinite(axis)) or not np.all(np.isfinite(mass))
+            or np.any(np.diff(axis) <= 0) or np.any(mass < 0)
+            or not 0 <= probability <= 1):
+        raise ValueError("Quantiles require ordered finite nodes, nonnegative weights, and a probability in [0, 1]")
+    density = mass / _trapezoid_weights(axis)
+    widths = np.diff(axis)
+    segments = .5 * (density[:-1] + density[1:]) * widths
+    cdf = np.r_[0., np.cumsum(segments)]
+    if cdf[-1] <= 0:
+        raise ValueError("Quantiles require positive total probability")
+    if probability == 0:
+        return float(axis[0])
+    if probability == 1:
+        return float(axis[-1])
+    target = probability * cdf[-1]
+    index = min(int(np.searchsorted(cdf, target, side="left"))-1, len(widths)-1)
+    area_per_width = (target-cdf[index])/widths[index]
+    left, right = density[index:index+2]
+    # Stable quadratic inversion of the integrated linear density in this cell.
+    discriminant = max(0., left*left + 2.*(right-left)*area_per_width)
+    denominator = left + np.sqrt(discriminant)
+    fraction = 2.*area_per_width/denominator if denominator > 0 else 0.
+    return float(axis[index] + widths[index]*np.clip(fraction, 0., 1.))
 
 
 def _edge_probability(
@@ -257,7 +282,9 @@ def joint_updated_posterior(
     ):
         raise ValueError("cell integration requires a free coordinate and a Gaussian air likelihood")
 
+    surface_path = select_surface_path(surface_path, request.biosphere_configuration)
     surface = load_updated_output_surface(str(Path(surface_path).resolve()))
+    surface.require_configuration(request.biosphere_configuration)
     axes: dict[Coordinate, np.ndarray] = {}
     priors: dict[Coordinate, np.ndarray] = {}
     weights: dict[Coordinate, np.ndarray] = {}

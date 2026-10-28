@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "default": "modern_reference",
+  "configurations": {
+    "modern_reference": {
+      "version": "modern_reference_v1",
+      "label": "Modern reference",
+      "description": "Inherited central mixed terrestrial-marine budget; 185/290 land production.",
+      "implementation": "inherited_central_biological_member",
+      "land_production_fraction": 0.6379310344827587,
+      "status": "Existing reference configuration; no biological parameters changed"
+    },
+    "marine_endmember": {
+      "version": "marine_blunier2012_light_active_v2",
+      "numerical_validation": {
+        "central_direct_column_D17_maximum_absolute_error_permil": 0.0015517406984564275,
+        "central_direct_column_delta18_prime_maximum_absolute_error_permil": 0.10595223320571279,
+        "scope": "180 unreduced comparisons: 152 mean-isoflux states and 14 at each one-sigma source-isoflux endpoint; sampled discrepancies, not continuous bounds"
+      },
+      "label": "Marine biosphere end member",
+      "description": "Marine-only light-active reference following the Blunier (2012) surface uptake prose (0.514) and interior reference (0.516), supported by original Angert/Helman process data; fixed reference seawater/20C and no geological age assigned.",
+      "implementation": "effective_marine_budget",
+      "land_production_fraction": 0.0,
+      "marine_atmospheric_accessibility": 1.0,
+      "source_alpha18": 1.0,
+      "source_alpha17": 1.0,
+      "surface_respiration_fraction": 0.95,
+      "interior_respiration_fraction": 0.05,
+      "surface_respiration_alpha18": 0.978,
+      "interior_respiration_alpha18": 0.988,
+      "surface_respiration_log_exponent": 0.514,
+      "interior_respiration_log_exponent": 0.516,
+      "reference_sea_surface_temperature_c": 20.0,
+      "equilibrium_epsilon18_intercept_permil": 0.8746,
+      "equilibrium_epsilon18_temperature_slope_permil_per_c": -0.0083,
+      "equilibrium_log_exponent": 0.5284,
+      "reference_seawater_delta18_permil": 0.0,
+      "reference_seawater_D528_permil": 0.0,
+      "source_doi": "10.5194/cp-8-1509-2012",
+      "source_url": "https://cp.copernicus.org/articles/8/1509/2012/",
+      "source_locations": "Blunier (2012) p.1514 marine prose, Tables2-3 and Eq.9; Angert (2003) Eqs.5-6 and paragraph42; Helman (2005) TableII and photorespiratory 2:1 uptake discussion",
+      "parameter_authority": {
+        "respiration_and_equilibrium": "Published model assumptions and fractionation formula, not fitted here",
+        "zero_source_fractionation": "Published baseline; the effective mixed-layer respiratory fractionation already incorporates photosynthetic recycling",
+        "pure_marine": "User-authorized limiting scenario, not a measured historical land fraction",
+        "20_c_and_reference_seawater": "Explicit fixed reference choices, not reconstructed Paleozoic conditions",
+        "accessibility": "Inherited full atmospheric accessibility; not a new gas-transfer or ocean-ventilation model"
+      },
+      "source_qualification": "Source-reconstructed light-active mixture supports the prose surface exponent 0.514, with interior 0.516. Fractions/taxonomy are model assumptions; not a universal marine law or author-confirmed erratum.",
+      "gpp_definition": "Inherited OXYTIB oxygen-equivalent gross turnover: major-O2 production = GPP(PgC/yr)*1e15/12.0107, with full accessibility. No new carbon-to-oxygen or photorespiration multiplier.",
+      "status": "Fixed optional configuration; implementation and validation scope are recorded in model_data/publication_model_contract_v1.json",
+      "supporting_source_dois": [
+        "10.1029/2002GB001933",
+        "10.1104/pp.105.063768",
+        "10.5194/cp-8-1509-2012"
+      ]
+    }
+  }
+}

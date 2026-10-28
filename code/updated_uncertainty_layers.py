@@ -183,6 +183,8 @@ def decompose_updated_uncertainty(
 
     prediction = run_updated_accelerated_forward(request, surface_path=surface_path)
     contract = _load_contract(str(Path(contract_path).resolve()))
+    if contract["central_model_data_id"] != prediction.upstream_model_data_id:
+        raise ValueError("uncertainty contract and atmospheric model identities differ")
     policy = contract["policy"]
     central = float(prediction.central_cap_delta17_prime_permil)
     measurement = MeasurementLayer(
@@ -210,7 +212,9 @@ def decompose_updated_uncertainty(
     biology = _interval(
         prediction.biological_process_interval_cap_delta17_permil,
         central,
-        interpretation="source-backed biological literature-corner envelope",
+        interpretation=("source-backed biological literature-corner envelope"
+                        if request.biosphere_configuration == "modern_reference" else
+                        "fixed marine biology; biological parameter uncertainty unassessed"),
     )
     crossed = _interval(
         prediction.combined_process_interval_cap_delta17_permil,
@@ -218,6 +222,8 @@ def decompose_updated_uncertainty(
         interpretation=(
             "crossed Adnew source-isoflux endpoints and biological corner ensemble; "
             "not a confidence interval"
+            if request.biosphere_configuration == "modern_reference" else
+            "Adnew source-isoflux endpoints conditional on fixed marine biology"
         ),
     )
     kernel_lower, kernel_upper = (

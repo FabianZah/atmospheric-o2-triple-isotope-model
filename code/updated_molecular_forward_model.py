@@ -17,6 +17,8 @@ from typing import Any
 
 import numpy as np
 
+from biosphere_configurations import configuration, configured_budget
+
 from biological_o2_ensemble import (
     BiologicalEnsembleMember,
     biological_ensemble_members,
@@ -52,6 +54,7 @@ class UpdatedForwardInput:
     p_o2_pal: float = 1.0
     p_co2_ppm: float = 294.0
     gpp_pgC_per_year: float = 290.0
+    biosphere_configuration: str = "modern_reference"
 
 
 @dataclass(frozen=True)
@@ -103,11 +106,10 @@ class UpdatedCentralForcing:
     def biological_budget(
         self, photochemical: IsotopologueTendency
     ) -> PartitionedBiologicalO2Budget:
-        return fixed_po2_partitioned_biological_budget(
-            self.biological_member,
-            po2_pal=self.request.p_o2_pal,
-            gpp_pgC_per_year=self.request.gpp_pgC_per_year,
-            photochemical=photochemical,
+        return configured_budget(
+            self.request.biosphere_configuration, self.request, photochemical,
+            biological_member=(self.biological_member
+                if self.request.biosphere_configuration == "modern_reference" else None),
         )
 
 
@@ -166,6 +168,7 @@ def _load_bundle(path_text: str) -> tuple[dict[str, object], LocalR7ResponseSurf
 
 
 def _validate_input(request: UpdatedForwardInput, bundle: dict[str, object]) -> None:
+    configuration(request.biosphere_configuration)
     values = np.asarray(
         (request.p_o2_pal, request.p_co2_ppm, request.gpp_pgC_per_year),
         dtype=float,
@@ -223,11 +226,9 @@ def _solve_sample(
             major_o2_moles_1pal=GLOBAL_MAJOR_O2_MOLES_1PAL,
         )
         photo = _scaled_tendency(native_photo, scale, sample=sample)
-        biology = fixed_po2_partitioned_biological_budget(
-            member,
-            po2_pal=request.p_o2_pal,
-            gpp_pgC_per_year=request.gpp_pgC_per_year,
-            photochemical=photo,
+        biology = configured_budget(
+            request.biosphere_configuration, request, photo,
+            biological_member=(member if request.biosphere_configuration == "modern_reference" else biological_member),
             marine_accessible_fraction=marine_accessible_fraction,
             marine_accessibility_source=marine_accessibility_source,
         )
@@ -367,7 +368,8 @@ def run_updated_forward(
     )
     source_interval = (float(np.min(source_values)), float(np.max(source_values)))
 
-    compact_members = compact_biological_envelope_members()
+    modern = request.biosphere_configuration == "modern_reference"
+    compact_members = compact_biological_envelope_members() if modern else ()
     combined_solved = {
         (sample, member.key): _solve_sample(
             surface,
@@ -382,8 +384,12 @@ def run_updated_forward(
     combined_values = {
         key: float(result.state[1]) for key, result in combined_solved.items()
     }
+    if not modern:
+        combined_solved = {(sample, "marine_fixed"): result for sample, result in solved.items()}
+        combined_values = {key: float(result.state[1]) for key, result in combined_solved.items()}
     biological_values = np.asarray(
         [combined_values[("mean", member.key)] for member in compact_members]
+        if modern else [float(solved["mean"].state[1])]
     )
     biological_interval = (
         float(np.min(biological_values)),
@@ -398,6 +404,9 @@ def run_updated_forward(
     interpolation_guardrail = float(
         bundle["validation"]["cap_delta17_maximum_absolute_residual_permil"]
     )
+    if not modern:
+        interpolation_guardrail = configuration(request.biosphere_configuration)[
+            "numerical_validation"]["central_direct_column_D17_maximum_absolute_error_permil"]
     model_interval = (
         combined_interval[0] - interpolation_guardrail,
         combined_interval[1] + interpolation_guardrail,
@@ -469,7 +478,7 @@ def run_updated_forward(
         },
         uncertainty_policy={
             "Adnew_source_isoflux_propagated": True,
-            "biological_literature_corner_envelope_propagated": True,
+            "biological_literature_corner_envelope_propagated": modern,
             "response_surface_holdout_error_propagated_as_guardrail": True,
             "Pack_analytical_uncertainty_used_only_for_observation_overlap": True,
             "output_offset_applied": False,
@@ -482,9 +491,9 @@ def run_updated_forward(
             "source as interpreted by Young et al. (2014); proportional Young "
             "respiration pathways; midpoint of Bender et al. (1994) terrestrial "
             "source-water interval; no atmospheric-O2 isotope calibration"
-        ),
-        biological_pathway_uncertainty_included=True,
-        biological_full_ensemble_member_count=len(biological_ensemble_members()),
+        ) if modern else configuration(request.biosphere_configuration)["description"],
+        biological_pathway_uncertainty_included=modern,
+        biological_full_ensemble_member_count=len(biological_ensemble_members()) if modern else 0,
         biological_compact_envelope_member_keys=tuple(
             item.key for item in compact_members
         ),

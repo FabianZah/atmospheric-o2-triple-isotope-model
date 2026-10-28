@@ -177,14 +177,37 @@ def solve_mechanistic_fixed_point_with_hybr_fallback(
     It changes no physical equation, relaxation coefficient, or target state.
     """
 
-    primary = solve_mechanistic_fixed_point(
-        evaluate_target,
-        initial_state,
-        finite_difference_step=finite_difference_step,
-        tolerance=tolerance,
-        maximum_iterations=maximum_iterations,
-        maximum_condition=maximum_condition,
-    )
+    primary_evaluations = 0
+    invalid_trial_restart = False
+
+    def primary_target(state: np.ndarray) -> np.ndarray:
+        nonlocal primary_evaluations
+        primary_evaluations += 1
+        return evaluate_target(state)
+
+    try:
+        primary = solve_mechanistic_fixed_point(
+            primary_target,
+            initial_state,
+            finite_difference_step=finite_difference_step,
+            tolerance=tolerance,
+            maximum_iterations=maximum_iterations,
+            maximum_condition=maximum_condition,
+        )
+    except ValueError as error:
+        # A Newton trial can leave the positive source-term domain although
+        # the physical steady root exists. Restart the same residual from the
+        # caller's valid initial state; unrelated validation errors propagate.
+        if str(error) != "fixed photochemical flux overwhelms an O2 source term":
+            raise
+        target = np.asarray(primary_target(initial_state), dtype=float)
+        state = np.asarray(initial_state, dtype=float).copy()
+        primary = FixedPointResult(
+            state=state, target=target, converged=False,
+            maximum_absolute_residual=float(np.max(np.abs(target-state))),
+            target_evaluations=primary_evaluations, history=(),
+        )
+        invalid_trial_restart = True
     if primary.converged:
         return primary
 
@@ -198,11 +221,14 @@ def solve_mechanistic_fixed_point_with_hybr_fallback(
             raise ValueError("fallback fixed-point target must be finite and state aligned")
         return target - state
 
+    options = {"xtol": min(tolerance * 0.01, 1.0e-10), "maxfev": 400}
+    if invalid_trial_restart:
+        options["factor"] = 0.1
     fallback = root(
         residual,
         primary.state,
         method="hybr",
-        options={"xtol": min(tolerance * 0.01, 1.0e-10), "maxfev": 400},
+        options=options,
     )
     state = np.asarray(fallback.x, dtype=float)
     target = np.asarray(evaluate_target(state), dtype=float)
@@ -235,5 +261,6 @@ def solve_mechanistic_fixed_point_with_hybr_fallback(
         maximum_absolute_residual=maximum_residual,
         target_evaluations=primary.target_evaluations + fallback_evaluations,
         history=history,
-        solver_method="undamped_newton_then_scipy_hybr",
+        solver_method=("newton_inadmissible_trial_then_scipy_hybr"
+                       if invalid_trial_restart else "undamped_newton_then_scipy_hybr"),
     )

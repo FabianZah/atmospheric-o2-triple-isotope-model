@@ -13,8 +13,8 @@ from updated_output_surface import (
 
 def test_release_metadata_and_domain() -> None:
     surface = load_updated_output_surface()
-    assert surface.surface_data_id == "updated_molecular_output_surface_v1"
-    assert surface.upstream_model_data_id == "updated_r7_response_surface_v1"
+    assert surface.surface_data_id == "r5_r7_refined_private_20261015_output"
+    assert surface.upstream_model_data_id == "r5_r7_refined_private_20261015"
     assert surface.domain == {
         "po2_pal": (0.1, 2.0),
         "pco2_ppm": (50.0, 60000.0),
@@ -22,7 +22,7 @@ def test_release_metadata_and_domain() -> None:
     }
     assert surface.delta18_acceleration_validated is True
     assert surface.maximum_holdout_cap_delta17_residual_permil == pytest.approx(
-        0.004940448570907918
+        0.0039938830673484915
     )
 
 

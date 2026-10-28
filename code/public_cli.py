@@ -33,6 +33,7 @@ from young_global_o2_budget import GLOBAL_MAJOR_O2_MOLES_1PAL
 
 def _forward_input(args: argparse.Namespace, prefix: str = "") -> UpdatedForwardInput:
     return UpdatedForwardInput(
+        biosphere_configuration=args.biosphere,
         p_o2_pal=getattr(args, f"{prefix}po2"),
         p_co2_ppm=getattr(args, f"{prefix}pco2"),
         gpp_pgC_per_year=getattr(args, f"{prefix}gpp"),
@@ -109,6 +110,7 @@ def _write_transient(
 
 
 def _add_state(parser: argparse.ArgumentParser, prefix: str = "") -> None:
+    parser.add_argument("--biosphere", choices=("modern_reference", "marine_endmember"), default="modern_reference")
     parser.add_argument(f"--{prefix}po2", type=float, default=1.0, metavar="PAL")
     parser.add_argument(f"--{prefix}pco2", type=float, default=294.0, metavar="PPM")
     parser.add_argument(f"--{prefix}gpp", type=float, default=290.0, metavar="PGC_YR")
@@ -212,6 +214,7 @@ def _run(args: argparse.Namespace) -> None:
                 raise ValueError("--lower and --upper must be supplied together")
             bounds = (args.lower, args.upper)
         request = UpdatedSurfaceInverseInput(
+            biosphere_configuration=args.biosphere,
             target_air_cap_delta17_permil=args.target_d17o,
             solve_for=args.solve_for,
             measurement_uncertainty_permil=args.sigma,
@@ -252,6 +255,7 @@ def _run(args: argparse.Namespace) -> None:
         if args.final_value is None:
             raise ValueError("--final-value is required for pCO2, pO2, and GPP steps")
         final = UpdatedForwardInput(
+            biosphere_configuration=initial.biosphere_configuration,
             p_o2_pal=args.final_value if args.experiment == "pO2" else initial.p_o2_pal,
             p_co2_ppm=args.final_value if args.experiment == "pCO2" else initial.p_co2_ppm,
             gpp_pgC_per_year=(args.final_value if args.experiment == "GPP" else initial.gpp_pgC_per_year),

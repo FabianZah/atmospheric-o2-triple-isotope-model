@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OXYTIB</title>
-  <link rel="stylesheet" href="assets/styles.css?v=1.27.0">
+  <link rel="stylesheet" href="assets/styles.css?v=biology-ui-20261020b">
   <script defer src="assets/mathjax-config.js?v=1.0.0"></script>
   <script defer src="assets/vendor/mathjax/tex-svg.js?v=3.2.2"></script>
-  <script defer src="assets/app.js?v=1.27.0"></script>
+  <script defer src="assets/app.js?v=biology-ui-20261020b"></script>
 </head>
 <body>
   <header class="topbar">
@@ -226,6 +226,16 @@
             </fieldset>
           </div>
 
+          <div class="input-group" id="biosphere-controls">
+            <label for="biosphere">Biological configuration</label>
+            <select id="biosphere" aria-describedby="biosphere-purpose biosphere-description">
+              <option value="modern_reference">Modern land–ocean mix (default)</option>
+              <option value="marine_endmember">Marine-only biosphere</option>
+            </select>
+            <p class="input-description" id="biosphere-purpose">Sets the isotope effects of photosynthesis and respiration.</p>
+            <p class="input-description" id="biosphere-description" aria-live="polite">About 64% of total GPP on land and 36% in the ocean, with their respective isotope effects.</p>
+          </div>
+
           <button class="primary-command" id="run-solver" type="button">Calculate constrained solution</button>
           <p class="error-message" id="solver-error" role="alert"></p>
           <div class="calculation-progress solver-progress hidden" id="solver-progress" role="status" aria-live="polite">
@@ -298,6 +308,18 @@
         <label><span class="control-label">GPP minimum <small>% modern</small></span><input id="surface-ymin" type="text" inputmode="decimal" value="6.3"></label>
         <label><span class="control-label">GPP maximum <small>% modern</small></span><input id="surface-ymax" type="text" inputmode="decimal" value="150"></label>
         <label><span class="control-label">pO<sub>2</sub> <small>PAL</small></span><input id="surface-po2" type="text" inputmode="decimal" value="1.00"></label>
+        <div class="surface-biology" id="surface-biosphere-controls">
+          <label for="surface-biosphere"><span class="control-label">Biological configuration</span>
+            <select id="surface-biosphere" aria-describedby="surface-biosphere-purpose surface-biosphere-description">
+              <option value="modern_reference">Modern land–ocean mix (default)</option>
+              <option value="marine_endmember">Marine-only biosphere</option>
+            </select>
+          </label>
+          <div class="surface-biology-description">
+            <p class="input-description" id="surface-biosphere-purpose">Sets the isotope effects of photosynthesis and respiration.</p>
+            <p class="input-description" id="surface-biosphere-description" aria-live="polite">About 64% of total GPP on land and 36% in the ocean, with their respective isotope effects.</p>
+          </div>
+        </div>
       </div>
       <p class="error-message" id="surface-error" role="alert"></p>
       <div class="surface-layout" id="isotope-surface-view">
@@ -403,6 +425,7 @@
           <details><summary>What do model limits and boundary-limited results mean?</summary><p>The solver shows the accepted input ranges and flags entries outside them. A boundary-limited result occurs when appreciable posterior probability reaches an edge of the accepted model domain. Compatible states may extend beyond that edge, so the inferred interval is only partially constrained. A peak at the boundary should be interpreted together with the warning and the entered constraints.</p></details>
           <details><summary>How do steady-state results and time-response experiments differ?</summary><p>The isotope field and model solver describe steady states. Select <strong>O₂ isotope composition</strong> to predict atmospheric Δ′<sup>17</sup>O and δ<sup>18</sup>O from pCO<sub>2</sub>, GPP, and pO<sub>2</sub>. Uncertain input constraints produce isotope medians and central 95% propagated intervals. Time response follows adjustment after an imposed change in pCO<sub>2</sub>, GPP, pO<sub>2</sub>, or photosynthesis. Year zero marks the start of the change, including a gradual pCO<sub>2</sub> trajectory; negative times show the initial state. Operational equilibrium is reached when both isotope coordinates enter and remain within 0.001‰ of the long-run state. The equilibrium search is independent of the displayed duration and extends to 100,000 years.</p></details>
           <details><summary>How long do calculations take?</summary><p>Most fixed-constraint calculations finish within seconds. Narrow probability fields may require automatic grid refinement and take a few minutes. Time-response experiments solve adaptive differential equations; the photosynthesis step integrates the coupled carbon, O<sub>2</sub>, and isotope response over the equilibrium-search horizon. Runtime also depends on the selected constraints, experiment duration, and server load. When the server is busy, a waiting indicator appears and the calculation starts automatically when capacity becomes available.</p></details>
+          <details><summary>What does the biological configuration change, and which should I choose?</summary><p>This setting selects the photosynthetic source-water compositions and respiratory isotope effects used to calculate atmospheric O<sub>2</sub> isotopes. Changing it can therefore change the predicted isotope composition or the inferred pCO<sub>2</sub>, GPP or pO<sub>2</sub>.</p><p><strong>Modern land–ocean mix</strong> is the default reference, with approximately 64% terrestrial and 36% marine GPP. <strong>Marine-only biosphere</strong> represents fully marine production and respiration, using reference seawater (δ<sup>18</sup>O = 0‰ VSMOW and Δ′<sup>17</sup>O = 0‰), a 20 °C reference temperature and full atmospheric accessibility of marine oxygen turnover. Choose the configuration appropriate to the biosphere being investigated.</p><p>Both retain the entered total GPP and the same definition of 100% modern GPP. In <strong>Model solver</strong>, the selection also applies to <strong>Time response</strong>. <strong>Isotope field</strong> has its own independent selector.</p></details>
           <details><summary>Can the model be applied to ancient atmospheres?</summary><p>Yes, when the requested state lies inside the accepted model domain and independent evidence constrains the other atmospheric coordinates. Geological interpretations should also consider structural model uncertainty and the applicability of the model assumptions to the investigated interval.</p></details>
           <details><summary>How are cosmic-spherule inputs converted?</summary><p>Enter the I-type cosmic spherule's Δ′<sup>17</sup>O and δ<sup>18</sup>O with their analytical 1σ uncertainties. The measurements and uncertainties are converted to atmospheric O<sub>2</sub> using Zahnow et al. (2025), Eq. 3, calibrated by Fischer et al. (2021). Calibration-parameter sensitivity is assessed separately.</p></details>
           <details><summary>What does the sulfate input require?</summary><p>Enter the sulfate isotope measurements and uncertainties, the air-derived oxygen percentage, and the non-air component's Δ′<sup>17</sup>O after sulfate formation and exchange. Both process inputs accept a fixed value, 1σ uncertainty or exact range. Choose constraints appropriate to a preserved or independently reconstructed primary sulfate signal. The prefilled isotope values and analytical errors are illustrative examples.</p></details>
@@ -466,6 +489,37 @@
             <strong>Wogan, N. F., et al. (2025)</strong>
             <span>The open-source Photochem code: A general chemical and climate model for interpreting (exo)planet observations. <i>The Planetary Science Journal</i>, 6, 256.</span>
             <a href="https://doi.org/10.3847/PSJ/ae0e1c" target="_blank" rel="noopener noreferrer">doi:10.3847/PSJ/ae0e1c</a>
+          </article>
+        </div>
+      </section>
+
+      <section class="reference-group" aria-labelledby="references-biology">
+        <h3 id="references-biology">Biological sources and isotope effects</h3>
+        <div class="reference-list">
+          <article>
+            <strong>Bender, M., Sowers, T., &amp; Labeyrie, L. (1994)</strong>
+            <span>The Dole Effect and its variations during the last 130,000 years as measured in the Vostok Ice Core. <i>Global Biogeochemical Cycles</i>, 8, 363–376.</span>
+            <a href="https://doi.org/10.1029/94GB00724" target="_blank" rel="noopener noreferrer">doi:10.1029/94GB00724</a>
+          </article>
+          <article>
+            <strong>Angert, A., Rachmilevitch, S., Barkan, E., &amp; Luz, B. (2003)</strong>
+            <span>Effects of photorespiration, the cytochrome pathway, and the alternative pathway on the triple isotopic composition of atmospheric O<sub>2</sub>. <i>Global Biogeochemical Cycles</i>, 17, 1030.</span>
+            <a href="https://doi.org/10.1029/2002GB001933" target="_blank" rel="noopener noreferrer">doi:10.1029/2002GB001933</a>
+          </article>
+          <article>
+            <strong>Helman, Y., Barkan, E., Eisenstadt, D., Luz, B., &amp; Kaplan, A. (2005)</strong>
+            <span>Fractionation of the three stable oxygen isotopes by oxygen-producing and oxygen-consuming reactions in photosynthetic organisms. <i>Plant Physiology</i>, 138, 2292–2298.</span>
+            <a href="https://doi.org/10.1104/pp.105.063768" target="_blank" rel="noopener noreferrer">doi:10.1104/pp.105.063768</a>
+          </article>
+          <article>
+            <strong>Barkan, E., &amp; Luz, B. (2011)</strong>
+            <span>The relationships among the three stable isotopes of oxygen in air, seawater and marine photosynthesis. <i>Rapid Communications in Mass Spectrometry</i>, 25, 2367–2369.</span>
+            <a href="https://doi.org/10.1002/rcm.5125" target="_blank" rel="noopener noreferrer">doi:10.1002/rcm.5125</a>
+          </article>
+          <article>
+            <strong>Blunier, T., Bender, M. L., Barnett, B., &amp; von Fischer, J. C. (2012)</strong>
+            <span>Planetary fertility during the past 400 ka based on the triple isotope composition of O<sub>2</sub> in trapped gases from the Vostok ice core. <i>Climate of the Past</i>, 8, 1509–1526.</span>
+            <a href="https://doi.org/10.5194/cp-8-1509-2012" target="_blank" rel="noopener noreferrer">doi:10.5194/cp-8-1509-2012</a>
           </article>
         </div>
       </section>

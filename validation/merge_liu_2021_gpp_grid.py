@@ -196,8 +196,8 @@ def shape_metrics(
                         "GPP_percent": gpp,
                         "available_state_count": int(len(values)),
                         "more_negative_with_pCO2": bool(
-                            len(values) >= 2 and np.all(np.diff(values) < 0.0)
-                        ),
+                            np.all(np.diff(values) < 0.0)
+                        ) if len(values) >= 2 else None,
                     }
                 )
         for pco2 in sorted({float(row["pCO2_ppm"]) for row in rows}):
@@ -224,8 +224,8 @@ def shape_metrics(
                         "pCO2_ppm": pco2,
                         "available_state_count": int(len(values)),
                         "less_negative_with_GPP": bool(
-                            len(values) >= 2 and np.all(np.diff(values) > 0.0)
-                        ),
+                            np.all(np.diff(values) > 0.0)
+                        ) if len(values) >= 2 else None,
                     }
                 )
     liu_response = np.asarray(
@@ -246,11 +246,15 @@ def shape_metrics(
         "response_mean_bias_permil": float(np.mean(difference)),
         "response_max_abs_difference_permil": float(np.max(np.abs(difference))),
         "all_pCO2_direction_checks_pass": all(
-            bool(row["more_negative_with_pCO2"]) for row in pco2_checks
-        ),
+            row["more_negative_with_pCO2"] for row in pco2_checks
+            if row["more_negative_with_pCO2"] is not None
+        ) and any(row["model"] == updated_label and row["more_negative_with_pCO2"] is not None for row in pco2_checks),
         "all_GPP_direction_checks_pass": all(
-            bool(row["less_negative_with_GPP"]) for row in gpp_checks
-        ),
+            row["less_negative_with_GPP"] for row in gpp_checks
+            if row["less_negative_with_GPP"] is not None
+        ) and any(row["model"] == updated_label and row["less_negative_with_GPP"] is not None for row in gpp_checks),
+        "unassessed_pCO2_curve_count": sum(row["more_negative_with_pCO2"] is None for row in pco2_checks),
+        "unassessed_GPP_curve_count": sum(row["less_negative_with_GPP"] is None for row in gpp_checks),
         "pCO2_direction_checks": pco2_checks,
         "GPP_direction_checks": gpp_checks,
     }

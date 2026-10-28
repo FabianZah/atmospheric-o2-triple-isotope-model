@@ -5,6 +5,28 @@ coordinate priors are unchanged by these numerical improvements.
 
 ## Integrating an uncertain coordinate
 
+### Marginal medians and credible intervals
+
+The joint and refined-field posterior stores density at grid nodes together
+with trapezoidal quadrature weights. For a marginal density, the quantile
+calculation recovers the nodal density from those weights, integrates its
+piecewise-linear interpolant over each interval, and inverts that integral.
+Thus probability accumulates between nodes, including on irregular or
+logarithmically spaced grids. Medians and equal-tailed interval endpoints use
+this continuous cumulative distribution. The priors, likelihood, posterior
+normalization and highest-density-region calculation are unchanged.
+
+`validation/test_posterior_quantiles.py` checks exact uniform and triangular
+densities, zero-density gaps, normalization invariance, truncated Gaussian
+convergence and a sulfate posterior evaluated on four successively refined
+grids. This avoids a half-cell bias from interpreting cumulative nodal
+quadrature weights as cumulative probability at the nodes.
+The browser uses the same interval integration for plot zoom bounds, checked
+by `node validation/test_browser_quantiles.cjs`. Displayed medians and credible
+intervals continue to use the server's returned summaries.
+
+### Coordinate integration
+
 For Gaussian air observations (including the existing converted-spherule
 observation), a three-coordinate constrained calculation integrates the
 coordinate absent from the displayed pair. This is pO2 when the displayed

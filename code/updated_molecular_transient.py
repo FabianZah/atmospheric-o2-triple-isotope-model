@@ -106,6 +106,8 @@ def run_updated_transient(request: UpdatedTransientInput) -> UpdatedTransientRes
         raise ValueError("transient requires at least two output samples")
 
     initial_state = run_updated_central_state(request.initial)
+    if request.initial.biosphere_configuration != request.final.biosphere_configuration:
+        raise ValueError("A state step must retain the same biosphere configuration")
     final_state = run_updated_central_state(request.final)
     po2_changed = not np.isclose(
         request.initial.p_o2_pal,

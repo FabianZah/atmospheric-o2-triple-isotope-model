@@ -196,6 +196,7 @@ legend { margin-bottom: 8px; color: var(--muted); font-size: 12px; font-weight: 
 #sulfate-inputs .field-note { margin: 2px 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
 
 .input-group { margin-top: 17px; display: grid; gap: 7px; }
+.input-description { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
 .input-group label, .surface-controls label, .transient-controls label { color: var(--field-label); font-weight: 600; font-size: 12px; }
 label span { color: var(--muted); font-weight: 500; }
 input, select {
@@ -285,6 +286,8 @@ h3 { font-size: 14px; letter-spacing: 0; }
 }
 .surface-controls label, .transient-controls label { display: grid; gap: 6px; }
 .surface-controls label, .transient-controls label { white-space: nowrap; }
+.surface-biology { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(240px, 330px) minmax(0, 1fr); align-items: end; gap: 12px; }
+.surface-biology-description { display: grid; gap: 7px; }
 .surface-constraint { padding: 2px 4px; display: grid; align-content: center; gap: 7px; }
 .surface-constraint strong { font-size: 16px; font-weight: 700; }
 .control-label { display: block; color: var(--field-label); font-weight: 600; }
@@ -381,6 +384,7 @@ footer a { color: var(--teal-dark); }
   .header-citation { order: 3; width: 100%; justify-content: space-between; }
   .view { padding-inline: 12px; }
   .surface-controls, .transient-controls { grid-template-columns: 1fr 1fr; }
+  .surface-biology { grid-template-columns: minmax(0, 1fr); }
   .transient-summary { grid-template-columns: 1fr; }
   .result-strip, .reference-list { grid-template-columns: 1fr; }
   .result-strip div { border-right: 0; border-bottom: 1px solid var(--line); }

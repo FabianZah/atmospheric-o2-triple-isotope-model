@@ -14,6 +14,7 @@ from scipy.stats import qmc
 
 from updated_constrained_pco2_posterior import CoordinateConstraint, _resolve_constraint
 from updated_output_surface import load_updated_output_surface
+from biosphere_configurations import output_surface_path
 
 
 class ForwardResolutionError(RuntimeError):
@@ -29,6 +30,7 @@ class ForwardIsotopeConstraints:
     pco2_constraint: CoordinateConstraint = CoordinateConstraint("fixed", center=294.0)
     gpp_constraint: CoordinateConstraint = CoordinateConstraint("fixed", center=290.0)
     po2_constraint: CoordinateConstraint = CoordinateConstraint("fixed", center=1.0)
+    biosphere_configuration: str = "modern_reference"
 
 
 _SEEDS = (52817, 18002)
@@ -109,7 +111,10 @@ def _replicate_statistics(replicas):
 
 
 def predict_isotopes(request: ForwardIsotopeConstraints, *, surface=None):
-    surface = surface if surface is not None else load_updated_output_surface()
+    surface = surface if surface is not None else load_updated_output_surface(
+        str(output_surface_path(request.biosphere_configuration)))
+    if surface.biosphere_configuration != request.biosphere_configuration:
+        raise ValueError("Requested biology differs from the forward surface configuration")
     specs = (
         ("pCO2", request.pco2_constraint, "pco2_ppm"),
         ("GPP", request.gpp_constraint, "gpp_pgC_per_year"),

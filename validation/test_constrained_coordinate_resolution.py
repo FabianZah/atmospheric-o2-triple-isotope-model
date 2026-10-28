@@ -179,7 +179,9 @@ def test_high_co2_probability_field_has_resolved_hpd_support() -> None:
     assert result.numerical_refinement_applied is True
     assert upper - lower + 1 >= 65
     assert result.field_hpd_probability_mass == pytest.approx(0.95, abs=0.002)
-    assert result.posterior_median == pytest.approx(14_768.0, abs=75.0)
+    # Corrected-core reference: independent 2401 x 5121 tensor quadrature,
+    # checked against 1201 x 2561; physical-coordinate uniform pCO2 prior.
+    assert result.posterior_median == pytest.approx(13_512.38, abs=75.0)
 
 
 def test_precise_low_delta17_hpd_ridge_is_refined_and_connected() -> None:
@@ -208,7 +210,7 @@ def test_precise_low_delta17_hpd_ridge_is_refined_and_connected() -> None:
     assert result.field_shape == (result.effective_grid_sizes["pCO2"], result.effective_grid_sizes["GPP"])
     assert components == 1
     assert result.field_hpd_probability_mass == pytest.approx(0.95, abs=0.002)
-    assert result.posterior_median == pytest.approx(34_152.0, abs=75.0)
+    assert result.posterior_median == pytest.approx(34_810.83, abs=75.0)
     density = np.asarray(result.field_density).reshape(result.field_shape)
     mass = np.asarray(result.field_probability_mass).reshape(result.field_shape)
     assert np.array_equal(mask, density >= result.field_hpd_density_threshold)
@@ -236,7 +238,7 @@ def test_precise_fixed_low_o2_field_is_concentrated_and_resolved(solve_for):
         assert result.field_refinement_diagnostics["outer_quadrature_nodes_retained"]
         assert (result.field_x_axis[0],result.field_x_axis[-1]) == (50,60000)
         assert (result.field_y_axis[0],result.field_y_axis[-1]) == (406,638)
-        assert result.posterior_median == pytest.approx(44011,abs=25)
+        assert result.posterior_median == pytest.approx(47781.01,abs=25)
 
 
 def test_true_domain_edge_remains_boundary_sensitive_and_is_not_refined() -> None:

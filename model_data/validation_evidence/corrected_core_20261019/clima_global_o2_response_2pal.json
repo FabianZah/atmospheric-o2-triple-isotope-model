@@ -1,0 +1,409 @@
+{
+  "audit": "Clima-parent structural sensitivity propagated to global O2",
+  "status": "diagnostic_not_promoted",
+  "pO2_PAL": 2.0,
+  "pressure_convention": "additive_co2",
+  "pCO2_nodes_ppm": [
+    300.0,
+    10000.0,
+    30000.0,
+    60000.0
+  ],
+  "GPP_percent_of_updated_modern": [
+    25.0,
+    50.0,
+    100.0,
+    150.0
+  ],
+  "updated_modern_GPP_PgC_per_year": 290.0,
+  "operator_count": 4,
+  "scenario_count": 16,
+  "all_scenarios_converged": true,
+  "maximum_absolute_D17O_change_permil": 4.916248379192144,
+  "maximum_absolute_delta18_change_permil": 1.1194501604842628,
+  "maximum_climate_fixed_point_residual_permil": 4.212284743232431e-09,
+  "controlled_difference": "Only the pCO2-dependent Clima temperature anomaly and the resulting native parent chemistry differ. The updated biological budget, Adnew source-isoflux normalization, global O2 inventory, and numerical fixed-point equations are unchanged.",
+  "promotion_decision": {
+    "promote_to_released_model": false,
+    "reason": "This is a single-pO2, additive_co2 structural sensitivity using a simplified isothermal-stratosphere climate profile."
+  },
+  "operators": {
+    "300ppm": {
+      "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+      "reference_ratio_coordinates": [
+        1.0121014369677277,
+        1.0238806836957661
+      ],
+      "reference_tendency_mol_per_year": [
+        -213392725.64782968,
+        -574323796.214684,
+        787716521.8580903
+      ],
+      "ratio_jacobian_mol_per_year": [
+        [
+          23718230923.263443,
+          122146317690.5076
+        ],
+        [
+          -23830648222.844204,
+          112938765.63083649
+        ],
+        [
+          112417306.41227722,
+          -122259256466.68134
+        ]
+      ],
+      "source": "native Photochem parent 2 PAL, 300 ppm",
+      "sample_condition": 4027.285822596888,
+      "maximum_sample_residual_mol_per_year": 98.81659543514252
+    },
+    "10000ppm": {
+      "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+      "reference_ratio_coordinates": [
+        1.0121014369677277,
+        1.0238806836957661
+      ],
+      "reference_tendency_mol_per_year": [
+        -775400704.8118129,
+        -19303577300.713375,
+        20078978005.43527
+      ],
+      "ratio_jacobian_mol_per_year": [
+        [
+          770364337232.0083,
+          3968734764671.8086
+        ],
+        [
+          -773947723643.0646,
+          3599531280.213196
+        ],
+        [
+          3583386647.0981445,
+          -3972334296238.94
+        ]
+      ],
+      "source": "native Photochem parent 2 PAL, 10000 ppm",
+      "sample_condition": 4027.285822596888,
+      "maximum_sample_residual_mol_per_year": 3175.2312688827515
+    },
+    "30000ppm": {
+      "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+      "reference_ratio_coordinates": [
+        1.0121014369677277,
+        1.0238806836957661
+      ],
+      "reference_tendency_mol_per_year": [
+        17788640516.35782,
+        -41506404722.51147,
+        23717764206.288578
+      ],
+      "ratio_jacobian_mol_per_year": [
+        [
+          1580413041641.0957,
+          8147525467777.771
+        ],
+        [
+          -1587535238194.0164,
+          7157377209.569824
+        ],
+        [
+          7122196358.860352,
+          -8154682845779.2705
+        ]
+      ],
+      "source": "native Photochem parent 2 PAL, 30000 ppm",
+      "sample_condition": 4027.285822596888,
+      "maximum_sample_residual_mol_per_year": 6449.595924377441
+    },
+    "60000ppm": {
+      "coordinate_definition": "x17=exp((DeltaPrime17O+0.528*deltaPrime18O)/1000); x18=exp(deltaPrime18O/1000)",
+      "reference_ratio_coordinates": [
+        1.0121014369677277,
+        1.0238806836957661
+      ],
+      "reference_tendency_mol_per_year": [
+        42621606973.14192,
+        -55215413424.819626,
+        12593806451.526834
+      ],
+      "ratio_jacobian_mol_per_year": [
+        [
+          2052378527839.1074,
+          10590849553438.71
+        ],
+        [
+          -2061374695189.3335,
+          9035300889.902344
+        ],
+        [
+          8996167293.524414,
+          -10599884854506.188
+        ]
+      ],
+      "source": "native Photochem parent 2 PAL, 60000 ppm",
+      "sample_condition": 4027.285822596888,
+      "maximum_sample_residual_mol_per_year": 8279.26374053955
+    }
+  },
+  "rows": [
+    {
+      "pO2_PAL": 2.0,
+      "pCO2_ppm": 300.0,
+      "GPP_percent_of_updated_modern": 25.0,
+      "GPP_PgC_per_year": 72.5,
+      "fixed_delta18_prime_permil": 23.478238120196114,
+      "climate_delta18_prime_permil": 23.478207832004664,
+      "climate_minus_fixed_delta18_permil": -3.0288191450011936e-05,
+      "fixed_cap_delta17_prime_permil": -0.7393007917925305,
+      "climate_cap_delta17_prime_permil": -0.739109195290212,
+      "climate_minus_fixed_D17O_permil": 0.0001915965023184807,
+      "fixed_solver_residual_permil": 1.56097357262297e-13,
+      "climate_solver_residual_permil": 2.5979218776228663e-13,
+      "climate_target_evaluations": 7,
+      "climate_solver_method": "undamped_newton"
+    },
+    {
+      "pO2_PAL": 2.0,
+      "pCO2_ppm": 300.0,
+      "GPP_percent_of_updated_modern": 50.0,
+      "GPP_PgC_per_year": 145.0,
+      "fixed_delta18_prime_permil": 23.424569560615907,
+      "climate_delta18_prime_permil": 23.424554107056903,
+      "climate_minus_fixed_delta18_permil": -1.5453559004896533e-05,
+      "fixed_cap_delta17_prime_permil": -0.5112156234430423,
+      "climate_cap_delta17_prime_permil": -0.5111182424132054,
+      "climate_minus_fixed_D17O_permil": 9.738102983691821e-05,
+      "fixed_solver_residual_permil": 4.2876813211023546e-13,
+      "climate_solver_residual_permil": 2.7711166694643907e-13,
+      "climate_target_evaluations": 7,
+      "climate_solver_method": "undamped_newton"
+    },
+    {
+      "pO2_PAL": 2.0,
+      "pCO2_ppm": 300.0,
+      "GPP_percent_of_updated_modern": 100.0,
+      "GPP_PgC_per_year": 290.0,
+      "fixed_delta18_prime_permil": 23.39739485463838,
+      "climate_delta18_prime_permil": 23.39738704893203,
+      "climate_minus_fixed_delta18_permil": -7.805706353281039e-06,
+      "fixed_cap_delta17_prime_permil": -0.39572519724856275,
+      "climate_cap_delta17_prime_permil": -0.39567610354417915,
+      "climate_minus_fixed_D17O_permil": 4.909370438360705e-05,
+      "fixed_solver_residual_permil": 2.307598556683388e-13,
+      "climate_solver_residual_permil": 1.2811973704174306e-13,
+      "climate_target_evaluations": 7,
+      "climate_solver_method": "undamped_newton"
+    },
+    {
+      "pO2_PAL": 2.0,
+      "pCO2_ppm": 300.0,
+      "GPP_percent_of_updated_modern": 150.0,
+      "GPP_PgC_per_year": 435.0,
+      "fixed_delta18_prime_permil": 23.388285473894676,
+      "climate_delta18_prime_permil": 23.38828025239406,
+      "climate_minus_fixed_delta18_permil": -5.221500614993602e-06,
+      "fixed_cap_delta17_prime_permil": -0.35701086330605203,
+      "climate_cap_delta17_prime_permil": -0.3569780438184727,
+      "climate_minus_fixed_D17O_permil": 3.281948757932751e-05,
+      "fixed_solver_residual_permil": 1.0191847366058937e-13,
+      "climate_solver_residual_permil": 1.9184653865522705e-13,
+      "climate_target_evaluations": 7,
+      "climate_solver_method": "undamped_newton"
+    },
+    {
+      "pO2_PAL": 2.0,
+      "pCO2_ppm": 10000.0,
+      "GPP_percent_of_updated_modern": 25.0,
+      "GPP_PgC_per_year": 72.5,
+      "fixed_delta18_prime_permil": 25.21708415814463,
+      "climate_delta18_prime_permil": 25.194221640157533,
+      "climate_minus_fixed_delta18_permil": -0.02286251798709671,
+      "fixed_cap_delta17_prime_permil": -10.067837620952886,
+      "climate_cap_delta17_prime_permil": -10.11597165516914,
+      "climate_minus_fixed_D17O_permil": -0.04813403421625395,
+      "fixed_solver_residual_permil": 1.8118839761882555e-13,
+      "climate_solver_residual_permil": 1.580957587066223e-13,
+      "climate_target_evaluations": 10,
+      "climate_solver_method": "undamped_newton"
+    },
+    {
+      "pO2_PAL": 2.0,
+      "pCO2_ppm": 10000.0,
+      "GPP_percent_of_updated_modern": 50.0,
+      "GPP_PgC_per_year": 145.0,
+      "fixed_delta18_prime_permil": 24.49268362662769,
+      "climate_delta18_prime_permil": 24.479219261582482,
+      "climate_minus_fixed_delta18_permil": -0.013464365045209092,
+      "fixed_cap_delta17_prime_permil": -6.229191992130307,
+      "climate_cap_delta17_prime_permil": -6.2608749805201995,
+      "climate_minus_fixed_D17O_permil": -0.031682988389892586,
+      "fixed_solver_residual_permil": 2.854083192005419e-09,
+      "climate_solver_residual_permil": 2.9576803228792414e-09,
+      "climate_target_evaluations": 7,
+      "climate_solver_method": "undamped_newton"
+    },
+    {
+      "pO2_PAL": 2.0,
+      "pCO2_ppm": 10000.0,
+      "GPP_percent_of_updated_modern": 100.0,
+      "GPP_PgC_per_year": 290.0,
+      "fixed_delta18_prime_permil": 23.999172825917896,
+      "climate_delta18_prime_permil": 23.991792068464452,
+      "climate_minus_fixed_delta18_permil": -0.007380757453443465,
+      "fixed_cap_delta17_prime_permil": -3.613843152066198,
+      "climate_cap_delta17_prime_permil": -3.632526275298165,
+      "climate_minus_fixed_D17O_permil": -0.01868312323196708,
+      "fixed_solver_residual_permil": 3.4716229890818795e-11,
+      "climate_solver_residual_permil": 4.0037306803242245e-11,
+      "climate_target_evaluations": 7,
+      "climate_solver_method": "undamped_newton"
+    },
+    {
+      "pO2_PAL": 2.0,
+      "pCO2_ppm": 10000.0,
+      "GPP_percent_of_updated_modern": 150.0,
+      "GPP_PgC_per_year": 435.0,
+      "fixed_delta18_prime_permil": 23.807050667057457,
+      "climate_delta18_prime_permil": 23.80196826554893,
+      "climate_minus_fixed_delta18_permil": -0.0050824015085275676,
+      "fixed_cap_delta17_prime_permil": -2.595650619569485,
+      "climate_cap_delta17_prime_permil": -2.608879709471542,
+      "climate_minus_fixed_D17O_permil": -0.013229089902056845,
+      "fixed_solver_residual_permil": 2.404743071338089e-12,
+      "climate_solver_residual_permil": 3.530509218307998e-12,
+      "climate_target_evaluations": 7,
+      "climate_solver_method": "undamped_newton"
+    },
+    {
+      "pO2_PAL": 2.0,
+      "pCO2_ppm": 30000.0,
+      "GPP_percent_of_updated_modern": 25.0,
+      "GPP_PgC_per_year": 72.5,
+      "fixed_delta18_prime_permil": 25.072066851680532,
+      "climate_delta18_prime_permil": 24.985705862434227,
+      "climate_minus_fixed_delta18_permil": -0.08636098924630531,
+      "fixed_cap_delta17_prime_permil": -17.217952607136066,
+      "climate_cap_delta17_prime_permil": -15.030635923807678,
+      "climate_minus_fixed_D17O_permil": 2.1873166833283886,
+      "fixed_solver_residual_permil": 9.066525308298878e-12,
+      "climate_solver_residual_permil": 8.206768598029157e-13,
+      "climate_target_evaluations": 10,
+      "climate_solver_method": "undamped_newton"
+    },
+    {
+      "pO2_PAL": 2.0,
+      "pCO2_ppm": 30000.0,
+      "GPP_percent_of_updated_modern": 50.0,
+      "GPP_PgC_per_year": 145.0,
+      "fixed_delta18_prime_permil": 24.5959113118683,
+      "climate_delta18_prime_permil": 24.4696549384987,
+      "climate_minus_fixed_delta18_permil": -0.12625637336959983,
+      "fixed_cap_delta17_prime_permil": -12.47770347825864,
+      "climate_cap_delta17_prime_permil": -10.318850905884739,
+      "climate_minus_fixed_D17O_permil": 2.1588525723739007,
+      "fixed_solver_residual_permil": 6.767919558114954e-13,
+      "climate_solver_residual_permil": 2.2026824808563106e-13,
+      "climate_target_evaluations": 10,
+      "climate_solver_method": "undamped_newton"
+    },
+    {
+      "pO2_PAL": 2.0,
+      "pCO2_ppm": 30000.0,
+      "GPP_percent_of_updated_modern": 100.0,
+      "GPP_PgC_per_year": 290.0,
+      "fixed_delta18_prime_permil": 24.15609014537879,
+      "climate_delta18_prime_permil": 24.041013233501335,
+      "climate_minus_fixed_delta18_permil": -0.1150769118774555,
+      "fixed_cap_delta17_prime_permil": -8.100329342374213,
+      "climate_cap_delta17_prime_permil": -6.405360042062906,
+      "climate_minus_fixed_D17O_permil": 1.6949693003113069,
+      "fixed_solver_residual_permil": 2.2737367544323206e-13,
+      "climate_solver_residual_permil": 4.212284743232431e-09,
+      "climate_target_evaluations": 7,
+      "climate_solver_method": "undamped_newton"
+    },
+    {
+      "pO2_PAL": 2.0,
+      "pCO2_ppm": 30000.0,
+      "GPP_percent_of_updated_modern": 150.0,
+      "GPP_PgC_per_year": 435.0,
+      "fixed_delta18_prime_permil": 23.94852912828534,
+      "climate_delta18_prime_permil": 23.852812442435606,
+      "climate_minus_fixed_delta18_permil": -0.0957166858497338,
+      "fixed_cap_delta17_prime_permil": -6.034931462347339,
+      "climate_cap_delta17_prime_permil": -4.687144326824653,
+      "climate_minus_fixed_D17O_permil": 1.3477871355226867,
+      "fixed_solver_residual_permil": 2.635926144023415e-09,
+      "climate_solver_residual_permil": 3.1732394489836224e-10,
+      "climate_target_evaluations": 7,
+      "climate_solver_method": "undamped_newton"
+    },
+    {
+      "pO2_PAL": 2.0,
+      "pCO2_ppm": 60000.0,
+      "GPP_percent_of_updated_modern": 25.0,
+      "GPP_PgC_per_year": 72.5,
+      "fixed_delta18_prime_permil": 23.064331266760796,
+      "climate_delta18_prime_permil": 24.18378142724506,
+      "climate_minus_fixed_delta18_permil": 1.1194501604842628,
+      "fixed_cap_delta17_prime_permil": -21.07114802191063,
+      "climate_cap_delta17_prime_permil": -16.67678334315043,
+      "climate_minus_fixed_D17O_permil": 4.394364678760201,
+      "fixed_solver_residual_permil": 3.1617588547305786e-09,
+      "climate_solver_residual_permil": 6.256328788367682e-12,
+      "climate_target_evaluations": 10,
+      "climate_solver_method": "undamped_newton"
+    },
+    {
+      "pO2_PAL": 2.0,
+      "pCO2_ppm": 60000.0,
+      "GPP_percent_of_updated_modern": 50.0,
+      "GPP_PgC_per_year": 145.0,
+      "fixed_delta18_prime_permil": 23.126470472289334,
+      "climate_delta18_prime_permil": 23.94923061593366,
+      "climate_minus_fixed_delta18_permil": 0.8227601436443273,
+      "fixed_cap_delta17_prime_permil": -16.8644036510252,
+      "climate_cap_delta17_prime_permil": -11.948155271833055,
+      "climate_minus_fixed_D17O_permil": 4.916248379192144,
+      "fixed_solver_residual_permil": 7.915446076367516e-12,
+      "climate_solver_residual_permil": 3.197442310920451e-13,
+      "climate_target_evaluations": 10,
+      "climate_solver_method": "undamped_newton"
+    },
+    {
+      "pO2_PAL": 2.0,
+      "pCO2_ppm": 60000.0,
+      "GPP_percent_of_updated_modern": 100.0,
+      "GPP_PgC_per_year": 290.0,
+      "fixed_delta18_prime_permil": 23.196864135020476,
+      "climate_delta18_prime_permil": 23.737426420475753,
+      "climate_minus_fixed_delta18_permil": 0.5405622854552767,
+      "fixed_cap_delta17_prime_permil": -12.086611277539559,
+      "climate_cap_delta17_prime_permil": -7.679890012788157,
+      "climate_minus_fixed_D17O_permil": 4.406721264751402,
+      "fixed_solver_residual_permil": 3.943512183468556e-13,
+      "climate_solver_residual_permil": 8.79296635503124e-14,
+      "climate_target_evaluations": 10,
+      "climate_solver_method": "undamped_newton"
+    },
+    {
+      "pO2_PAL": 2.0,
+      "pCO2_ppm": 60000.0,
+      "GPP_percent_of_updated_modern": 150.0,
+      "GPP_PgC_per_year": 435.0,
+      "fixed_delta18_prime_permil": 23.235687341725082,
+      "climate_delta18_prime_permil": 23.639044459406026,
+      "climate_minus_fixed_delta18_permil": 0.40335711768094384,
+      "fixed_cap_delta17_prime_permil": -9.445932970152194,
+      "climate_cap_delta17_prime_permil": -5.697870436276276,
+      "climate_minus_fixed_D17O_permil": 3.7480625338759177,
+      "fixed_solver_residual_permil": 2.646771690706373e-13,
+      "climate_solver_residual_permil": 1.8537766877102513e-09,
+      "climate_target_evaluations": 7,
+      "climate_solver_method": "undamped_newton"
+    }
+  ],
+  "sources": {
+    "released_bundle": "model_data/updated_r7_response_surface_v1.json"
+  }
+}

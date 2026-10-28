@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
+from biosphere_configurations import select_surface_path
 from sulfate_uncertainty import SulfateLikelihoodInput
 from scipy.ndimage import label as connected_component_labels
 
@@ -52,6 +53,7 @@ class ConstrainedPCO2Input:
     pco2_grid_size: int = 181
     gpp_grid_size: int = 81
     po2_grid_size: int = 17
+    biosphere_configuration: str = "modern_reference"
 
 
 @dataclass(frozen=True)
@@ -68,6 +70,7 @@ class ConstrainedCoordinateInput:
     po2_grid_size: int = 41
     enforce_public_resolution: bool = True
     sulfate: SulfateLikelihoodInput | None = None
+    biosphere_configuration: str = "modern_reference"
 
 
 @dataclass(frozen=True)
@@ -415,7 +418,9 @@ def constrained_coordinate_posterior(
             f"for {request.solve_for}"
         )
 
+    surface_path = select_surface_path(surface_path, request.biosphere_configuration)
     surface = load_updated_output_surface(str(Path(surface_path).resolve()))
+    surface.require_configuration(request.biosphere_configuration)
     resolved: dict[
         Coordinate,
         tuple[float, tuple[float, float], str, float | None, float | None],
@@ -478,6 +483,7 @@ def constrained_coordinate_posterior(
 
     joint = joint_updated_posterior(
         UpdatedJointPosteriorInput(
+            biosphere_configuration=request.biosphere_configuration,
             target_air_cap_delta17_permil=request.target_air_cap_delta17_permil,
             measurement_sigma_permil=request.measurement_sigma_permil,
             target_air_delta18_conventional_permil=(
@@ -693,7 +699,9 @@ def constrained_pco2_posterior(
 ) -> ConstrainedPCO2Result:
     """Infer pCO2 while propagating explicit GPP and pO2 constraints."""
 
+    surface_path = select_surface_path(surface_path, request.biosphere_configuration)
     surface = load_updated_output_surface(str(Path(surface_path).resolve()))
+    surface.require_configuration(request.biosphere_configuration)
     gpp_center, gpp_bounds, gpp_prior, gpp_mean, gpp_sigma = _resolve_constraint(
         request.gpp_constraint,
         tuple(surface.domain["gpp_pgC_per_year"]),
@@ -713,6 +721,7 @@ def constrained_pco2_posterior(
 
     joint = joint_updated_posterior(
         UpdatedJointPosteriorInput(
+            biosphere_configuration=request.biosphere_configuration,
             target_air_cap_delta17_permil=request.target_air_cap_delta17_permil,
             measurement_sigma_permil=request.measurement_sigma_permil,
             target_air_delta18_conventional_permil=(

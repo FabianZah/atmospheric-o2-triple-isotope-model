@@ -181,10 +181,21 @@ function coordinateLabel(coordinate) {
 
 function currentForwardState() {
   return {
+    biosphere_configuration: $("biosphere").value,
     p_o2_pal: finite(number("po2"), "pO2"),
     p_co2_ppm: finite(number("pco2"), "pCO2"),
     gpp_pgC_per_year: finite(number("gpp"), "GPP") * MODERN_GPP / 100,
   };
+}
+
+function biosphereLabel(name) {
+  return name === "marine_endmember" ? "Marine-only biosphere" : "Modern land–ocean mix";
+}
+
+function updateBiosphereDescription(id = "biosphere") {
+  $(`${id}-description`).textContent = $(id).value === "marine_endmember"
+    ? "All GPP is marine, with marine isotope effects and reference seawater at 20 °C."
+    : "About 64% of total GPP on land and 36% in the ocean, with their respective isotope effects.";
 }
 
 function coordinateConstraint(coordinate) {
@@ -478,7 +489,7 @@ function renderConstrainedCoordinate(result, target, inputs, constraints, reques
   const isotopeLines = isotopeConstraintText(target).split("<br>");
   const coordinateLines = Object.entries(constraints)
     .map(([name, constraint]) => constraintText(name, constraint));
-  $("result-constraints").innerHTML = [...isotopeLines, ...coordinateLines].join("<br>");
+  $("result-constraints").innerHTML = [biosphereLabel(request.biosphere_configuration), ...isotopeLines, ...coordinateLines].join("<br>");
   const hasField = Array.isArray(result.field_density)
     && Array.isArray(result.field_probability_mass)
     && Array.isArray(result.field_x_axis);
@@ -557,8 +568,8 @@ function renderForwardIsotopes(result, constraints, request) {
   $("forward-d18-label").innerHTML = `δ<sup>18</sup>O<sub>VSMOW</sub>${uncertain ? " median" : ""}`;
   $("forward-d18-value").textContent = `${format(d18.median, 3)}‰`;
   $("forward-d18-interval").textContent = interval(d18);
-  $("result-constraints").innerHTML = Object.entries(constraints)
-    .map(([coordinate, constraint]) => constraintText(coordinate, constraint)).join("<br>");
+  $("result-constraints").innerHTML = [biosphereLabel(request.biosphere_configuration), ...Object.entries(constraints)
+    .map(([coordinate, constraint]) => constraintText(coordinate, constraint))].join("<br>");
   ["solver-marginal", "solver-probability", "solver-method-note"].forEach((id) => $(id).classList.add("hidden"));
   ["solver-marginal-canvas", "solver-probability-canvas"].forEach(clearPlot);
   $("download-result-xlsx").disabled = false;
@@ -581,7 +592,7 @@ async function runSolver() {
   try {
     if (solveFor === "isotopes") {
       const constraints = Object.fromEntries(["pCO2", "GPP", "pO2"].map((coordinate) => [coordinate, coordinateConstraint(coordinate)]));
-      const request = { pco2_constraint: constraints.pCO2, gpp_constraint: constraints.GPP, po2_constraint: constraints.pO2 };
+      const request = { biosphere_configuration: $("biosphere").value, pco2_constraint: constraints.pCO2, gpp_constraint: constraints.GPP, po2_constraint: constraints.pO2 };
       const payload = await api("/api/v1/forward/isotopes", {
         method: "POST", onComputeState: endProgress.onState, body: JSON.stringify(request),
       });
@@ -600,6 +611,7 @@ async function runSolver() {
     }
     const request = {
       solve_for: state.solveFor,
+      biosphere_configuration: $("biosphere").value,
       ...(target.sulfate ? { sulfate: target.sulfate } : {
         target_air_cap_delta17_permil: target.target,
         measurement_sigma_permil: target.sigma,
@@ -824,17 +836,27 @@ function axisTickText(coordinate, value) {
 }
 
 function posteriorQuantile(axis, probabilityMass, probability) {
-  const total = probabilityMass.reduce((sum, value) => sum + value, 0);
-  const target = probability * total;
+  if (probability === 0) return axis[0];
+  if (probability === 1) return axis[axis.length - 1];
+  const density = probabilityMass.map((mass, index) => {
+    const left = axis[Math.max(0, index - 1)];
+    const right = axis[Math.min(axis.length - 1, index + 1)];
+    return 2 * mass / (right - left);
+  });
+  const segments = axis.slice(1).map((right, index) =>
+    0.5 * (density[index] + density[index + 1]) * (right - axis[index]));
+  const target = probability * segments.reduce((sum, value) => sum + value, 0);
   let cumulative = 0;
-  for (let index = 0; index < probabilityMass.length; index += 1) {
-    const previous = cumulative;
-    cumulative += probabilityMass[index];
-    if (cumulative >= target) {
-      if (index === 0 || cumulative === previous) return axis[index];
-      const fraction = (target - previous) / (cumulative - previous);
-      return axis[index - 1] + fraction * (axis[index] - axis[index - 1]);
+  for (let index = 0; index < segments.length; index += 1) {
+    if (cumulative + segments[index] >= target) {
+      const width = axis[index + 1] - axis[index];
+      const area = (target - cumulative) / width;
+      const left = density[index], right = density[index + 1];
+      const denominator = left + Math.sqrt(Math.max(0, left * left + 2 * (right - left) * area));
+      const fraction = denominator > 0 ? 2 * area / denominator : 0;
+      return axis[index] + width * Math.max(0, Math.min(1, fraction));
     }
+    cumulative += segments[index];
   }
   return axis[axis.length - 1];
 }
@@ -1343,6 +1365,7 @@ function drawIsotopeField(result) {
     margin.left + legendWidth + 34,
     28,
   );
+  ctx.fillText(biosphereLabel(result.biosphere_configuration), margin.left + legendWidth + 34, 44);
   for (let ix = 0; ix < nx - 1; ix += 1) {
     for (let iy = 0; iy < ny - 1; iy += 1) {
       const index = ix * ny + iy;
@@ -1425,6 +1448,7 @@ async function runIsotopeField() {
       onComputeState: (status) => setBusy(button, true, status === "waiting" ? "Waiting…" : "Calculating…"),
       body: JSON.stringify({
         p_o2_pal: finite(number("surface-po2"), "Isotope-field pO2"),
+        biosphere_configuration: $("surface-biosphere").value,
         pco2_bounds_ppm: [xmin, xmax],
         gpp_bounds_pgC_per_year: [ymin * MODERN_GPP / 100, ymax * MODERN_GPP / 100],
         pco2_grid_size: 241,
@@ -1706,6 +1730,7 @@ async function runTransient() {
       transitionD18Card = `<div><span>At transition end δ′<sup>18</sup>O</span><strong>${formatFixed(transitionState.delta18_prime_permil, 3)}‰</strong></div>`;
     }
     $("transient-summary").innerHTML = `
+      <div><span>Biological configuration</span><strong>${biosphereLabel(initial.biosphere_configuration)}</strong></div>
       <div><span>Initial Δ′<sup>17</sup>O</span><strong>${formatFixed(d17[0], 3)}‰</strong></div>
       ${transitionD17Card}
       <div><span>Displayed final Δ′<sup>17</sup>O</span><strong>${formatFixed(d17[d17.length - 1], 3)}‰</strong></div>
@@ -1762,6 +1787,8 @@ async function downloadTransientWorkbook() {
 }
 
 function resetInputs() {
+  $("biosphere").value = "modern_reference";
+  updateBiosphereDescription();
   state.source = "air";
   state.solveFor = "pCO2";
   document.querySelectorAll("#source-selector button").forEach((button) => {
@@ -1814,6 +1841,8 @@ function resetInputs() {
 }
 
 function resetSurfaceInputs() {
+  $("surface-biosphere").value = "modern_reference";
+  updateBiosphereDescription("surface-biosphere");
   $("surface-xmin").value = "50";
   $("surface-xmax").value = "60000";
   $("surface-ymin").value = "6.3";
@@ -1837,6 +1866,21 @@ function resetTransientInputs() {
 }
 
 function bindInterface() {
+  $("biosphere").addEventListener("change", () => {
+    updateBiosphereDescription();
+    state.lastResult = null;
+    $("solver-result").classList.add("hidden");
+    $("solver-empty").classList.remove("hidden");
+    $("download-result-xlsx").disabled = true;
+    state.lastTransient = null;
+    $("transient-summary").innerHTML = "";
+    ["transient-forcing", "transient-pco2", "transient-d17", "transient-d18"].forEach(clearPlot);
+    $("download-transient-xlsx").disabled = true;
+  });
+  $("surface-biosphere").addEventListener("change", () => {
+    updateBiosphereDescription("surface-biosphere");
+    clearPlot("isotope-canvas");
+  });
   $("theme-toggle").addEventListener("change", (event) => {
     applyTheme(event.target.checked ? "dark" : "light");
   });
@@ -1891,6 +1935,8 @@ function bindInterface() {
   $("reset-surface").addEventListener("click", resetSurfaceInputs);
   $("reset-transient").addEventListener("click", resetTransientInputs);
   window.addEventListener("pageshow", () => {
+    updateBiosphereDescription();
+    updateBiosphereDescription("surface-biosphere");
     updateTransientControls(false);
     updateSulfateControls();
   });
@@ -1899,6 +1945,8 @@ function bindInterface() {
 async function initialize() {
   applyTheme(preferredTheme(), false);
   bindInterface();
+  updateBiosphereDescription();
+  updateBiosphereDescription("surface-biosphere");
   updateSulfateControls();
   setConstraintMode("pCO2", "fixed");
   setConstraintMode("GPP", "fixed");
@@ -1910,7 +1958,12 @@ async function initialize() {
     state.metadata = await api("/api/v1/model");
     $("model-state").classList.add("ready");
     $("model-state").innerHTML = "<span></span> Model ready";
-    $("footer-model").textContent = `OXYTIB ${state.metadata.citation.version}`;
+    $("footer-model").textContent = `OXYTIB ${state.metadata.software_version || state.metadata.citation.version}`;
+    if (state.metadata.status?.startsWith("local_")) {
+      $("model-state").innerHTML = "<span></span> Local revision";
+      document.querySelector(".header-citation strong").textContent = "Archive: v0.1.0";
+      document.querySelector(".header-citation").title = "These citation records describe archived v0.1.0; this local revision is unreleased.";
+    }
   } catch (error) {
     $("model-state").classList.add("error");
     $("model-state").innerHTML = "<span></span> Model unavailable";

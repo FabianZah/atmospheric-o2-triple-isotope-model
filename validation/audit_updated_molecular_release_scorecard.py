@@ -524,8 +524,8 @@ def run(*, include_photosynthesis_transient: bool = True) -> dict[str, Any]:
                 "carbon_internal_runtime_warnings"
             ],
             "coupling_scope": (
-                "one-way hybrid: detailed carbon driver supplies live pCO2 to "
-                "the molecular O2 isotope integration"
+                "joint carbon/O2 integration with shared biological fluxes "
+                "and a balanced slow geological background"
             ),
         }
 
@@ -579,7 +579,6 @@ def run(*, include_photosynthesis_transient: bool = True) -> dict[str, Any]:
         _metric("uncertainty", "Separated uncertainty-layer contract", uncertainty_audit["all_combined_confidence_intervals_disabled"], "", "pass" if uncertainty_audit["all_combined_confidence_intervals_disabled"] and not uncertainty_contract["policy"]["combined_public_confidence_interval_available"] else "fail", "measurement, parameter, numerical, and structural layers remain separate", "The contract and 12-state audit explicitly prohibit a combined public confidence interval."),
         _metric("uncertainty", "Yang low-pCO2 excess predictive scale", yang_predictive_error["variance_decomposition"]["candidate_excess_predictive_sigma_permil"], "permil", "diagnostic", "late-Quaternary, 1 PAL, fixed-GPP domain only", "Estimated from age-block held-out residuals after retaining reported isotope and propagated CO2 analytical variances; not a public default or whole-domain sigma."),
         _metric("uncertainty", "Empirical structural model-discrepancy calibration", False, "", "limitation", "required before a default joint posterior is presented as calibrated", "The joint engine is operational, but the release gate uses a synthetic discrepancy solely to verify propagation. Literature-corner guardrails remain non-probabilistic."),
-        _metric("transient", "Fully simultaneous carbon-oxygen coupling", False, "", "limitation", "required before claiming fully coupled transient dynamics", "Current Fig. 9-type experiment uses operator splitting; its independent pO2 trajectories are audited below."),
     ]
     if photosynthesis is not None:
         metrics.extend(
@@ -587,8 +586,8 @@ def run(*, include_photosynthesis_transient: bool = True) -> dict[str, Any]:
                 _metric("Young diagnostic", "Fig. 9-type half-photosynthesis minimum", photosynthesis["minimum_cap_delta17_prime_permil"], "permil", "diagnostic", "Young visual minimum approximately -0.73 permil", f"Minimum at {photosynthesis['minimum_time_years']:.0f} years."),
                 _metric("Young diagnostic", "Fig. 9-type peak delta-prime-18O", photosynthesis["maximum_delta18_prime_permil"], "permil", "diagnostic", "Young visual peak approximately 28 permil", f"Peak at {photosynthesis['maximum_delta18_time_years']:.0f} years."),
                 _metric("transient", "Half-photosynthesis multi-reservoir response", True, "", "pass", "pO2 decreases, pCO2 overshoots, and isotope extrema precede equilibrium", f"Minimum displayed pO2 {photosynthesis['minimum_display_pO2_pal']:.3f} PAL; peak pCO2 {photosynthesis['peak_pCO2_ppm']:.1f} ppm."),
-                _metric("transient", "Operator-split pO2 closure", photosynthesis["maximum_carbon_oxygen_pO2_mismatch_pal"], "PAL", "pass" if photosynthesis["maximum_carbon_oxygen_pO2_mismatch_pal"] <= 0.01 else "fail", "maximum absolute pO2 mismatch <= 0.01 PAL", "Independent detailed-box and molecular-reservoir oxygen inventories under identical photosynthesis forcing."),
-                _metric("transient", "Uncontained numerical warning classes", photosynthesis["captured_warning_count"], "", "pass" if not warning_messages else "fail", "zero", "; ".join(warning_messages) if warning_messages else "None; internal BDF trial-state warnings are retained in solver provenance."),
+                _metric("transient", "Shared carbon/O2 inventory", photosynthesis["maximum_carbon_oxygen_pO2_mismatch_pal"], "PAL", "pass" if photosynthesis["maximum_carbon_oxygen_pO2_mismatch_pal"] == 0.0 else "fail", "identical O2 inventory in the joint budget", "Five simultaneous ODEs share the biological production and respiration fluxes; pointwise flux cancellation is tested independently."),
+                _metric("transient", "Uncontained numerical warning classes", photosynthesis["captured_warning_count"], "", "pass" if not warning_messages else "fail", "zero", "; ".join(warning_messages) if warning_messages else "No external warnings; solver warnings are retained in provenance."),
             ]
         )
 

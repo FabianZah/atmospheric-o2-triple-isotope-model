@@ -44,16 +44,23 @@ def run(*, surface_path: Path, report_path: Path) -> dict[str, object]:
     interval_monotonicity_valid = True
     all_finite = bool(np.all(np.isfinite(central)))
     for lower_key, _upper_key in surface._interval_pairs():
-        lower_interpolator, upper_interpolator = (
-            surface._interval_width_interpolators[lower_key]
-        )
-        lower_width = np.exp(lower_interpolator(points))
-        upper_width = np.exp(upper_interpolator(points))
+        interpolators = surface._interval_width_interpolators[lower_key]
+        if interpolators is None:
+            # The loader permits this only for the fixed marine biological envelope.
+            lower_width = upper_width = np.zeros(len(points))
+            interval_order_valid &= (
+                surface.biosphere_configuration == "marine_endmember"
+                and lower_key == "biological_process_lower_cap_delta17_permil"
+            )
+        else:
+            lower_interpolator, upper_interpolator = interpolators
+            lower_width = np.exp(lower_interpolator(points))
+            upper_width = np.exp(upper_interpolator(points))
+            interval_order_valid &= bool(
+                np.all(lower_width > 0.0) and np.all(upper_width > 0.0)
+            )
         all_finite &= bool(
             np.all(np.isfinite(lower_width)) and np.all(np.isfinite(upper_width))
-        )
-        interval_order_valid &= bool(
-            np.all(lower_width > 0.0) and np.all(upper_width > 0.0)
         )
         lower_surface = (central.ravel() - lower_width).reshape(central.shape)
         upper_surface = (central.ravel() + upper_width).reshape(central.shape)
@@ -74,7 +81,7 @@ def run(*, surface_path: Path, report_path: Path) -> dict[str, object]:
     upper_overshoot = max(0.0, float(np.max(central) - np.max(node_central)))
     gates = {
         "all_dense_values_finite": all_finite,
-        "all_uncertainty_widths_positive": interval_order_valid,
+        "all_interval_widths_valid_for_configuration": interval_order_valid,
         "central_increases_with_pO2": bool(
             np.all(central_steps["pO2"] >= -1.0e-10)
         ),
@@ -96,6 +103,7 @@ def run(*, surface_path: Path, report_path: Path) -> dict[str, object]:
         "audit": "updated molecular output-surface dense shape",
         "status": "accepted" if all(gates.values()) else "failed",
         "surface_data_id": surface.surface_data_id,
+        "biosphere_configuration": surface.biosphere_configuration,
         "dense_point_count": int(central.size),
         "domain": surface.domain,
         "gates": gates,

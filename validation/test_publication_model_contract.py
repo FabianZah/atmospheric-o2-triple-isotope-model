@@ -4,6 +4,7 @@ import json
 import sys
 from pathlib import Path
 from uuid import uuid4
+import pytest
 
 
 ROOT = next(
@@ -14,6 +15,15 @@ if str(ROOT / "validation") not in sys.path:
 
 from export_publication_model_contract import run  # noqa: E402
 from export_publication_model_contract import _sha256  # noqa: E402
+
+
+def test_local_freeze_is_explicit_and_requires_current_evidence(monkeypatch, tmp_path):
+    import export_current_model_evidence
+    output = tmp_path / "contract.json"
+    assert run(output_path=output, manuscript_freeze=True)["status"] == "local_manuscript_freeze"
+    monkeypatch.setattr(export_current_model_evidence, "evidence_matches_current_core", lambda: False)
+    with pytest.raises(ValueError, match="hash-bound evidence"):
+        run(output_path=output, manuscript_freeze=True)
 
 
 def test_stored_contract_hashes_match_supplied_sources():
@@ -39,7 +49,9 @@ def test_publication_contract_has_one_consistent_model() -> None:
         contract = run(output_path=output)
 
         assert contract["schema_version"] == 1
-        assert contract["status"] == "active_publication_model"
+        assert contract["status"] == "local_integration_under_validation"
+        assert contract["validation"]["current_model_evidence_status"] == "current_core_hash_bound"
+        assert contract["validation"]["bundled_evidence_role"] == "current_comparisons_with_explicit_archived_structural_records"
         policy = contract["single_model_policy"]
         assert policy["release_model_count"] == 1
         assert policy["public_interface_model_count"] == 1
@@ -49,10 +61,10 @@ def test_publication_contract_has_one_consistent_model() -> None:
         )
 
         deterministic = contract["deterministic_model"]
-        assert deterministic["model_data_id"] == "updated_r7_response_surface_v1"
+        assert deterministic["model_data_id"] == "r5_r7_refined_private_20261015"
         accelerator = deterministic["numerical_accelerator"]
         assert accelerator["surface_data_id"] == (
-            "updated_molecular_output_surface_v1"
+            "r5_r7_refined_private_20261015_output"
         )
         assert accelerator["extrapolation_permitted"] is False
         assert accelerator["output_offset_applied"] is False
@@ -78,11 +90,11 @@ def test_publication_contract_has_one_consistent_model() -> None:
         assert uncertainty["layers_remain_separate"]
         assert not uncertainty["combined_public_confidence_interval_available"]
         assert not uncertainty["whole_domain_structural_Gaussian_sigma_available"]
-        assert "structural sensitivity" in uncertainty["clima_role"]
+        assert "require recalculation with corrected chemistry" in uncertainty["clima_role"]
 
         assert len(contract["validation"]["evidence"]) == 7
         assert contract["validation"]["evidence_bundle_id"] == (
-            "publication_validation_evidence_v1"
+            "corrected_core_evidence_20261019"
         )
         assert contract["validation"]["integrated_acceptance_generator"] == (
             "validation/audit_publication_model_acceptance.py"

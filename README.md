@@ -2,6 +2,18 @@
 
 **Atmospheric oxygen triple-isotope budget and inference model**
 
+Software release pending: `unreleased-20261021`. This source implements model
+`oxytib_r5_r7_shared_budget_20261021`, served by the hosted application since
+28 October 2026. Windows and Linux/container qualification is complete.
+The source includes corrected CO2 reaction accounting and optional fixed marine
+biology. The photosynthesis experiment integrates shared carbon and oxygen
+budgets with the published carbon uptake coefficients and multiplier 1.00.
+Its initial-state balancing flux is calculated separately; slow geological
+fluxes retain their balanced background. See [the budget definition](docs/photosynthesis_carbon_budget.md).
+The preserved `v0.1.0` archive has its own
+[DOI](https://doi.org/10.5281/zenodo.22819964); the next software release will
+receive a separate version-specific citation.
+
 OXYTIB links atmospheric O₂ triple-isotope composition to pCO₂, pO₂, and
 gross primary production (GPP). It provides steady forward calculations,
 constrained inference of one coordinate, isotope fields, time-response
@@ -19,16 +31,20 @@ faster by interpolation, with accuracy checked against direct model calculations
 
 OXYTIB predicts atmospheric O₂ Δ′¹⁷O and δ′¹⁸O for specified pCO₂, pO₂, and
 GPP. Inference solves one coordinate from an isotope observation and
-independent constraints on the other two. The accepted operational domain is:
+independent constraints on the other two. The computational domain is:
 
 | Coordinate | Minimum | Maximum |
 |---|---:|---:|
 | pO₂ | 0.10 PAL | 2.00 PAL |
 | pCO₂ | 50 ppm | 60,000 ppm |
-| GPP | 18.256 Pg C yr⁻¹ | 850 Pg C yr⁻¹ |
+| Gross O₂ production, carbon-equivalent | 18.256 Pg C-equivalent yr⁻¹ | 850 Pg C-equivalent yr⁻¹ |
 
 PAL means present atmospheric level; 1 PAL corresponds to the model's modern
-O₂ reference of 21.2%. In the interface, 100% modern GPP is 290 Pg C yr⁻¹.
+O₂ reference of 21.2%. In the interface, 100% modern GPP is 290 Pg
+C-equivalent yr⁻¹. The production flux is G*1e15/12.0107 mol of dominant O₂
+per year; external carbon-productivity estimates require a source-consistent
+conversion. `modern_reference` biology is the default; `marine_endmember` is
+the optional fixed 20 C, reference-seawater marine configuration.
 
 The machine-readable definition in
 [`model_data/publication_model_contract_v1.json`](model_data/publication_model_contract_v1.json)
@@ -166,9 +182,11 @@ Zahnow, F. (2026). *OXYTIB: Atmospheric oxygen triple-isotope budget and inferen
 model* (v0.1.0) [Software]. Zenodo.
 [doi:10.5281/zenodo.22819964](https://doi.org/10.5281/zenodo.22819964).
 
-This DOI identifies the archived v0.1.0 release. Downloadable citation records
-are supplied as [`CITATION.cff`](CITATION.cff), [`CITATION.bib`](CITATION.bib),
-and [`CITATION.ris`](CITATION.ris).
+This DOI identifies the archived v0.1.0 release. The downloadable records
+[`CITATION.cff`](CITATION.cff), [`CITATION.bib`](CITATION.bib), and
+[`CITATION.ris`](CITATION.ris) currently cite that archive. A matching citation
+for the corrected model above will accompany its software release. Until then,
+record the model ID and software version supplied with each calculation.
 
 Source code is MIT licensed. Project documentation and original model data are
 CC BY 4.0. Third-party scientific inputs retain their original licenses; see

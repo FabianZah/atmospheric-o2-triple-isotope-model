@@ -25,7 +25,7 @@ def _run(*arguments: str) -> subprocess.CompletedProcess[str]:
 def test_forward_json_stdout_uses_publication_model() -> None:
     completed = _run("forward", "--po2", "1", "--pco2", "294", "--gpp", "290")
     payload = json.loads(completed.stdout)
-    assert payload["publication_model_id"] == "oxytib_publication_model_v1"
+    assert payload["publication_model_id"] == "oxytib_r5_r7_shared_budget_20261021"
     assert payload["calculation"] == "steady_forward"
     assert payload["result"]["inputs"]["p_co2_ppm"] == 294.0
 

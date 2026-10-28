@@ -4,7 +4,7 @@ OXYTIB reports measurement/proxy, parameter, numerical and structural
 uncertainty as distinct layers. Their machine-readable definitions are in
 `model_data/uncertainty/updated_o2_uncertainty_layers_v1.json`.
 The model-comparison classification is
-`model_data/literature/multimodel_evidence_matrix_v1.json`.
+`model_data/literature/multimodel_evidence_matrix_20261019.json`.
 
 ## Statistical interpretation
 
@@ -20,30 +20,27 @@ on the declared physical model and entered constraints.
 
 The Yang-Banerjee blocked-validation analysis provides a domain-limited
 predictive assessment at low pCO2, 1 PAL and specified GPP assumptions.
-Its excess isotope-coordinate scatter is approximately 0.01324 per mil.
+Its excess isotope-coordinate scatter is recorded in the current
+`yang_lowco2_predictive_error.json` evidence report.
 This includes possible GPP/pO2 variability, chronology and reference-coordinate
 effects. It is recorded separately from the public measurement likelihood.
 Brandon-event residuals similarly describe that event and its assumptions.
 
 ## Climate and oxygen-accessibility sensitivity
 
-Cloud-free Clima calculations assess sensitivity to thermal structure and
-ozone chemistry at high pCO2. Additive-CO2 and fixed-total-dry-gas pressure
-conventions differ by at most 0.0404 per mil through 30,000 ppm and
-0.2270 per mil across the tested domain. The larger fixed-profile versus
-Clima difference reaches several per mil.
-
-Exact end-member calculations at 0.1, 1 and 2 PAL demonstrate a material
-pO2-climate-ozone interaction. These scenarios retain their own physical
-assumptions and are reported as non-probabilistic sensitivity evidence.
-The modern ozone-heated radiative-convective equilibrium (RCE) check and the high-pCO2 comparisons are summarized
-in [the validation assessment](publication_model_acceptance.md).
+Archived cloud-free Clima calculations assess thermal structure, ozone
+chemistry and pressure conventions using the earlier atmospheric chemistry.
+Their offsets remain historical structural experiments and are excluded from
+the corrected core's numerical uncertainty layer. A current climate sensitivity
+would require consistent regeneration of the atmospheric states and isotope
+coefficients. This is deferred; an unquantified contribution is not zero error.
 
 Liu et al. (2021)'s atmosphere-accessible marine oxygen convention is another
-structural sensitivity. The test improves the Liu response comparison but
-weakens Young Fig. 8 and Yang ice-core comparisons. OXYTIB therefore uses
-total global GPP in its central biological budget.
-See [marine oxygen accessibility](marine_o2_accessibility_audit.md).
+structural sensitivity. Its current-core comparison is reported separately in
+`model_data/validation_evidence/corrected_core_20261019/marine_o2_accessibility_audit.json`.
+Both supported biological configurations retain full atmospheric accessibility.
+The fixed marine endmember changes isotope sources and respiratory effects;
+it does not introduce an ocean gas-transfer model.
 
 ## High-pCO2 and low-GPP interpretation
 

@@ -186,7 +186,11 @@ class StrictRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class ForwardRequest(StrictRequest):
+class BiosphereRequest(StrictRequest):
+    biosphere_configuration: Literal["modern_reference", "marine_endmember"] = "modern_reference"
+
+
+class ForwardRequest(BiosphereRequest):
     p_o2_pal: float = Field(default=1.0, gt=0.0)
     p_co2_ppm: float = Field(default=294.0, gt=0.0)
     gpp_pgC_per_year: float = Field(default=290.0, gt=0.0)
@@ -195,7 +199,7 @@ class ForwardRequest(StrictRequest):
         return UpdatedForwardInput(**self.model_dump())
 
 
-class InverseRequest(StrictRequest):
+class InverseRequest(BiosphereRequest):
     target_air_cap_delta17_permil: float
     solve_for: Coordinate = "pCO2"
     measurement_uncertainty_permil: float = Field(default=0.0, ge=0.0)
@@ -208,7 +212,7 @@ class InverseRequest(StrictRequest):
         return UpdatedSurfaceInverseInput(**self.model_dump())
 
 
-class ConditionalPosteriorRequest(StrictRequest):
+class ConditionalPosteriorRequest(BiosphereRequest):
     target_air_cap_delta17_permil: float
     measurement_sigma_permil: float = Field(gt=0.0)
     target_air_delta18_conventional_permil: float | None = None
@@ -226,7 +230,7 @@ class ConditionalPosteriorRequest(StrictRequest):
         return UpdatedConditionalPosteriorInput(**self.model_dump())
 
 
-class JointPosteriorRequest(StrictRequest):
+class JointPosteriorRequest(BiosphereRequest):
     target_air_cap_delta17_permil: float
     measurement_sigma_permil: float = Field(gt=0.0)
     target_air_delta18_conventional_permil: float | None = None
@@ -298,19 +302,19 @@ class CoordinateConstraintRequest(StrictRequest):
         return CoordinateConstraint(**self.model_dump())
 
 
-class ForwardIsotopeRequest(StrictRequest):
+class ForwardIsotopeRequest(BiosphereRequest):
     pco2_constraint: CoordinateConstraintRequest
     gpp_constraint: CoordinateConstraintRequest
     po2_constraint: CoordinateConstraintRequest
 
     def solver_input(self) -> ForwardIsotopeConstraints:
-        return ForwardIsotopeConstraints(**{
+        return ForwardIsotopeConstraints(biosphere_configuration=self.biosphere_configuration, **{
             name: getattr(self, name).solver_input()
             for name in ("pco2_constraint", "gpp_constraint", "po2_constraint")
         })
 
 
-class ConstrainedPCO2Request(StrictRequest):
+class ConstrainedPCO2Request(BiosphereRequest):
     target_air_cap_delta17_permil: float
     measurement_sigma_permil: float = Field(gt=0.0)
     target_air_delta18_conventional_permil: float | None = None
@@ -395,7 +399,7 @@ class SulfateObservationRequest(StrictRequest):
         return self
 
 
-class ConstrainedCoordinateRequest(StrictRequest):
+class ConstrainedCoordinateRequest(BiosphereRequest):
     solve_for: Coordinate
     target_air_cap_delta17_permil: float | None = None
     measurement_sigma_permil: float | None = Field(default=None, gt=0.0)
@@ -460,6 +464,7 @@ class ConstrainedCoordinateRequest(StrictRequest):
             if coordinate != self.solve_for
         }
         return ConstrainedCoordinateInput(
+            biosphere_configuration=self.biosphere_configuration,
             solve_for=self.solve_for,
             target_air_cap_delta17_permil=self.target_air_cap_delta17_permil,
             measurement_sigma_permil=self.measurement_sigma_permil,
@@ -507,7 +512,7 @@ class ConstrainedCoordinateWorkbookRequest(StrictRequest):
         return self
 
 
-class IsotopeFieldRequest(StrictRequest):
+class IsotopeFieldRequest(BiosphereRequest):
     p_o2_pal: float = Field(default=1.0, gt=0.0)
     pco2_bounds_ppm: tuple[float, float] = (50.0, 60000.0)
     gpp_bounds_pgC_per_year: tuple[float, float] = (18.256264, 435.0)

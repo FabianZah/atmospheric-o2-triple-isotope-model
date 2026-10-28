@@ -1,4 +1,4 @@
-"""Export the versioned uncertainty-layer contract for the updated model."""
+"""Rebuild the archived chemistry's uncertainty contract from its evidence."""
 
 from __future__ import annotations
 
@@ -66,6 +66,12 @@ def run(
     evidence = json.loads(Path(evidence_path).read_text(encoding="utf-8"))
     climate = json.loads(Path(climate_report_path).read_text(encoding="utf-8"))
     response = json.loads(Path(response_bundle_path).read_text(encoding="utf-8"))
+    if response["model_data_id"] != "updated_r7_response_surface_v1":
+        raise ValueError(
+            "This exporter uses archived climate evidence and cannot bind it to "
+            "different chemistry. Preserve the corrected core's supplied uncertainty "
+            "contract; climate regeneration requires a separate validated experiment."
+        )
     predictive_error = (
         None
         if predictive_error_path is None

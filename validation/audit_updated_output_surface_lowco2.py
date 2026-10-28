@@ -73,7 +73,7 @@ def _plot(rows: list[dict[str, object]], output: Path) -> None:
 def run(
     candidate_path: Path,
     report_path: Path,
-    validated_path: Path,
+    validated_path: Path | None,
     *,
     response_bundle_path: Path | None = None,
 ) -> dict[str, object]:
@@ -142,8 +142,8 @@ def run(
         "status": "accepted" if accepted else "grid_refinement_required",
         "policy": (
             "The 75, 125, 175, 225, and 275 ppm live-model outputs are excluded from "
-            "training. Overlap points above 294 ppm test that extending the lower "
-            "boundary does not degrade the previous release. No observational "
+            "training. Points above 294 ppm also test the adjoining part of the "
+            "same configured domain. No observational "
             "isotope or CO2 values are fitted."
         ),
         "case_count": len(rows),
@@ -175,8 +175,10 @@ def run(
         writer.writerows(rows)
     _plot(rows, report_path.with_suffix(".png"))
 
-    if accepted:
-        previous_validation = bundle["validation"]["previous_domain_validation"]
+    if accepted and validated_path is not None:
+        previous_validation = bundle["validation"].get(
+            "previous_domain_validation", bundle["validation"]
+        )
         overall_cap_residual = max(
             all_d17,
             float(previous_validation["cap_delta17_maximum_absolute_residual_permil"]),
@@ -189,7 +191,6 @@ def run(
                 ]
             ),
         )
-        bundle["surface_data_id"] = "updated_molecular_output_surface_v1"
         bundle["validation"] = {
             "status": "accepted_independent_noncentral_holdouts",
             "cap_delta17_maximum_absolute_residual_permil": overall_cap_residual,

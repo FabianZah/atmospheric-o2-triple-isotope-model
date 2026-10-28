@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import sys
+import json
 from pathlib import Path
 
-import numpy as np
 import pytest
 
 
@@ -35,29 +35,14 @@ def test_uncertainty_layers_remain_separate_at_modern_conditions() -> None:
     assert result.structural_endmember_points == ()
 
 
-def test_exact_clima_node_is_reported_without_interpolation() -> None:
+@pytest.mark.parametrize("po2", [0.1, 1.0, 2.0])
+@pytest.mark.parametrize("biosphere", ["modern_reference", "marine_endmember"])
+def test_old_clima_offsets_are_excluded_from_corrected_model(po2, biosphere) -> None:
     result = decompose_updated_uncertainty(
-        UpdatedOutputSurfaceInput(1.0, 30000.0, 290.0),
+        UpdatedOutputSurfaceInput(po2, 30000.0, 290.0, biosphere),
     )
-
-    assert len(result.structural_endmember_points) == 2
-    points = {
-        point.pressure_convention: point
-        for point in result.structural_endmember_points
-    }
-    assert set(points) == {"additive_co2", "fixed_total_dry_major"}
-    assert points["additive_co2"].endmember_id == (
-        "clima_0p5p11_1pal_additive_co2_v1"
-    )
-    assert all(not point.interpolation_applied for point in points.values())
-    assert np.isclose(
-        points["additive_co2"].offset_from_central_permil,
-        3.092283101529705,
-    )
-    assert np.isclose(
-        points["fixed_total_dry_major"].offset_from_central_permil,
-        3.0734650918169386,
-    )
+    assert result.structural_endmember_points == ()
+    assert not result.whole_domain_structural_sigma_available
 
 
 def test_positive_measurement_sigma_requires_source() -> None:
@@ -67,13 +52,22 @@ def test_positive_measurement_sigma_requires_source() -> None:
         )
 
 
-@pytest.mark.parametrize("po2", [0.1, 2.0])
-def test_exact_nonmodern_po2_clima_node_is_reported(po2: float) -> None:
+def test_fixed_marine_parameter_scope_is_explicit() -> None:
     result = decompose_updated_uncertainty(
-        UpdatedOutputSurfaceInput(po2, 30000.0, 290.0),
+        UpdatedOutputSurfaceInput(1., 294., 290., "marine_endmember"),
     )
+    assert "unassessed" in result.biological_parameter.interpretation
+    assert "fixed marine" in result.crossed_parameter_envelope.interpretation
+    assert result.biological_parameter.lower_distance_permil == 0.
+    assert result.biological_parameter.upper_distance_permil == 0.
+    assert result.source_isoflux_parameter.lower_distance_permil > 0.
 
-    assert len(result.structural_endmember_points) == 1
-    point = result.structural_endmember_points[0]
-    assert point.pressure_convention == "additive_co2"
-    assert not point.interpolation_applied
+
+def test_uncertainty_contract_cannot_be_mixed_with_another_core(tmp_path) -> None:
+    from updated_uncertainty_layers import DEFAULT_UNCERTAINTY_CONTRACT_PATH
+    contract = json.loads(DEFAULT_UNCERTAINTY_CONTRACT_PATH.read_text())
+    contract["central_model_data_id"] = "different_chemistry"
+    path = tmp_path / "foreign_contract.json"
+    path.write_text(json.dumps(contract), encoding="utf-8")
+    with pytest.raises(ValueError, match="identities differ"):
+        decompose_updated_uncertainty(UpdatedOutputSurfaceInput(), contract_path=path)

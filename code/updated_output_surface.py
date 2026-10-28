@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+from biosphere_configurations import configuration, select_surface_path
 from scipy.interpolate import RegularGridInterpolator
 
 
@@ -46,6 +47,7 @@ class UpdatedOutputSurfaceInput:
     p_o2_pal: float = 1.0
     p_co2_ppm: float = 294.0
     gpp_pgC_per_year: float = 290.0
+    biosphere_configuration: str = "modern_reference"
 
 
 @dataclass(frozen=True)
@@ -65,6 +67,7 @@ class UpdatedOutputSurfacePrediction:
     interpolation_method: str
     interpolation_coordinates: str
     extrapolation_applied: bool
+    biosphere_configuration: str = "modern_reference"
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -77,6 +80,8 @@ class UpdatedMolecularOutputSurface:
         if int(bundle.get("schema_version", -1)) != 1:
             raise ValueError("unsupported updated output-surface schema")
         self.bundle = bundle
+        self.biosphere_configuration = str(bundle.get("biosphere_configuration", "modern_reference"))
+        configuration(self.biosphere_configuration)
         self.surface_data_id = str(bundle["surface_data_id"])
         self.upstream_model_data_id = str(bundle["upstream_model_data_id"])
         axes = bundle["axes"]
@@ -171,6 +176,11 @@ class UpdatedMolecularOutputSurface:
         for lower_key, upper_key in self._interval_pairs():
             lower_width = central - self.values[lower_key]
             upper_width = self.values[upper_key] - central
+            if (self.biosphere_configuration == "marine_endmember"
+                and lower_key.startswith("biological_process_")
+                and np.all(lower_width == 0.) and np.all(upper_width == 0.)):
+                self._interval_width_interpolators[lower_key] = None
+                continue
             if np.any(lower_width <= 0.0) or np.any(upper_width <= 0.0):
                 raise ValueError(
                     f"stored uncertainty widths must be positive for {lower_key}"
@@ -225,6 +235,10 @@ class UpdatedMolecularOutputSurface:
             upper = self.values[upper_key]
             if np.any(lower > upper):
                 raise ValueError(f"stored interval order fails for {lower_key}")
+            if (self.biosphere_configuration == "marine_endmember"
+                and lower_key.startswith("biological_process_")
+                and np.array_equal(lower, central) and np.array_equal(upper, central)):
+                continue
             if np.any(central <= lower) or np.any(central >= upper):
                 raise ValueError(f"central Delta-prime-17O lies outside {lower_key}")
 
@@ -260,7 +274,12 @@ class UpdatedMolecularOutputSurface:
             ),
         }
 
+    def require_configuration(self, name: str) -> None:
+        if name != self.biosphere_configuration:
+            raise ValueError("Requested biology differs from the output surface configuration")
+
     def _point(self, request: UpdatedOutputSurfaceInput) -> np.ndarray:
+        self.require_configuration(request.biosphere_configuration)
         values = np.asarray(
             (request.p_o2_pal, request.p_co2_ppm, request.gpp_pgC_per_year),
             dtype=float,
@@ -297,6 +316,10 @@ class UpdatedMolecularOutputSurface:
             "central_cap_delta17_prime_permil": central,
         }
         for lower_key, upper_key in self._interval_pairs():
+            if self._interval_width_interpolators[lower_key] is None:
+                interpolated[lower_key] = central
+                interpolated[upper_key] = central
+                continue
             lower_interpolator, upper_interpolator = (
                 self._interval_width_interpolators[lower_key]
             )
@@ -310,6 +333,7 @@ class UpdatedMolecularOutputSurface:
             interpolated["model_guardrail_upper_cap_delta17_permil"],
         )
         return UpdatedOutputSurfacePrediction(
+            biosphere_configuration=self.biosphere_configuration,
             inputs=request,
             surface_data_id=self.surface_data_id,
             upstream_model_data_id=self.upstream_model_data_id,
@@ -532,4 +556,5 @@ def run_updated_accelerated_forward(
     *,
     surface_path: Path = DEFAULT_OUTPUT_SURFACE_PATH,
 ) -> UpdatedOutputSurfacePrediction:
-    return load_updated_output_surface(str(Path(surface_path).resolve())).evaluate(request)
+    path = select_surface_path(surface_path, request.biosphere_configuration)
+    return load_updated_output_surface(str(path.resolve())).evaluate(request)

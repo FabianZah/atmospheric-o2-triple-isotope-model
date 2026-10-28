@@ -351,6 +351,12 @@ class LocalR7ResponseSurface:
             raise ValueError("R7 response surface requires provenance")
         object.__setattr__(self, "po2_nodes_pal", po2.copy())
         object.__setattr__(self, "pco2_nodes_ppm", pco2.copy())
+        object.__setattr__(self, "_node_reference_coordinates", np.asarray([
+            [op.reference_ratio_coordinates for op in row] for row in self.operators]))
+        object.__setattr__(self, "_node_reference_flux", np.asarray([
+            [op.reference_tendency_mol_per_year for op in row] for row in self.operators]))
+        object.__setattr__(self, "_node_jacobian", np.asarray([
+            [op.ratio_jacobian_mol_per_year for op in row] for row in self.operators]))
 
     def operator_at(self, *, po2_pal: float, pco2_ppm: float) -> LocalR7ResponseOperator:
         along_pco2 = tuple(
@@ -404,50 +410,51 @@ class LocalR7ResponseSurface:
         ):
             raise ValueError("R7 response surface does not permit extrapolation")
         state = np.asarray(state_permil, dtype=float)
-        rate_grid = np.empty(
-            (len(self.po2_nodes_pal), len(self.pco2_nodes_ppm), 2), dtype=float
+        coordinates = prime_state_to_ratio_coordinates(state)
+        values = self._node_reference_flux + np.einsum(
+            "...ij,...j->...i", self._node_jacobian,
+            coordinates - self._node_reference_coordinates,
         )
-        for po2_index, (node_po2, operator_row) in enumerate(
-            zip(self.po2_nodes_pal, self.operators, strict=True)
-        ):
-            node_reservoir = GlobalO2Reservoir.from_prime_composition(
-                major_o2_moles=major_o2_moles_1pal * node_po2,
-                delta18_prime_permil=float(state[0]),
-                cap_delta17_prime_permil=float(state[1]),
-                source=f"R7 response node at {node_po2:g} PAL",
-            )
-            for pco2_index, operator in enumerate(operator_row):
-                rate_grid[po2_index, pco2_index] = (
-                    prime_tendency_rates_permil_per_year(
-                        node_reservoir, operator.evaluate(state)
-                    )
-                )
+        unit_reservoir = GlobalO2Reservoir.from_prime_composition(
+            major_o2_moles=major_o2_moles_1pal,
+            delta18_prime_permil=float(state[0]),
+            cap_delta17_prime_permil=float(state[1]),
+            source="Vectorized native R7 node rates",
+        )
+        major = major_o2_moles_1pal * self.po2_nodes_pal[:, None]
+        rare17 = unit_reservoir.o16o17 * self.po2_nodes_pal[:, None]
+        rare18 = unit_reservoir.o16o18 * self.po2_nodes_pal[:, None]
+        d18 = 1000.0 * (values[..., 2] / rare18 - values[..., 0] / major)
+        d17 = 1000.0 * (values[..., 1] / rare17 - values[..., 0] / major)
+        rate_grid = np.stack((d18, d17 - 0.528 * d18), axis=-1)
 
         # delta-prime-18O contains a small difference of large fluxes and is
         # interpolated without a sign transform. Delta-prime-17O is a stable,
         # one-signed R7 forcing over this domain, so log-magnitude interpolation
         # preserves its relative response across orders of magnitude in pCO2.
-        delta18_along_pco2 = np.asarray(
-            [
-                PchipInterpolator(self.pco2_nodes_ppm, row[:, 0])(pco2_ppm)
-                for row in rate_grid
-            ]
-        )
+        delta18_along_pco2 = PchipInterpolator(
+            self.pco2_nodes_ppm, rate_grid[..., 0], axis=1
+        )(pco2_ppm)
         delta18_rate = float(
             PchipInterpolator(
                 np.log10(self.po2_nodes_pal), delta18_along_pco2
             )(np.log10(po2_pal))
         )
         cap_grid = rate_grid[:, :, 1]
-        cap_along_pco2 = np.asarray(
-            [
-                _interpolate_signed_rate_on_log_axis(
-                    self.pco2_nodes_ppm,
-                    row,
-                    pco2_ppm,
-                )
-                for row in cap_grid
-            ]
+        # Each row follows exactly the original signed/log branch rule.
+        same_sign = np.all(cap_grid > 0, axis=1) | np.all(cap_grid < 0, axis=1)
+        transformed = np.where(
+            same_sign[:, None],
+            np.log(np.where(same_sign[:, None], np.abs(cap_grid), 1.0)),
+            cap_grid,
+        )
+        interpolated = PchipInterpolator(
+            np.log10(self.pco2_nodes_ppm), transformed, axis=1
+        )(np.log10(pco2_ppm))
+        cap_along_pco2 = np.where(
+            same_sign,
+            np.sign(cap_grid[:, 0]) * np.exp(np.where(same_sign, interpolated, 0.0)),
+            interpolated,
         )
         cap_rate = _interpolate_signed_rate_on_log_axis(
             self.po2_nodes_pal,

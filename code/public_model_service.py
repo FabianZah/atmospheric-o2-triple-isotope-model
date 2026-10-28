@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+from biosphere_configurations import configuration, output_surface_path
 
 from isotope_field_contours import select_isotope_field_contours
 from forward_isotope_constraints import ForwardIsotopeConstraints, predict_isotopes
@@ -91,6 +92,8 @@ def model_metadata() -> dict[str, Any]:
         "api_version": API_VERSION,
         "publication_model_id": contract["publication_model_id"],
         "status": contract["status"],
+        "software_version": contract.get("software_version", "0.1.0"),
+        "biosphere_configurations": contract.get("biosphere_configurations", {}),
         "deterministic_model": contract["deterministic_model"],
         "operational_domain": contract["operational_domain"],
         "modern_reference_state": contract["modern_reference_state"],
@@ -98,6 +101,7 @@ def model_metadata() -> dict[str, Any]:
         "uncertainty": contract["uncertainty"],
         "source_contract": "model_data/publication_model_contract_v1.json",
         "citation": {
+            "scope": "archived v0.1.0; the local integration has no release DOI",
             "title": (
                 "OXYTIB: Atmospheric oxygen triple-isotope budget and "
                 "inference model"
@@ -121,18 +125,29 @@ def model_metadata() -> dict[str, Any]:
     }
 
 
-def result_envelope(result: Any, *, calculation: str) -> dict[str, Any]:
+def result_envelope(result: Any, *, calculation: str,
+                    biosphere_configuration: str = "modern_reference") -> dict[str, Any]:
     contract = publication_contract()
+    biology = configuration(biosphere_configuration)
+    surface = load_updated_output_surface(str(output_surface_path(biosphere_configuration)))
+    surface.require_configuration(biosphere_configuration)
     return {
         "api_version": API_VERSION,
         "publication_model_id": contract["publication_model_id"],
         "calculation": calculation,
         "result": to_jsonable(result),
         "provenance": {
+            "software_version": contract.get("software_version", "0.1.0"),
+            "model_status": contract["status"],
             "contract": "model_data/publication_model_contract_v1.json",
-            "central_model_data_id": contract["deterministic_model"]["model_data_id"],
-            "accelerated_surface_data_id": contract["deterministic_model"]
-            ["numerical_accelerator"]["surface_data_id"],
+            "central_model_data_id": surface.upstream_model_data_id,
+            "accelerated_surface_data_id": surface.surface_data_id,
+            "biosphere_configuration": biosphere_configuration,
+            "biosphere_version": biology["version"],
+            "biological_uncertainty_scope": (
+                "literature-corner envelope" if biosphere_configuration == "modern_reference"
+                else "fixed marine endmember; biological parameter uncertainty unassessed"
+            ),
             "uncertainty_contract_id": contract["uncertainty"]["contract_id"],
             "extrapolation_permitted": False,
         },
@@ -140,37 +155,43 @@ def result_envelope(result: Any, *, calculation: str) -> dict[str, Any]:
 
 
 def forward_isotopes(request: ForwardIsotopeConstraints) -> dict[str, Any]:
-    return result_envelope(predict_isotopes(request), calculation="steady_forward_constraints")
+    return result_envelope(predict_isotopes(request), calculation="steady_forward_constraints",
+                           biosphere_configuration=request.biosphere_configuration)
 
 
 def forward(request: UpdatedForwardInput) -> dict[str, Any]:
     result = run_updated_accelerated_forward(
         UpdatedOutputSurfaceInput(
+            biosphere_configuration=request.biosphere_configuration,
             p_o2_pal=request.p_o2_pal,
             p_co2_ppm=request.p_co2_ppm,
             gpp_pgC_per_year=request.gpp_pgC_per_year,
         )
     )
-    return result_envelope(result.as_dict(), calculation="steady_forward")
+    return result_envelope(result.as_dict(), calculation="steady_forward",
+                           biosphere_configuration=request.biosphere_configuration)
 
 
 def inverse(request: UpdatedSurfaceInverseInput) -> dict[str, Any]:
     result = invert_updated_output_surface(request)
-    return result_envelope(result.as_dict(), calculation="one_coordinate_inverse")
+    return result_envelope(result.as_dict(), calculation="one_coordinate_inverse",
+                           biosphere_configuration=request.biosphere_configuration)
 
 
 def conditional_posterior(
     request: UpdatedConditionalPosteriorInput,
 ) -> dict[str, Any]:
     result = conditional_updated_posterior(request, verify_live_mode=False)
-    return result_envelope(result.as_dict(), calculation="conditional_posterior")
+    return result_envelope(result.as_dict(), calculation="conditional_posterior",
+                           biosphere_configuration=request.biosphere_configuration)
 
 
 def joint_posterior(
     request: UpdatedJointPosteriorInput, *, include_grid: bool = False
 ) -> dict[str, Any]:
     result = result_envelope(
-        joint_updated_posterior(request).as_dict(), calculation="joint_posterior"
+        joint_updated_posterior(request).as_dict(), calculation="joint_posterior",
+        biosphere_configuration=request.biosphere_configuration,
     )
     if include_grid:
         return result
@@ -194,7 +215,8 @@ def joint_posterior(
 def constrained_pco2(request: ConstrainedPCO2Input) -> dict[str, Any]:
     result = constrained_pco2_posterior(request)
     return result_envelope(
-        result.as_dict(), calculation="constrained_pco2_posterior"
+        result.as_dict(), calculation="constrained_pco2_posterior",
+        biosphere_configuration=request.biosphere_configuration,
     )
 
 
@@ -203,7 +225,8 @@ def constrained_coordinate(
 ) -> dict[str, Any]:
     result = constrained_coordinate_posterior(request)
     return result_envelope(
-        result.as_dict(), calculation="constrained_coordinate_posterior"
+        result.as_dict(), calculation="constrained_coordinate_posterior",
+        biosphere_configuration=request.biosphere_configuration,
     )
 
 
@@ -214,10 +237,11 @@ def isotope_field(
     gpp_bounds_pgC_per_year: tuple[float, float],
     pco2_grid_size: int,
     gpp_grid_size: int,
+    biosphere_configuration: str = "modern_reference",
 ) -> dict[str, Any]:
     """Return the deterministic central isotope field at fixed pO2."""
 
-    surface = load_updated_output_surface()
+    surface = load_updated_output_surface(str(output_surface_path(biosphere_configuration)))
     pco2_lower, pco2_upper = map(float, pco2_bounds_ppm)
     gpp_lower, gpp_upper = map(float, gpp_bounds_pgC_per_year)
     for label, value, bounds in (
@@ -247,6 +271,7 @@ def isotope_field(
     )
     contours = select_isotope_field_contours(values, pco2, gpp)
     result = {
+        "biosphere_configuration": biosphere_configuration,
         "fixed_p_o2_pal": float(p_o2_pal),
         "axes": {
             "pCO2": tuple(map(float, pco2)),
@@ -267,7 +292,8 @@ def isotope_field(
             "likelihoods and uncertainty are handled by inference endpoints"
         ),
     }
-    return result_envelope(result, calculation="deterministic_isotope_field")
+    return result_envelope(result, calculation="deterministic_isotope_field",
+                           biosphere_configuration=biosphere_configuration)
 
 
 def spherule_to_air(
@@ -310,6 +336,7 @@ def state_step_transient(request: UpdatedTransientInput) -> dict[str, Any]:
     return result_envelope(
         run_updated_transient(request).as_dict(),
         calculation="state_step_transient",
+        biosphere_configuration=request.initial.biosphere_configuration,
     )
 
 
@@ -319,6 +346,7 @@ def photosynthesis_step_transient(
     return result_envelope(
         run_updated_photosynthesis_transient(request).as_dict(),
         calculation="photosynthesis_step_transient",
+        biosphere_configuration=request.initial.biosphere_configuration,
     )
 
 
@@ -328,4 +356,5 @@ def pco2_trajectory_transient(
     return result_envelope(
         run_updated_pco2_trajectory(request).as_dict(),
         calculation="pco2_trajectory_transient",
+        biosphere_configuration=request.initial.biosphere_configuration,
     )

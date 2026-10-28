@@ -23,7 +23,7 @@ ROOT = next(
 OUTPUTS = ROOT / "outputs"
 DEFAULT_OUTPUT = OUTPUTS / "publication_model_acceptance.json"
 DEFAULT_DOC = ROOT / "outputs" / "publication_model_acceptance.md"
-EVIDENCE = ROOT / "model_data" / "validation_evidence"
+EVIDENCE = ROOT / "model_data/validation_evidence/corrected_core_20261019"
 
 SOURCE_PATHS = {
     "release": EVIDENCE / "updated_molecular_release_scorecard.json",
@@ -93,6 +93,12 @@ def build_report() -> dict[str, Any]:
     marine = source["marine_access"]
     uncertainty = source["uncertainty"]
     contract = source["contract"]
+    marine_cache = json.loads((ROOT / contract["source_files"]["marine_output_surface"]["path"]).read_text(encoding="utf-8"))
+    marine_check = marine_cache["validation"]
+    marine_ok = (marine_check.get("passed") is True
+                 and marine_check["cap_delta17_maximum_absolute_residual_permil"] <= .005
+                 and marine_check["central_delta18_maximum_absolute_residual_permil"] <= .015
+                 and marine_check["maximum_root_residual_permil"] <= 1e-8)
 
     pack_d17 = _metric(release, "Pack Delta-prime-17O residual")
     pack_d18 = _metric(release, "Pack conventional delta-18O residual")
@@ -153,6 +159,21 @@ def build_report() -> dict[str, Any]:
             "No hooks, sign reversals, or non-finite cells",
             "Dense-domain shape audit",
             blocking=dense_shape["status"] == "fail",
+        ),
+        _row(
+            "surface",
+            "Fixed marine numerical accelerator",
+            "pass" if marine_ok else "fail",
+            f"{marine_check['full_holdout_count']} main-field and {marine_check['delta18_holdout_count']} oxygen-18 holdouts",
+            "Configured live-budget agreement within 0.005/0.015 per mil and root residual <=1e-8 per mil",
+            "Independent every-cell holdouts; configuration routing is covered by the application regression suite",
+            blocking=not marine_ok,
+        ),
+        _row(
+            "scope", "Fixed marine biological interpretation", "scope_limit",
+            "20 C/reference-seawater endmember; biological parameter uncertainty unassessed",
+            "Keep the fixed biological scenario separate from the modern mixed-budget ensemble",
+            "Versioned biosphere registry and configuration-specific tests",
         ),
         _row(
             "surface",
@@ -218,7 +239,7 @@ def build_report() -> dict[str, Any]:
             "pass" if liu_metrics["all_pCO2_direction_checks_pass"] and liu_metrics["all_GPP_direction_checks_pass"] else "fail",
             f"rank r={float(liu_metrics['response_rank_correlation']):.4f}; RMSE {float(liu_metrics['response_RMSE_permil']):.2f} per mil",
             "Correct response directions over all shared states",
-            "Liu et al. (2021) native 90-state grid",
+            f"Liu et al. (2021): {liu_metrics['paired_finite_state_count']} shared states of {liu['scenario_count']} source states; {liu_metrics['updated_unavailable_state_count']} outside OXYTIB domain",
             blocking=not (liu_metrics["all_pCO2_direction_checks_pass"] and liu_metrics["all_GPP_direction_checks_pass"]),
         ),
         _row(
@@ -261,7 +282,7 @@ def build_report() -> dict[str, Any]:
             "qualified",
             "model families agree in direction but not amplitude",
             "Report non-probabilistic structural sensitivity",
-            "Young, Liu, Cao-Bao, and Clima comparisons",
+            "Young, Liu and Cao-Bao comparisons; archived Clima experiments are separate",
         ),
         _row(
             "structural",
@@ -275,17 +296,17 @@ def build_report() -> dict[str, Any]:
             "structural",
             "pCO2-dependent climate profile",
             "excluded",
-            "large high-pCO2 sensitivity; modern RCE gate failed",
-            "A recognizable modern climate is required before promotion",
-            "Clima calculations remain structural end members",
+            "deferred; archived offsets use earlier chemistry",
+            "Require a consistent atmospheric and isotope recalculation before application",
+            "Archived Clima records provide historical context only",
         ),
         _row(
             "scope",
-            "Fully simultaneous carbon-oxygen transients",
+            "Slow geological reservoirs during photosynthesis transients",
             "scope_limit",
-            "operator-split prescribed forcing experiments",
-            "Interpret carbon forcing as prescribed rather than prognostic",
-            "Steady inversions and declared perturbation experiments are accepted",
+            "shared prognostic carbon/O2 budget; balanced slow geological background",
+            "Interpret long-run response as conditional on the prescribed geological background",
+            "Young carbon exchange coefficients and one shared biological flux; evolving geological isotope fluxes require additional constraints",
         ),
         _row(
             "scope",
@@ -297,6 +318,14 @@ def build_report() -> dict[str, Any]:
         ),
     ]
 
+    from export_current_model_evidence import evidence_matches_current_core
+    if (contract["validation"].get("current_model_evidence_status") != "current_core_hash_bound"
+            or not evidence_matches_current_core()):
+        rows.insert(0, _row(
+            "core", "Validation evidence bound to current equations and coefficients", "fail",
+            "Current-core evidence is missing or its source hashes differ",
+            "Regenerate and bind current-model comparisons before acceptance",
+            "model_data/publication_model_contract_v1.json", blocking=True))
     blockers = [row for row in rows if row["blocking"] and row["status"] == "fail"]
     verdict = (
         "accepted_for_steady_forward_inverse_and_declared_time_responses"
@@ -311,7 +340,7 @@ def build_report() -> dict[str, Any]:
         "release_blocker_count": len(blockers),
         "release_blockers": [row["gate"] for row in blockers],
         "central_model_changed_by_audit": False,
-        "accepted_claims": [
+        "accepted_claims": [] if blockers else [
             "steady forward calculation within the declared pO2-pCO2-GPP domain",
             "conditional and joint inversion with independent constraints and explicit priors",
             (
@@ -382,8 +411,10 @@ def _write_markdown(report: dict[str, Any], path: Path) -> None:
                 "There are no release-blocking failures. The deterministic core is "
                 "accepted for steady forward and inverse applications and for the "
                 "declared time-response experiments. High-pCO2 model-family spread, "
-                "the climate and marine-access sensitivity cases, and operator-split "
-                "transient coupling remain explicit scope limits."
+                "the climate and marine-access sensitivity cases, and the balanced "
+                "slow geological background of the photosynthesis experiment remain explicit scope limits."
+                if not report["release_blocker_count"] else
+                "Acceptance remains blocked: " + "; ".join(report["release_blockers"])
             ),
             "",
             f"Central-model change policy: {report['next_model_change_policy']}",

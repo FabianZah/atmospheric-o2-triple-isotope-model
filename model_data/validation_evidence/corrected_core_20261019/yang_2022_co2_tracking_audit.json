@@ -1,0 +1,146 @@
+{
+  "audit": "Yang et al. (2022) measured-CO2 tracking test",
+  "status": "tracking_supported",
+  "role": "External temporal tracking test. Measured CO2 is an independent predictor; GPP and pO2 are fixed. Only an additive reference offset is estimated, never the physical response amplitude.",
+  "data": {
+    "rows": 269,
+    "age_ka_bp": [
+      58.016,
+      796.297
+    ],
+    "measured_CO2_ppm": [
+      177.83712970638283,
+      279.1553547028091
+    ],
+    "isotope_coordinate": "modern-air-relative Delta-17O, lambda=0.516, ppm"
+  },
+  "fixed_model_conditions": {
+    "pO2_PAL": 1.0,
+    "GPP_PgC_per_year": 290.0,
+    "reference_CO2_ppm": 280.0,
+    "surface_data_id": "r5_r7_refined_private_20261015_output"
+  },
+  "co2_response": {
+    "updated_model_slope_ppm_Delta17_per_ppm_CO2": -0.4941222165163774,
+    "Yang_2022_TB_slope_ppm_per_ppm": -0.55,
+    "relative_slope_difference": -0.10159596997022302,
+    "Banerjee_2026_empirical_slope_ppm_per_ppm": -0.6199243692269544,
+    "maximum_nonlinearity_about_linear_fit_ppm": 0.020147707306371387
+  },
+  "tracking_by_smoothing_window": {
+    "0_ka": {
+      "pearson_r": 0.48703344940886334,
+      "offset_ppm": -0.9170372943118907,
+      "fixed_amplitude_rmse_ppm": 14.215315179206039,
+      "intercept_only_rmse_ppm": 15.925243574263732,
+      "fixed_amplitude_variance_skill": 0.20321560584150933,
+      "diagnostic_fitted_amplitude": 0.7254146331195892,
+      "diagnostic_fitted_intercept_ppm": 6.473987266480448,
+      "observed_standard_deviation_ppm": 15.925243574263732,
+      "predicted_standard_deviation_ppm": 10.691990423870255,
+      "blocked_cross_validation": {
+        "age_contiguous_blocks": 8,
+        "model_rmse_ppm": 14.281968581918793,
+        "intercept_only_rmse_ppm": 16.26908838856838,
+        "variance_skill": 0.22936326119235972
+      },
+      "cross_validated_CO2_inversion": {
+        "age_contiguous_blocks": 8,
+        "root_count": 266,
+        "out_of_domain_count": 3,
+        "rmse_ppm": 28.48117272798445,
+        "mean_absolute_error_ppm": 23.302035947826578,
+        "bias_ppm": 0.6216003045261104,
+        "pearson_r": 0.4651483268677038,
+        "intercept_only_rmse_ppm": 22.439156139725796
+      }
+    },
+    "11_ka": {
+      "pearson_r": 0.7374306966441148,
+      "offset_ppm": -0.9147733562637114,
+      "fixed_amplitude_rmse_ppm": 7.446562590862746,
+      "intercept_only_rmse_ppm": 10.548834794052294,
+      "fixed_amplitude_variance_skill": 0.5016864382802628,
+      "diagnostic_fitted_amplitude": 0.7822900131816163,
+      "diagnostic_fitted_intercept_ppm": 4.948900079508514,
+      "observed_standard_deviation_ppm": 10.548834794052294,
+      "predicted_standard_deviation_ppm": 9.943926753358257,
+      "blocked_cross_validation": {
+        "age_contiguous_blocks": 8,
+        "model_rmse_ppm": 7.540843408526369,
+        "intercept_only_rmse_ppm": 11.05844918898192,
+        "variance_skill": 0.5350016720551112
+      },
+      "cross_validated_CO2_inversion": {
+        "age_contiguous_blocks": 8,
+        "root_count": 269,
+        "out_of_domain_count": 0,
+        "rmse_ppm": 15.254981444774094,
+        "mean_absolute_error_ppm": 12.03172754029011,
+        "bias_ppm": 0.003071329417154911,
+        "pearson_r": 0.7327362659271006,
+        "intercept_only_rmse_ppm": 21.088888282296875
+      }
+    },
+    "21_ka": {
+      "pearson_r": 0.7760201955689042,
+      "offset_ppm": -0.8632994944834483,
+      "fixed_amplitude_rmse_ppm": 6.176904057369792,
+      "intercept_only_rmse_ppm": 9.22828600827538,
+      "fixed_amplitude_variance_skill": 0.5519777120905166,
+      "diagnostic_fitted_amplitude": 0.7759116629655548,
+      "diagnostic_fitted_intercept_ppm": 5.1338254980797355,
+      "observed_standard_deviation_ppm": 9.22828600827538,
+      "predicted_standard_deviation_ppm": 9.229576838085952,
+      "blocked_cross_validation": {
+        "age_contiguous_blocks": 8,
+        "model_rmse_ppm": 6.275084487133291,
+        "intercept_only_rmse_ppm": 9.774620776707643,
+        "variance_skill": 0.587865168302776
+      },
+      "cross_validated_CO2_inversion": {
+        "age_contiguous_blocks": 8,
+        "root_count": 269,
+        "out_of_domain_count": 0,
+        "rmse_ppm": 12.69666048184206,
+        "mean_absolute_error_ppm": 10.365718485194261,
+        "bias_ppm": -0.0002313767639333412,
+        "pearson_r": 0.7703283093953184,
+        "intercept_only_rmse_ppm": 19.677929095852086
+      }
+    },
+    "31_ka": {
+      "pearson_r": 0.7853186612249723,
+      "offset_ppm": -0.8686667230607126,
+      "fixed_amplitude_rmse_ppm": 5.447494236392897,
+      "intercept_only_rmse_ppm": 8.387471704484595,
+      "fixed_amplitude_variance_skill": 0.5781758668505026,
+      "diagnostic_fitted_amplitude": 0.7999912929990863,
+      "diagnostic_fitted_intercept_ppm": 4.462898051351339,
+      "observed_standard_deviation_ppm": 8.387471704484595,
+      "predicted_standard_deviation_ppm": 8.233637175393238,
+      "blocked_cross_validation": {
+        "age_contiguous_blocks": 8,
+        "model_rmse_ppm": 5.542549647945697,
+        "intercept_only_rmse_ppm": 8.949144813842874,
+        "variance_skill": 0.6164198608055299
+      },
+      "cross_validated_CO2_inversion": {
+        "age_contiguous_blocks": 8,
+        "root_count": 269,
+        "out_of_domain_count": 0,
+        "rmse_ppm": 11.215484125962929,
+        "mean_absolute_error_ppm": 8.962362838591233,
+        "bias_ppm": -0.0013608347835492385,
+        "pearson_r": 0.7796760592599971,
+        "intercept_only_rmse_ppm": 17.66739690685534
+      }
+    }
+  },
+  "interpretation": {
+    "supported": "Measured CO2 supplies out-of-block predictive information for Delta-17O with the model amplitude fixed.",
+    "not_identified": "Residual isotope variation cannot be assigned uniquely to GPP; it also includes measurement noise and unmodeled process change.",
+    "inversion_scope": "The raw individual-sample inversion is less accurate than an intercept-only CO2 comparator. The 21-kyr signal tracks measured CO2 substantially better, so support applies to coherent glacial-scale variation rather than precise single-sample CO2 estimates.",
+    "smoothing_caveat": "Moving-window metrics reproduce Yang's descriptive comparison but overlapping windows are not statistically independent."
+  }
+}

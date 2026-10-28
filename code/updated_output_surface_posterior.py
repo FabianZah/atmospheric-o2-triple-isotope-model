@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
+from biosphere_configurations import select_surface_path
 
 from isotopes import conventional_delta_from_prime
 from updated_molecular_forward_model import UpdatedForwardInput, run_updated_forward
@@ -45,6 +46,7 @@ class UpdatedConditionalPosteriorInput:
     gpp_pgC_per_year: float = 290.0
     solve_bounds: tuple[float, float] | None = None
     grid_size: int = 4097
+    biosphere_configuration: str = "modern_reference"
 
 
 @dataclass(frozen=True)
@@ -99,6 +101,7 @@ def _request_at(
     request: UpdatedConditionalPosteriorInput, value: float
 ) -> UpdatedOutputSurfaceInput:
     return UpdatedOutputSurfaceInput(
+        biosphere_configuration=request.biosphere_configuration,
         p_o2_pal=value if request.solve_for == "pO2" else request.p_o2_pal,
         p_co2_ppm=value if request.solve_for == "pCO2" else request.p_co2_ppm,
         gpp_pgC_per_year=(
@@ -168,7 +171,9 @@ def conditional_updated_posterior(
     if request.grid_size < 257 or request.grid_size % 2 == 0:
         raise ValueError("grid size must be an odd integer of at least 257")
 
+    surface_path = select_surface_path(surface_path, request.biosphere_configuration)
     surface = load_updated_output_surface(str(Path(surface_path).resolve()))
+    surface.require_configuration(request.biosphere_configuration)
     domain = _coordinate_domain(surface, request.solve_for)
     lower, upper = map(
         float, domain if request.solve_bounds is None else request.solve_bounds
@@ -253,6 +258,7 @@ def conditional_updated_posterior(
 
     inverse = invert_updated_output_surface(
         UpdatedSurfaceInverseInput(
+            biosphere_configuration=request.biosphere_configuration,
             target_air_cap_delta17_permil=request.target_air_cap_delta17_permil,
             solve_for=request.solve_for,
             measurement_uncertainty_permil=request.measurement_sigma_permil,

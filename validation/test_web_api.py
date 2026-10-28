@@ -37,8 +37,8 @@ def test_frontend_assets_and_api_work_when_mounted_below_prefix() -> None:
     swagger_initializer = prefixed_client.get("/oxytib/assets/swagger-init.js")
 
     assert root.status_code == 200
-    assert 'href="assets/styles.css?v=1.27.0"' in root.text
-    assert 'src="assets/app.js?v=1.27.0"' in root.text
+    assert 'href="assets/styles.css?v=biology-ui-20261020b"' in root.text
+    assert 'src="assets/app.js?v=biology-ui-20261020b"' in root.text
     assert 'src="assets/mathjax-config.js?v=1.0.0"' in root.text
     assert 'src="assets/vendor/mathjax/tex-svg.js?v=3.2.2"' in root.text
     assert "cdn.jsdelivr.net" not in root.text
@@ -164,7 +164,8 @@ def test_faq_merges_overlapping_topics_and_preserves_input_guidance() -> None:
     guide = html.split('id="view-guide"', 1)[1].split('id="view-references"', 1)[0]
     faq = guide.split("<h2>Frequently asked questions</h2>", 1)[1]
 
-    assert faq.count("<summary>") == 13
+    assert faq.count("<summary>") == 14
+    assert "What does the biological configuration change, and which should I choose?" in faq
     for former_question in (
         "What assumptions are made about input uncertainties?",
         "Does the main solver represent steady state?",
@@ -206,8 +207,8 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert 'id="transient-progress-elapsed"' in root.text
     assert 'id="solver-progress"' in root.text
     assert 'id="solver-progress-elapsed"' in root.text
-    assert 'href="assets/styles.css?v=1.27.0"' in root.text
-    assert 'src="assets/app.js?v=1.27.0"' in root.text
+    assert 'href="assets/styles.css?v=biology-ui-20261020b"' in root.text
+    assert 'src="assets/app.js?v=biology-ui-20261020b"' in root.text
     assert 'id="reset-surface"' in root.text
     assert 'id="reset-transient"' in root.text
     assert '>Download XLSX</button>' in root.text
@@ -264,8 +265,8 @@ def test_root_serves_independent_frontend_and_static_assets() -> None:
     assert 'href="citation/CITATION.cff"' not in root.text
     assert '<a href="docs">API documentation</a>' in root.text
     assert 'href="/docs"' not in root.text
-    assert root.text.count('class="reference-group"') == 6
-    assert root.text.count("<article>", root.text.index('id="view-references"')) == 30
+    assert root.text.count('class="reference-group"') == 7
+    assert root.text.count("<article>", root.text.index('id="view-references"')) == 35
     for citation_url in (
         "https://jpldataeval.jpl.nasa.gov/",
         "https://doi.org/10.1002/qj.3803",
@@ -420,7 +421,7 @@ def test_coordinate_xlsx_export_contains_provenance_and_posterior_data() -> None
         for row in workbook["Summary"].iter_rows(min_row=4, max_col=2)
     }
     assert summary["software"] == "OXYTIB"
-    assert summary["software_version"] == "0.1.0"
+    assert summary["software_version"] == "unreleased-20261021"
     assert "publication_model_id" not in summary
     assert "surface_data_id" not in summary
     assert summary["isotope_source"] == "Direct air O2"
@@ -470,7 +471,7 @@ def test_transient_xlsx_export_reuses_run_and_contains_metadata(
         for row in workbook["Summary"].iter_rows(min_row=4, max_col=2)
     }
     assert summary["software"] == "OXYTIB"
-    assert summary["software_version"] == "0.1.0"
+    assert summary["software_version"] == "unreleased-20261021"
     assert "publication_model_id" not in summary
     provenance_fields = {
         row[0].value
@@ -576,13 +577,13 @@ def test_coordinate_xlsx_export_includes_spherule_context_and_joint_field() -> N
     assert "unlisted combinations are zero" in summary["joint_probability_storage"]
 
 
-def test_health_and_model_metadata_expose_one_accepted_model() -> None:
+def test_health_and_model_metadata_expose_current_model_identity() -> None:
     health = client.get("/api/v1/health")
     assert health.status_code == 200
     assert health.json() == {
         "status": "ok",
         "api_version": "1.0",
-        "publication_model_id": "oxytib_publication_model_v1",
+        "publication_model_id": "oxytib_r5_r7_shared_budget_20261021",
     }
 
     metadata = client.get("/api/v1/model")
@@ -609,7 +610,7 @@ def test_forward_and_inverse_roundtrip_preserve_model_provenance() -> None:
     assert forward.status_code == 200
     forward_body = forward.json()
     target = forward_body["result"]["central_cap_delta17_prime_permil"]
-    assert target == pytest.approx(-0.42635313046373885)
+    assert target == pytest.approx(-0.4261881668584182)
     assert forward_body["provenance"]["extrapolation_permitted"] is False
 
     inverse = client.post(

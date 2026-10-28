@@ -282,7 +282,7 @@ def test_container_excludes_local_secrets_and_environments():
     dockerfile = (ROOT / "Dockerfile").read_text()
     assert "COPY . /app" not in dockerfile
     for directory in ("code", "model_data", "web"):
-        assert f"COPY {directory} /app/{directory}" in dockerfile
+        assert f"COPY --chown=10001:10001 {directory} /app/{directory}" in dockerfile
     ignore = set((ROOT / ".dockerignore").read_text().splitlines())
     assert {"**/.env", "**/.env.*", "**/.venv", "**/venv", "**/.tmp",
             "**/tmp", "**/*.log", "**/*.pem", "**/*.key", "**/.ssh", "**/.aws"} <= ignore
@@ -290,6 +290,15 @@ def test_container_excludes_local_secrets_and_environments():
     steps = {s.get("name"): s for s in workflow["jobs"]["container"]["steps"]}
     assert "Prepare harmless build-exclusion sentinels" in steps
     assert "Verify build excludes local secrets and environments" in steps
+
+
+def test_container_avoids_duplicate_ownership_layer_and_generated_bytecode():
+    dockerfile = (ROOT / "Dockerfile").read_text()
+    assert "pip install --no-cache-dir --no-compile" in dockerfile
+    assert "chown -R" not in dockerfile
+    assert dockerfile.index("RUN useradd") < dockerfile.index("COPY --chown=")
+    assert "PYTHONDONTWRITEBYTECODE=1" in dockerfile
+    assert "USER modelapi" in dockerfile
 
 
 def test_proxy_trust_is_explicit_and_limited():
@@ -362,6 +371,14 @@ def test_dense_export_verifier_checks_real_workload_and_workbook(monkeypatch, fa
         assert report["field_shape"] == [833, 961]
         assert report["xlsx_bytes"] > 0
         assert calls[0][3] == calls[1][3] == 600.0
+        assert calls[0][2] == {
+            "solve_for": "pCO2", "target_air_cap_delta17_permil": -10.0,
+            "measurement_sigma_permil": 0.015,
+            "target_air_delta18_conventional_permil": 23.9,
+            "delta18_measurement_sigma_permil": 0.3,
+            "gpp_constraint": {"kind": "normal", "center": 290.0, "sigma": 29.0},
+            "po2_constraint": {"kind": "fixed", "center": 1.0},
+        }
         assert calls[1][2]["inference"] == calls[0][2]
         assert calls[1][2]["context"] == {"isotope_source": "Direct air O2"}
 

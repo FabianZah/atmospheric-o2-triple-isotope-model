@@ -24,6 +24,7 @@ import web_api
 
 
 class LinearSurface:
+    biosphere_configuration = "modern_reference"
     domain = {"pco2_ppm": (50., 60000.), "gpp_pgC_per_year": (18.256264, 850.), "po2_pal": (.1, 2.)}
 
     def evaluate_central_cap_delta17_grid(self, *, p_o2_pal, p_co2_ppm, gpp_pgC_per_year):

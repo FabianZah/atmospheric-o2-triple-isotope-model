@@ -29,7 +29,7 @@ def main():
     require_accepted(report, "Oxygen-18 interpolation")
     print("Checking low-CO2 interpolation", flush=True)
     report = low_co2_holdouts(surface, outputs / "updated_molecular_output_surface_50ppm_audit.json",
-                    outputs / "updated_molecular_output_surface_50ppm_validated.json",
+                    None,
                     response_bundle_path=ROOT / "model_data/updated_r7_response_surface_v1.json")
     require_accepted(report, "Low-CO2 interpolation")
     print("Checking surface shape", flush=True)

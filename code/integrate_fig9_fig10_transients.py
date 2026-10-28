@@ -36,6 +36,7 @@ import warnings
 
 import numpy as np
 from scipy.integrate import solve_ivp
+from scipy.optimize import OptimizeResult
 
 from calibrated_model import MODEL_VARIANTS, R5_MODES, ModelConfig, build_reactions, run_model
 from model_scenarios import (
@@ -232,6 +233,21 @@ def integrate_photosynthesis_carbon_driver(
         r7_finite_exposure_residence_time_yr=None,
     )
     initial_run = run_model(no_finite)
+    if photosynthesis_fraction == 1.0 and initial_run.full_result.converged:
+        # The declared equilibrium is stationary when no parameter is changed.
+        times = np.linspace(0.0, duration_years, max(sample_count, 2))
+        return PhotosynthesisCarbonDriverTrajectory(
+            time_years=times,
+            pco2_ppm=np.full_like(times, base_config.p_co2_ppm),
+            po2_pal=np.full_like(times, base_config.p_o2_pal),
+            solver=OptimizeResult(
+                success=True, message="stationary initial equilibrium; no photosynthesis perturbation",
+                method="stationary equilibrium", nfev=0, njev=0, nlu=0,
+                internal_runtime_warning_events=0, internal_runtime_warnings=(),
+                minimum_unclipped_inventory_mol=float(np.min(initial_run.y)),
+                negative_inventory_count_before_clipping=int(np.count_nonzero(initial_run.y < 0.0)),
+            ),
+        )
     if no_finite.processed_access_reservoir_mode == "lagged_state":
         species_order = EXTENDED_SPECIES_ORDER
         initial = extend_state_with_access(
