@@ -346,7 +346,7 @@
     },
     "public_service_implementation": {
       "path": "code/public_model_service.py",
-      "sha256": "6686991b5a7ae64fd5bdd86452c0ebd590ed89d3d3aa21176c4c08d053c00caa"
+      "sha256": "aee8c032dfa3833b2e6264d83634fc6f206cb77229e1098408895ffbb18d91cd"
     },
     "central_response_surface": {
       "path": "model_data/updated_r7_response_surface_v1.json",
@@ -366,7 +366,7 @@
     },
     "validation_evidence_manifest": {
       "path": "model_data/validation_evidence/corrected_core_20261019/manifest.json",
-      "sha256": "b7af3e2cc4f0f0d7d5455aa7d16fd23b7c0f412ccd638ac77c5a1a61f6edb549"
+      "sha256": "49b915bba2f50a90575ab280578505bfdbb35493a47b640dd61451c94fc4449d"
     },
     "validation_release_scorecard": {
       "path": "model_data/validation_evidence/corrected_core_20261019/updated_molecular_release_scorecard.json",

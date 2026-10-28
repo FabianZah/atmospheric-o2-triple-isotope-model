@@ -9,7 +9,9 @@ abstract: >-
   surfaces, transient experiments, and separated uncertainty layers.
 type: software
 version: "0.2.0"
-url: "https://github.com/FabianZah/atmospheric-o2-triple-isotope-model/releases/tag/v0.2.0"
+doi: "10.5281/zenodo.23731402"
+date-released: "2026-10-28"
+url: "https://doi.org/10.5281/zenodo.23731402"
 license: MIT  # code; data/docs are CC-BY-4.0 (see LICENSING.md)
 authors:
   - family-names: "Zahnow"

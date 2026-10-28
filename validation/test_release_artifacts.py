@@ -57,15 +57,15 @@ def test_author_orcid_is_valid_and_in_citation_downloads() -> None:
 
 
 def test_release_citations_match_public_metadata() -> None:
-    url = "https://github.com/FabianZah/atmospheric-o2-triple-isotope-model/releases/tag/v0.2.0"
+    url = "https://doi.org/10.5281/zenodo.23731402"
     citation = yaml.safe_load((ROOT / "CITATION.cff").read_text(encoding="utf-8"))
     metadata = model_metadata()["citation"]
     assert citation["version"] == metadata["version"] == "0.2.0"
-    assert citation.get("doi") == metadata["doi"] is None
-    assert "date-released" not in citation
+    assert citation["doi"] == metadata["doi"] == "10.5281/zenodo.23731402"
+    assert citation["date-released"] == "2026-10-28"
     assert citation["url"] == metadata["url"] == url
     assert url in metadata["recommended_text"]
-    assert "GitHub" in metadata["recommended_text"]
+    assert "Zenodo" in metadata["recommended_text"]
     for filename in ("CITATION.bib", "CITATION.ris", "README.md", "web/index.html"):
         assert url in (ROOT / filename).read_text(encoding="utf-8")
     for filename in ("CITATION.cff", "CITATION.bib", "CITATION.ris", "web/index.html"):

@@ -178,8 +178,8 @@ outputs remain outside the release runtime.
 ## Citation and license
 
 Zahnow, F. (2026). *OXYTIB: Atmospheric oxygen triple-isotope budget and inference
-model* (v0.2.0) [Software]. GitHub.
-[Version-specific source release](https://github.com/FabianZah/atmospheric-o2-triple-isotope-model/releases/tag/v0.2.0).
+model* (v0.2.0) [Software]. Zenodo.
+[doi:10.5281/zenodo.23731402](https://doi.org/10.5281/zenodo.23731402).
 
 Downloadable citation records:
 [`CITATION.cff`](CITATION.cff), [`CITATION.bib`](CITATION.bib), and

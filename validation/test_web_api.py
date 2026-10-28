@@ -384,7 +384,7 @@ def test_downloadable_citation_records(path: str, marker: str) -> None:
     response = client.get(path)
     assert response.status_code == 200
     assert marker in response.text
-    assert "releases/tag/v0.2.0" in response.text
+    assert "10.5281/zenodo.23731402" in response.text
     assert "attachment" in response.headers["content-disposition"]
 
 
